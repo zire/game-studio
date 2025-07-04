@@ -99,6 +99,8 @@
     }
 
     let map, pelletMap, pelletsLeft, pacman;
+    let ghosts = [];
+    let ghostMoveInterval = null;
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const message = document.getElementById('message');
@@ -109,6 +111,14 @@
       pelletMap = map.map(row => row.map(cell => cell === 0 ? 1 : 0));
       pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
       pacman = { x: 1, y: 1 };
+      ghosts = [
+        { x: mapWidth - 2, y: 1, color: '#FF5A36', name: 'Clement' },
+        { x: 1, y: mapHeight - 2, color: '#00FFFF', name: 'Chase' },
+        { x: mapWidth - 2, y: mapHeight - 2, color: '#FFB8FF', name: 'Ray' },
+        { x: Math.floor(mapWidth/2), y: Math.floor(mapHeight/2), color: '#FFD700', name: 'Jayden' }
+      ];
+      if (ghostMoveInterval) clearInterval(ghostMoveInterval);
+      ghostMoveInterval = setInterval(moveGhosts, 350);
       message.innerText = '';
       draw();
     }
@@ -129,6 +139,37 @@
           }
         }
       }
+      // Draw ghosts
+      for (const ghost of ghosts) {
+        ctx.beginPath();
+        ctx.arc(
+          ghost.x * tileSize + tileSize / 2,
+          ghost.y * tileSize + tileSize / 2,
+          tileSize / 2 - 4,
+          Math.PI, 0, false
+        );
+        ctx.lineTo(ghost.x * tileSize + tileSize - 4, ghost.y * tileSize + tileSize - 4);
+        ctx.lineTo(ghost.x * tileSize + 4, ghost.y * tileSize + tileSize - 4);
+        ctx.closePath();
+        ctx.fillStyle = ghost.color;
+        ctx.fill();
+        // Eyes
+        ctx.beginPath();
+        ctx.arc(ghost.x * tileSize + tileSize/2 - 6, ghost.y * tileSize + tileSize/2 - 2, 3, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 + 6, ghost.y * tileSize + tileSize/2 - 2, 3, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(ghost.x * tileSize + tileSize/2 - 6, ghost.y * tileSize + tileSize/2 - 2, 1.2, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 + 6, ghost.y * tileSize + tileSize/2 - 2, 1.2, 0, 2 * Math.PI);
+        ctx.fillStyle = '#222';
+        ctx.fill();
+        // Draw ghost name above
+        ctx.font = 'bold 13px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = ghost.color;
+        ctx.fillText(ghost.name, ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 4);
+      }
       ctx.beginPath();
       ctx.arc(
         pacman.x * tileSize + tileSize / 2,
@@ -143,6 +184,36 @@
       ctx.closePath();
       ctx.fillStyle = 'yellow';
       ctx.fill();
+    }
+
+    function moveGhosts() {
+      for (const ghost of ghosts) {
+        // Try random directions until a valid move is found
+        const dirs = [ [0, -1], [0, 1], [-1, 0], [1, 0] ];
+        for (let i = dirs.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+        }
+        for (const [dx, dy] of dirs) {
+          const nx = ghost.x + dx;
+          const ny = ghost.y + dy;
+          if (map[ny] && map[ny][nx] === 0 && !ghosts.some(g => g !== ghost && g.x === nx && g.y === ny)) {
+            ghost.x = nx;
+            ghost.y = ny;
+            break;
+          }
+        }
+      }
+      // Check collision with Pac-Man
+      for (const ghost of ghosts) {
+        if (ghost.x === pacman.x && ghost.y === pacman.y) {
+          message.innerText = 'Game Over!';
+          clearInterval(ghostMoveInterval);
+          setTimeout(resetGame, 1500);
+          return;
+        }
+      }
+      draw();
     }
 
     function tryMove(dx, dy) {
@@ -160,10 +231,20 @@
             wakaSound.play();
           } catch (e) {}
         }
+        // Check collision with ghosts after Pac-Man moves
+        for (const ghost of ghosts) {
+          if (ghost.x === pacman.x && ghost.y === pacman.y) {
+            message.innerText = 'Game Over!';
+            clearInterval(ghostMoveInterval);
+            setTimeout(resetGame, 1500);
+            return;
+          }
+        }
       }
       draw();
       if (pelletsLeft === 0) {
         message.innerText = 'You Win!';
+        clearInterval(ghostMoveInterval);
         setTimeout(resetGame, 1200);
       }
     }
