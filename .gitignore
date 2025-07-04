@@ -1,0 +1,37 @@
+# ---- DFX & IC build outputs ----
+.dfx/
+.ic-assets/
+ic-out/
+canisters/
+*.wasm
+*.pem
+*.mo.json
+
+# ---- Node & Package Manager stuff ----
+node_modules/
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# ---- Build Artifacts ----
+dist/
+build/
+out/
+*.log
+
+# ---- OS and Editor crap ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ---- Env & Secrets ----
+.env
+.env.*
+*.key
+
+# ---- Misc ----
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
