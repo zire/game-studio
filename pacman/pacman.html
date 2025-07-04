@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Pacman - Random Maze</title>
+  <style>
+    body { background: #000; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
+    canvas { border: 2px solid #fff; background: #111; display: block; margin: 0 auto; }
+    #newGameBtn {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      font-size: 1.2em;
+      padding: 8px 24px;
+      background: #222;
+      color: #FFD700;
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    #message {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: yellow;
+      font-family: monospace;
+      font-size: 2em;
+      text-shadow: 2px 2px 8px #000;
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+  <button id="newGameBtn">New Game</button>
+  <canvas id="game" width="420" height="420"></canvas>
+  <div id="message"></div>
+  <script>
+    const tileSize = 30;
+    const mapWidth = 14;
+    const mapHeight = 9;
+
+    function generateRandomMap() {
+      // Maze generation using randomized DFS
+      const newMap = [];
+      for (let y = 0; y < mapHeight; y++) {
+        const row = [];
+        for (let x = 0; x < mapWidth; x++) {
+          row.push(1); // Start with all walls
+        }
+        newMap.push(row);
+      }
+
+      // Helper to shuffle directions
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+      }
+
+      // DFS maze generation
+      function carve(x, y) {
+        newMap[y][x] = 0;
+        const dirs = [ [0, -2], [0, 2], [-2, 0], [2, 0] ];
+        shuffle(dirs);
+        for (const [dx, dy] of dirs) {
+          const nx = x + dx, ny = y + dy;
+          if (ny > 0 && ny < mapHeight-1 && nx > 0 && nx < mapWidth-1 && newMap[ny][nx] === 1) {
+            newMap[y + dy/2][x + dx/2] = 0; // Remove wall between
+            carve(nx, ny);
+          }
+        }
+      }
+
+      carve(1, 1); // Start maze at (1,1)
+
+      // Optionally open a few more random cells for pellet variety
+      let extraOpens = Math.floor((mapWidth * mapHeight) * 0.12);
+      while (extraOpens > 0) {
+        const rx = 1 + Math.floor(Math.random() * (mapWidth - 2));
+        const ry = 1 + Math.floor(Math.random() * (mapHeight - 2));
+        if (newMap[ry][rx] === 1) {
+          newMap[ry][rx] = 0;
+          extraOpens--;
+        }
+      }
+
+      // Ensure (1,1) is open
+      newMap[1][1] = 0;
+      return newMap;
+    }
+
+    let map, pelletMap, pelletsLeft, pacman;
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const message = document.getElementById('message');
+    const newGameBtn = document.getElementById('newGameBtn');
+
+    function resetGame() {
+      map = generateRandomMap();
+      pelletMap = map.map(row => row.map(cell => cell === 0 ? 1 : 0));
+      pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
+      pacman = { x: 1, y: 1 };
+      message.innerText = '';
+      draw();
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+          if (map[y][x] === 1) {
+            ctx.fillStyle = '#0033cc';
+            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+          }
+          if (pelletMap[y][x] === 1) {
+            ctx.beginPath();
+            ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 4, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+          }
+        }
+      }
+      ctx.beginPath();
+      ctx.arc(
+        pacman.x * tileSize + tileSize / 2,
+        pacman.y * tileSize + tileSize / 2,
+        tileSize / 2 - 2,
+        0.25 * Math.PI, 1.75 * Math.PI, false
+      );
+      ctx.lineTo(
+        pacman.x * tileSize + tileSize / 2,
+        pacman.y * tileSize + tileSize / 2
+      );
+      ctx.closePath();
+      ctx.fillStyle = 'yellow';
+      ctx.fill();
+    }
+
+    function tryMove(dx, dy) {
+      const nx = pacman.x + dx;
+      const ny = pacman.y + dy;
+      if (map[ny] && map[ny][nx] === 0) {
+        pacman.x = nx;
+        pacman.y = ny;
+        if (pelletMap[ny][nx] === 1) {
+          pelletMap[ny][nx] = 0;
+          pelletsLeft--;
+        }
+      }
+      draw();
+      if (pelletsLeft === 0) {
+        message.innerText = 'You Win!';
+        setTimeout(resetGame, 1200);
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (pelletsLeft === 0) return;
+      switch (e.key) {
+        case 'ArrowUp': tryMove(0, -1); break;
+        case 'ArrowDown': tryMove(0, 1); break;
+        case 'ArrowLeft': tryMove(-1, 0); break;
+        case 'ArrowRight': tryMove(1, 0); break;
+      }
+    });
+
+    newGameBtn.addEventListener('click', resetGame);
+
+    resetGame();
+  </script>
+</body>
+</html> 
