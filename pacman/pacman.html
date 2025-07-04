@@ -43,6 +43,10 @@
     const mapWidth = 14;
     const mapHeight = 9;
 
+    // Load waka-waka sound effect
+    const wakaSound = new Audio('waka.wav');
+    wakaSound.volume = 0.5; // Adjust volume as needed
+
     function generateRandomMap() {
       // Maze generation using randomized DFS
       const newMap = [];
@@ -150,6 +154,11 @@
         if (pelletMap[ny][nx] === 1) {
           pelletMap[ny][nx] = 0;
           pelletsLeft--;
+          // Play waka-waka sound when eating a pellet
+          try {
+            wakaSound.currentTime = 0;
+            wakaSound.play();
+          } catch (e) {}
         }
       }
       draw();
