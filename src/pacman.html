@@ -78,23 +78,27 @@
       display: none;
       flex-direction: column;
       gap: 8px;
-      margin-top: 15px;
+      margin-top: 20px;
     }
     
     .control-row {
       display: flex;
       justify-content: center;
-      gap: 8px;
+      gap: 20px;
+    }
+    
+    .control-row.middle {
+      gap: 40px;
     }
     
     .control-btn {
-      width: 55px;
-      height: 55px;
+      width: 60px;
+      height: 60px;
       background: rgba(255, 215, 0, 0.2);
       border: 2px solid #FFD700;
       border-radius: 50%;
       color: #FFD700;
-      font-size: 22px;
+      font-size: 24px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -108,6 +112,7 @@
       -moz-user-select: none;
       -ms-user-select: none;
       touch-action: manipulation;
+      margin: 5px;
     }
     
     .control-btn:active {
@@ -157,9 +162,22 @@
       }
       
       .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 55px;
+        height: 55px;
+        font-size: 22px;
+        margin: 3px;
+      }
+      
+      .control-row {
+        gap: 15px;
+      }
+      
+      .control-row.middle {
+        gap: 30px;
+      }
+      
+      .mobile-controls {
+        gap: 6px;
       }
       
       #message {
@@ -204,7 +222,7 @@
       <div class="control-row">
         <button class="control-btn up" data-direction="up">↑</button>
       </div>
-      <div class="control-row">
+      <div class="control-row middle">
         <button class="control-btn left" data-direction="left">←</button>
         <button class="control-btn right" data-direction="right">→</button>
       </div>
