@@ -214,7 +214,7 @@
 <body>
   <div class="game-container">
     <button id="newGameBtn">New Game</button>
-    <canvas id="game" width="280" height="480"></canvas>
+    <canvas id="game" width="300" height="480"></canvas>
     <div id="message"></div>
     
     <!-- Mobile Controls -->
@@ -232,20 +232,20 @@
     </div>
     
     <div class="instructions">
-      <div id="desktop-instructions">Use arrow keys to move Pacman</div>
-      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move Pacman</div>
+      <div id="desktop-instructions">Use arrow keys to move Pacman to the exit door</div>
+      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move Pacman to the exit door</div>
     </div>
   </div>
 
   <script>
     // Portrait-optimized maze dimensions
-    const mapWidth = 10;  // Narrower for portrait
+    const mapWidth = 10;  // Back to original size
     const mapHeight = 16; // Taller for portrait
     
     // Responsive canvas sizing for portrait mode
     function resizeCanvas() {
       const canvas = document.getElementById('game');
-      const maxWidth = Math.min(window.innerWidth - 20, 280);
+      const maxWidth = Math.min(window.innerWidth - 20, 300);
       const maxHeight = Math.min(window.innerHeight * 0.65, 480);
       
       // For portrait mode, prioritize height
@@ -304,7 +304,7 @@
         }
       }
 
-      // DFS maze generation
+      // DFS maze generation (full maze including exit door position)
       function carve(x, y) {
         newMap[y][x] = 0;
         const dirs = [ [0, -2], [0, 2], [-2, 0], [2, 0] ];
@@ -333,6 +333,27 @@
 
       // Ensure (1,1) is open
       newMap[1][1] = 0;
+      
+      // Place exit door at bottom-right corner
+      newMap[mapHeight - 2][mapWidth - 2] = 2; // Door
+      
+      // Ensure the door is connected to the maze
+      // Create a guaranteed path from the maze to the door
+      let doorConnected = false;
+      
+      // Try to connect from the left of the door
+      if (newMap[mapHeight - 2][mapWidth - 3] === 0) {
+        doorConnected = true;
+      }
+      // Try to connect from above the door
+      else if (newMap[mapHeight - 3][mapWidth - 2] === 0) {
+        doorConnected = true;
+      }
+      // If not connected, force a connection from the left
+      if (!doorConnected) {
+        newMap[mapHeight - 2][mapWidth - 3] = 0; // Open the cell to the left of the door
+      }
+      
       return newMap;
     }
 
@@ -346,13 +367,17 @@
 
     function resetGame() {
       map = generateRandomMap();
-      pelletMap = map.map(row => row.map(cell => cell === 0 ? 1 : 0));
+      pelletMap = map.map((row, y) => row.map((cell, x) => {
+        // Don't place pellets on the door
+        if (cell === 2) return 0;
+        return cell === 0 ? 1 : 0;
+      }));
       pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
       pacman = { x: 1, y: 1 };
       ghosts = [
-        { x: mapWidth - 2, y: 1, color: '#FF5A36', name: 'Clement' },
+        { x: mapWidth - 3, y: 1, color: '#FF5A36', name: 'Clement' },
         { x: 1, y: mapHeight - 2, color: '#00FFFF', name: 'Chase' },
-        { x: mapWidth - 2, y: mapHeight - 2, color: '#FFB8FF', name: 'Ray' },
+        { x: mapWidth - 3, y: mapHeight - 2, color: '#FFB8FF', name: 'Ray' },
         { x: Math.floor(mapWidth/2), y: Math.floor(mapHeight/2), color: '#FFD700', name: 'Jayden' }
       ];
       if (ghostMoveInterval) clearInterval(ghostMoveInterval);
@@ -371,6 +396,30 @@
             ctx.fillStyle = '#0033cc';
             ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
           }
+          if (map[y][x] === 2) {
+            // Draw door frame
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+            
+            // Draw door
+            ctx.fillStyle = '#D2691E';
+            ctx.fillRect(x * tileSize + 2, y * tileSize + 2, tileSize - 4, tileSize - 4);
+            
+            // Draw door panels
+            ctx.fillStyle = '#CD853F';
+            ctx.fillRect(x * tileSize + 4, y * tileSize + 4, (tileSize - 8) / 2, (tileSize - 8) / 2);
+            ctx.fillRect(x * tileSize + 4 + (tileSize - 8) / 2, y * tileSize + 4, (tileSize - 8) / 2, (tileSize - 8) / 2);
+            ctx.fillRect(x * tileSize + 4, y * tileSize + 4 + (tileSize - 8) / 2, (tileSize - 8) / 2, (tileSize - 8) / 2);
+            ctx.fillRect(x * tileSize + 4 + (tileSize - 8) / 2, y * tileSize + 4 + (tileSize - 8) / 2, (tileSize - 8) / 2, (tileSize - 8) / 2);
+            
+            // Draw door handle
+            ctx.fillStyle = '#FFD700';
+            ctx.beginPath();
+            ctx.arc(x * tileSize + tileSize * 0.75, y * tileSize + tileSize * 0.5, 2, 0, 2 * Math.PI);
+            ctx.fill();
+          }
+          
+
           if (pelletMap[y][x] === 1) {
             ctx.beginPath();
             ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 3, 0, 2 * Math.PI);
@@ -464,9 +513,18 @@
     function tryMove(dx, dy) {
       const nx = pacman.x + dx;
       const ny = pacman.y + dy;
-      if (map[ny] && map[ny][nx] === 0) {
+      if (map[ny] && (map[ny][nx] === 0 || map[ny][nx] === 2)) {
         pacman.x = nx;
         pacman.y = ny;
+        
+        // Check if Pacman reached the door (win condition)
+        if (map[ny][nx] === 2) {
+          message.innerText = '🎉 You Win! Exit Found! 🎉';
+          clearInterval(ghostMoveInterval);
+          setTimeout(resetGame, 1200);
+          return;
+        }
+        
         if (pelletMap[ny][nx] === 1) {
           pelletMap[ny][nx] = 0;
           pelletsLeft--;
@@ -487,16 +545,10 @@
         }
       }
       draw();
-      if (pelletsLeft === 0) {
-        message.innerText = 'You Win!';
-        clearInterval(ghostMoveInterval);
-        setTimeout(resetGame, 1200);
-      }
     }
 
     // Keyboard controls
     document.addEventListener('keydown', e => {
-      if (pelletsLeft === 0) return;
       switch (e.key) {
         case 'ArrowUp': tryMove(0, -1); break;
         case 'ArrowDown': tryMove(0, 1); break;
@@ -524,8 +576,6 @@
         
         // Only trigger if it's a quick tap (not a long press)
         if (touchEndTime - touchStartTime < 300) {
-          if (pelletsLeft === 0) return;
-          
           const direction = btn.dataset.direction;
           switch (direction) {
             case 'up': tryMove(0, -1); break;
@@ -543,7 +593,6 @@
       // Handle mouse clicks for desktop
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (pelletsLeft === 0) return;
         
         const direction = btn.dataset.direction;
         switch (direction) {
