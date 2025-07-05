@@ -2,50 +2,270 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Pacman - Random Maze</title>
   <style>
-    body { background: #000; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh; }
-    canvas { border: 2px solid #fff; background: #111; display: block; margin: 0 auto; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body { 
+      background: #000; 
+      margin: 0; 
+      padding: 0;
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    
+    .game-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+    
+    canvas { 
+      border: 2px solid #fff; 
+      background: #111; 
+      display: block; 
+      margin: 0 auto;
+      max-width: 100%;
+      max-height: 70vh;
+    }
+    
     #newGameBtn {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 2;
-      font-size: 1.2em;
-      padding: 8px 24px;
+      font-size: 1.1em;
+      padding: 10px 20px;
       background: #222;
       color: #FFD700;
       border: 2px solid #FFD700;
       border-radius: 8px;
       cursor: pointer;
       font-family: monospace;
+      transition: all 0.3s ease;
     }
+    
+    #newGameBtn:hover {
+      background: #FFD700;
+      color: #222;
+    }
+    
     #message {
-      position: absolute;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%);
       color: yellow;
       font-family: monospace;
-      font-size: 2em;
+      font-size: 1.5em;
       text-shadow: 2px 2px 8px #000;
-      z-index: 2;
+      text-align: center;
+      min-height: 40px;
+    }
+    
+    /* Mobile Controls */
+    .mobile-controls {
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 15px;
+    }
+    
+    .control-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .control-btn {
+      width: 55px;
+      height: 55px;
+      background: rgba(255, 215, 0, 0.2);
+      border: 2px solid #FFD700;
+      border-radius: 50%;
+      color: #FFD700;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      touch-action: manipulation;
+    }
+    
+    .control-btn:active {
+      background: rgba(255, 215, 0, 0.5);
+      transform: scale(0.95);
+    }
+    
+    .control-btn.up { font-size: 18px; }
+    .control-btn.down { font-size: 18px; }
+    .control-btn.left { font-size: 18px; }
+    .control-btn.right { font-size: 18px; }
+    
+    /* Instructions */
+    .instructions {
+      color: #ccc;
+      text-align: center;
+      font-size: 12px;
+      margin-top: 8px;
+      opacity: 0.8;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .mobile-controls {
+        display: flex;
+      }
+      
+      .instructions {
+        font-size: 11px;
+      }
+      
+      #message {
+        font-size: 1.3em;
+        min-height: 35px;
+      }
+      
+      #newGameBtn {
+        font-size: 1em;
+        padding: 8px 16px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .game-container {
+        padding: 8px;
+        gap: 12px;
+      }
+      
+      .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      #message {
+        font-size: 1.1em;
+      }
+    }
+    
+    /* Portrait mode optimizations */
+    @media (orientation: portrait) {
+      .game-container {
+        max-width: 350px;
+        height: 100vh;
+      }
+      
+      canvas {
+        max-height: 60vh;
+      }
+    }
+    
+    /* Firefox mobile specific fixes */
+    @-moz-document url-prefix() {
+      body {
+        height: 100vh;
+        min-height: 100vh;
+      }
+      
+      .game-container {
+        height: 100vh;
+        min-height: 100vh;
+      }
     }
   </style>
 </head>
 <body>
-  <button id="newGameBtn">New Game</button>
-  <canvas id="game" width="420" height="420"></canvas>
-  <div id="message"></div>
+  <div class="game-container">
+    <button id="newGameBtn">New Game</button>
+    <canvas id="game" width="280" height="480"></canvas>
+    <div id="message"></div>
+    
+    <!-- Mobile Controls -->
+    <div class="mobile-controls">
+      <div class="control-row">
+        <button class="control-btn up" data-direction="up">↑</button>
+      </div>
+      <div class="control-row">
+        <button class="control-btn left" data-direction="left">←</button>
+        <button class="control-btn right" data-direction="right">→</button>
+      </div>
+      <div class="control-row">
+        <button class="control-btn down" data-direction="down">↓</button>
+      </div>
+    </div>
+    
+    <div class="instructions">
+      <div id="desktop-instructions">Use arrow keys to move Pacman</div>
+      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move Pacman</div>
+    </div>
+  </div>
+
   <script>
-    const tileSize = 30;
-    const mapWidth = 14;
-    const mapHeight = 9;
+    // Portrait-optimized maze dimensions
+    const mapWidth = 10;  // Narrower for portrait
+    const mapHeight = 16; // Taller for portrait
+    
+    // Responsive canvas sizing for portrait mode
+    function resizeCanvas() {
+      const canvas = document.getElementById('game');
+      const maxWidth = Math.min(window.innerWidth - 20, 280);
+      const maxHeight = Math.min(window.innerHeight * 0.65, 480);
+      
+      // For portrait mode, prioritize height
+      let size;
+      if (window.innerHeight > window.innerWidth) {
+        // Portrait mode - use height as primary constraint
+        size = Math.min(maxHeight / mapHeight, maxWidth / mapWidth);
+      } else {
+        // Landscape mode - use width as primary constraint
+        size = Math.min(maxWidth / mapWidth, maxHeight / mapHeight);
+      }
+      
+      const canvasWidth = mapWidth * size;
+      const canvasHeight = mapHeight * size;
+      
+      canvas.style.width = canvasWidth + 'px';
+      canvas.style.height = canvasHeight + 'px';
+      
+      // Update tile size based on canvas size
+      window.tileSize = size;
+    }
+    
+    // Initialize responsive design
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Show/hide instructions based on device
+    function updateInstructions() {
+      const isMobile = window.innerWidth <= 768;
+      document.getElementById('desktop-instructions').style.display = isMobile ? 'none' : 'block';
+      document.getElementById('mobile-instructions').style.display = isMobile ? 'block' : 'none';
+    }
+    updateInstructions();
+    window.addEventListener('resize', updateInstructions);
 
     // Load waka-waka sound effect
     const wakaSound = new Audio('waka.wav');
-    wakaSound.volume = 0.5; // Adjust volume as needed
+    wakaSound.volume = 0.5;
 
     function generateRandomMap() {
       // Maze generation using randomized DFS
@@ -83,7 +303,7 @@
       carve(1, 1); // Start maze at (1,1)
 
       // Optionally open a few more random cells for pellet variety
-      let extraOpens = Math.floor((mapWidth * mapHeight) * 0.12);
+      let extraOpens = Math.floor((mapWidth * mapHeight) * 0.1);
       while (extraOpens > 0) {
         const rx = 1 + Math.floor(Math.random() * (mapWidth - 2));
         const ry = 1 + Math.floor(Math.random() * (mapHeight - 2));
@@ -124,7 +344,9 @@
     }
 
     function draw() {
+      const tileSize = window.tileSize || 20;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
       for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
           if (map[y][x] === 1) {
@@ -133,48 +355,53 @@
           }
           if (pelletMap[y][x] === 1) {
             ctx.beginPath();
-            ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 4, 0, 2 * Math.PI);
+            ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 3, 0, 2 * Math.PI);
             ctx.fillStyle = '#FFD700';
             ctx.fill();
           }
         }
       }
+      
       // Draw ghosts
       for (const ghost of ghosts) {
         ctx.beginPath();
         ctx.arc(
           ghost.x * tileSize + tileSize / 2,
           ghost.y * tileSize + tileSize / 2,
-          tileSize / 2 - 4,
+          tileSize / 2 - 3,
           Math.PI, 0, false
         );
-        ctx.lineTo(ghost.x * tileSize + tileSize - 4, ghost.y * tileSize + tileSize - 4);
-        ctx.lineTo(ghost.x * tileSize + 4, ghost.y * tileSize + tileSize - 4);
+        ctx.lineTo(ghost.x * tileSize + tileSize - 3, ghost.y * tileSize + tileSize - 3);
+        ctx.lineTo(ghost.x * tileSize + 3, ghost.y * tileSize + tileSize - 3);
         ctx.closePath();
         ctx.fillStyle = ghost.color;
         ctx.fill();
+        
         // Eyes
         ctx.beginPath();
-        ctx.arc(ghost.x * tileSize + tileSize/2 - 6, ghost.y * tileSize + tileSize/2 - 2, 3, 0, 2 * Math.PI);
-        ctx.arc(ghost.x * tileSize + tileSize/2 + 6, ghost.y * tileSize + tileSize/2 - 2, 3, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 - 4, ghost.y * tileSize + tileSize/2 - 1, 2, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 + 4, ghost.y * tileSize + tileSize/2 - 1, 2, 0, 2 * Math.PI);
         ctx.fillStyle = '#fff';
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(ghost.x * tileSize + tileSize/2 - 6, ghost.y * tileSize + tileSize/2 - 2, 1.2, 0, 2 * Math.PI);
-        ctx.arc(ghost.x * tileSize + tileSize/2 + 6, ghost.y * tileSize + tileSize/2 - 2, 1.2, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 - 4, ghost.y * tileSize + tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 + 4, ghost.y * tileSize + tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
         ctx.fillStyle = '#222';
         ctx.fill();
-        // Draw ghost name above
-        ctx.font = 'bold 13px monospace';
+        
+        // Draw ghost name above (smaller for portrait mode)
+        ctx.font = 'bold 10px monospace';
         ctx.textAlign = 'center';
         ctx.fillStyle = ghost.color;
-        ctx.fillText(ghost.name, ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 4);
+        ctx.fillText(ghost.name, ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 2);
       }
+      
+      // Draw Pacman
       ctx.beginPath();
       ctx.arc(
         pacman.x * tileSize + tileSize / 2,
         pacman.y * tileSize + tileSize / 2,
-        tileSize / 2 - 2,
+        tileSize / 2 - 1,
         0.25 * Math.PI, 1.75 * Math.PI, false
       );
       ctx.lineTo(
@@ -249,6 +476,7 @@
       }
     }
 
+    // Keyboard controls
     document.addEventListener('keydown', e => {
       if (pelletsLeft === 0) return;
       switch (e.key) {
@@ -259,8 +487,64 @@
       }
     });
 
+    // Mobile touch controls with iOS support
+    document.querySelectorAll('.control-btn').forEach(btn => {
+      let touchStartTime = 0;
+      let touchEndTime = 0;
+      
+      // Handle touch events for iOS
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchStartTime = Date.now();
+        btn.style.transform = 'scale(0.95)';
+        btn.style.background = 'rgba(255, 215, 0, 0.5)';
+      });
+      
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        touchEndTime = Date.now();
+        
+        // Only trigger if it's a quick tap (not a long press)
+        if (touchEndTime - touchStartTime < 300) {
+          if (pelletsLeft === 0) return;
+          
+          const direction = btn.dataset.direction;
+          switch (direction) {
+            case 'up': tryMove(0, -1); break;
+            case 'down': tryMove(0, 1); break;
+            case 'left': tryMove(-1, 0); break;
+            case 'right': tryMove(1, 0); break;
+          }
+        }
+        
+        // Reset button appearance
+        btn.style.transform = 'scale(1)';
+        btn.style.background = 'rgba(255, 215, 0, 0.2)';
+      });
+      
+      // Handle mouse clicks for desktop
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (pelletsLeft === 0) return;
+        
+        const direction = btn.dataset.direction;
+        switch (direction) {
+          case 'up': tryMove(0, -1); break;
+          case 'down': tryMove(0, 1); break;
+          case 'left': tryMove(-1, 0); break;
+          case 'right': tryMove(1, 0); break;
+        }
+      });
+      
+      // Prevent context menu on long press
+      btn.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+      });
+    });
+
     newGameBtn.addEventListener('click', resetGame);
 
+    // Initialize game
     resetGame();
   </script>
 </body>
