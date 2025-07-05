@@ -49,6 +49,7 @@
       justify-content: flex-start;
       gap: 10px;
       padding: 10px;
+      padding-top: max(10px, env(safe-area-inset-top) + 10px);
       width: 100%;
       max-width: 400px;
       height: 100vh;
@@ -85,24 +86,25 @@
     
     .level-info {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      align-items: center;
       width: 100%;
       max-width: 400px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-family: monospace;
-      font-size: 0.9em;
+      font-size: 0.85em;
       color: #FFD700;
-      flex-wrap: wrap;
-      gap: 5px;
+      gap: 15px;
+      flex-wrap: nowrap;
     }
     
     #levelDisplay, #livesDisplay, #scoreDisplay {
-      background: rgba(0, 0, 0, 0.7);
-      padding: 5px 8px;
-      border-radius: 5px;
-      border: 1px solid #FFD700;
-      font-size: 0.8em;
+      background: none;
+      padding: 0;
+      border: none;
+      font-size: inherit;
       white-space: nowrap;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     }
     
     #message {
@@ -117,29 +119,25 @@
     /* Mobile Controls */
     .mobile-controls {
       display: none;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 20px;
+      flex-direction: row;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 15px;
+      padding: 0 10px;
     }
     
     .control-row {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-    }
-    
-    .control-row.middle {
-      gap: 40px;
+      display: none;
     }
     
     .control-btn {
-      width: 60px;
-      height: 60px;
+      width: 55px;
+      height: 55px;
       background: rgba(255, 215, 0, 0.2);
       border: 2px solid #FFD700;
       border-radius: 50%;
       color: #FFD700;
-      font-size: 24px;
+      font-size: 22px;
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -153,7 +151,7 @@
       -moz-user-select: none;
       -ms-user-select: none;
       touch-action: manipulation;
-      margin: 5px;
+      margin: 0;
     }
     
     .control-btn:active {
@@ -161,10 +159,10 @@
       transform: scale(0.95);
     }
     
-    .control-btn.up { font-size: 18px; }
-    .control-btn.down { font-size: 18px; }
-    .control-btn.left { font-size: 18px; }
-    .control-btn.right { font-size: 18px; }
+    .control-btn.up { font-size: 20px; }
+    .control-btn.down { font-size: 20px; }
+    .control-btn.left { font-size: 20px; }
+    .control-btn.right { font-size: 20px; }
     
     /* Instructions */
     .instructions {
@@ -173,6 +171,19 @@
       font-size: 12px;
       margin-top: 8px;
       opacity: 0.8;
+    }
+    
+    /* Studio Credit */
+    .studio-credit {
+      color: #FFD700;
+      text-align: center;
+      font-size: 11px;
+      font-family: monospace;
+      margin-top: 15px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      letter-spacing: 0.5px;
     }
     
     /* Responsive Design */
@@ -197,12 +208,13 @@
       
       .level-info {
         font-size: 0.8em;
-        gap: 3px;
+        gap: 12px;
+        margin-bottom: 6px;
       }
       
       #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: 0.75em;
-        padding: 4px 6px;
+        font-size: inherit;
+        padding: 0;
       }
     }
     
@@ -211,59 +223,55 @@
         padding: 8px;
         gap: 12px;
         justify-content: flex-start;
-        padding-top: 5px;
+        padding-top: max(8px, env(safe-area-inset-top) + 8px);
       }
       
       .control-btn {
-        width: 55px;
-        height: 55px;
-        font-size: 22px;
-        margin: 3px;
-      }
-      
-      .control-row {
-        gap: 15px;
-      }
-      
-      .control-row.middle {
-        gap: 30px;
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
       }
       
       .mobile-controls {
-        gap: 6px;
+        gap: 10px;
+        margin-top: 12px;
       }
       
       .level-info {
         font-size: 0.75em;
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: center;
         align-items: center;
-        gap: 2px;
+        gap: 8px;
+        margin-bottom: 4px;
       }
       
       #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: 0.7em;
-        padding: 3px 5px;
+        font-size: inherit;
+        padding: 0;
       }
     }
     
     /* iPhone 16 Pro Max and similar large phones */
     @media (max-width: 430px) and (min-height: 800px) {
       .game-container {
-        padding-top: 10px;
+        padding-top: max(15px, env(safe-area-inset-top) + 15px);
         gap: 8px;
       }
       
       .level-info {
         font-size: 0.8em;
         flex-direction: row;
-        justify-content: space-between;
+        justify-content: center;
+        align-items: center;
         width: 100%;
         max-width: 350px;
+        gap: 10px;
       }
       
       #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: 0.75em;
-        padding: 4px 6px;
+        font-size: inherit;
+        padding: 0;
       }
       
       canvas {
@@ -277,21 +285,38 @@
     
     /* Ultra-wide phones */
     @media (max-width: 360px) {
+      .game-container {
+        padding-top: max(6px, env(safe-area-inset-top) + 6px);
+      }
+      
       .level-info {
         font-size: 0.7em;
-        flex-direction: column;
+        flex-direction: row;
+        justify-content: center;
         align-items: center;
+        gap: 6px;
       }
       
       #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: 0.65em;
-        padding: 3px 4px;
+        font-size: inherit;
+        padding: 0;
       }
       
       .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+      }
+      
+      .mobile-controls {
+        gap: 8px;
+        margin-top: 10px;
+      }
+      
+      .studio-credit {
+        font-size: 10px;
+        margin-top: 12px;
+        margin-bottom: 8px;
       }
     }
     
@@ -335,6 +360,19 @@
         min-height: 100vh;
       }
     }
+    
+    /* Dynamic Island and notch devices */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      .game-container {
+        padding-top: max(10px, env(safe-area-inset-top) + 10px);
+      }
+      
+      @media (max-width: 430px) and (min-height: 800px) {
+        .game-container {
+          padding-top: max(20px, env(safe-area-inset-top) + 20px);
+        }
+      }
+    }
   </style>
 </head>
 <body>
@@ -350,21 +388,28 @@
     
     <!-- Mobile Controls -->
     <div class="mobile-controls">
-      <div class="control-row">
-        <button class="control-btn up" data-direction="up">↑</button>
-      </div>
-      <div class="control-row middle">
-        <button class="control-btn left" data-direction="left">←</button>
-        <button class="control-btn right" data-direction="right">→</button>
-      </div>
-      <div class="control-row">
-        <button class="control-btn down" data-direction="down">↓</button>
-      </div>
+      <button class="control-btn left" data-direction="left">←</button>
+      <button class="control-btn up" data-direction="up">↑</button>
+      <button class="control-btn down" data-direction="down">↓</button>
+      <button class="control-btn right" data-direction="right">→</button>
     </div>
     
     <div class="instructions">
-      <div id="desktop-instructions">Use arrow keys to move Pacman to the exit door</div>
-      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move Pacman to the exit door</div>
+      <div id="desktop-instructions">Use arrow keys to move <svg width="16" height="16" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle;">
+        <g transform="rotate(45 8 8)">
+          <path d="M8 1 A7 7 0 1 1 8 15 A7 7 0 0 1 8 1 M8 1 L8 8 L15 8 A7 7 0 0 0 8 1 Z" fill="#FFD700" stroke="#000" stroke-width="0.5"/>
+        </g>
+      </svg> to 🍎</div>
+      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move <svg width="16" height="16" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle;">
+        <g transform="rotate(45 8 8)">
+          <path d="M8 1 A7 7 0 1 1 8 15 A7 7 0 0 1 8 1 M8 1 L8 8 L15 8 A7 7 0 0 0 8 1 Z" fill="#FFD700" stroke="#000" stroke-width="0.5"/>
+        </g>
+      </svg> to 🍎</div>
+    </div>
+    
+    <div class="studio-credit">
+      Produced by Brandonator Awesome Game Studio<br>
+      B·A·G·S
     </div>
   </div>
 
