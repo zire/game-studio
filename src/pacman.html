@@ -50,9 +50,9 @@
     #newGameBtn {
       font-size: 1.1em;
       padding: 10px 20px;
-      background: #222;
-      color: #FFD700;
-      border: 2px solid #FFD700;
+      background: #FF69B4;
+      color: #222;
+      border: 2px solid #FF69B4;
       border-radius: 8px;
       cursor: pointer;
       font-family: monospace;
@@ -60,7 +60,7 @@
     }
     
     #newGameBtn:hover {
-      background: #FFD700;
+      background: #FF1493;
       color: #222;
     }
     
@@ -75,7 +75,7 @@
       color: #FFD700;
     }
     
-    #levelDisplay, #livesDisplay {
+    #levelDisplay, #livesDisplay, #scoreDisplay {
       background: rgba(0, 0, 0, 0.7);
       padding: 5px 10px;
       border-radius: 5px;
@@ -498,7 +498,7 @@
       pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
       totalPelletsInLevel = pelletsLeft;
       pelletsCollected = 0;
-      pacman = { x: 1, y: 1 };
+      pacman = { x: 1, y: 1, direction: 'right' };
       
       // Generate ghosts based on level
       ghosts = [];
@@ -542,26 +542,14 @@
             ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
           }
           if (map[y][x] === 2) {
-            // Draw door frame
-            ctx.fillStyle = '#8B4513';
-            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+            // Draw apple emoji as the exit
+            const centerX = x * tileSize + tileSize / 2;
+            const centerY = y * tileSize + tileSize / 2;
             
-            // Draw door
-            ctx.fillStyle = '#D2691E';
-            ctx.fillRect(x * tileSize + 2, y * tileSize + 2, tileSize - 4, tileSize - 4);
-            
-            // Draw door panels
-            ctx.fillStyle = '#CD853F';
-            ctx.fillRect(x * tileSize + 4, y * tileSize + 4, (tileSize - 8) / 2, (tileSize - 8) / 2);
-            ctx.fillRect(x * tileSize + 4 + (tileSize - 8) / 2, y * tileSize + 4, (tileSize - 8) / 2, (tileSize - 8) / 2);
-            ctx.fillRect(x * tileSize + 4, y * tileSize + 4 + (tileSize - 8) / 2, (tileSize - 8) / 2, (tileSize - 8) / 2);
-            ctx.fillRect(x * tileSize + 4 + (tileSize - 8) / 2, y * tileSize + 4 + (tileSize - 8) / 2, (tileSize - 8) / 2, (tileSize - 8) / 2);
-            
-            // Draw door handle
-            ctx.fillStyle = '#FFD700';
-            ctx.beginPath();
-            ctx.arc(x * tileSize + tileSize * 0.75, y * tileSize + tileSize * 0.5, 2, 0, 2 * Math.PI);
-            ctx.fill();
+            ctx.font = `${tileSize - 4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍎', centerX, centerY);
           }
           
 
@@ -608,18 +596,37 @@
         ctx.fillText(ghost.name, ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 2);
       }
       
-      // Draw Pacman
+      // Draw Pacman with directional mouth
       ctx.beginPath();
-      ctx.arc(
-        pacman.x * tileSize + tileSize / 2,
-        pacman.y * tileSize + tileSize / 2,
-        tileSize / 2 - 1,
-        0.25 * Math.PI, 1.75 * Math.PI, false
-      );
-      ctx.lineTo(
-        pacman.x * tileSize + tileSize / 2,
-        pacman.y * tileSize + tileSize / 2
-      );
+      const centerX = pacman.x * tileSize + tileSize / 2;
+      const centerY = pacman.y * tileSize + tileSize / 2;
+      const radius = tileSize / 2 - 1;
+      
+      let startAngle, endAngle;
+      switch (pacman.direction) {
+        case 'right':
+          startAngle = 0.25 * Math.PI;
+          endAngle = 1.75 * Math.PI;
+          break;
+        case 'left':
+          startAngle = 1.25 * Math.PI;
+          endAngle = 0.75 * Math.PI;
+          break;
+        case 'up':
+          startAngle = 1.25 * Math.PI;
+          endAngle = 1.75 * Math.PI;
+          break;
+        case 'down':
+          startAngle = 0.75 * Math.PI;
+          endAngle = 0.25 * Math.PI;
+          break;
+        default:
+          startAngle = 0.25 * Math.PI;
+          endAngle = 1.75 * Math.PI;
+      }
+      
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+      ctx.lineTo(centerX, centerY);
       ctx.closePath();
       ctx.fillStyle = 'yellow';
       ctx.fill();
@@ -655,15 +662,16 @@
               resetGame();
             }, 1500);
             return;
-                      } else {
-              document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-              message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
-              // Reset Pacman position
-              pacman.x = 1;
-              pacman.y = 1;
-              draw();
-              return;
-            }
+          } else {
+            document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
+            message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
+            // Reset Pacman position and direction
+            pacman.x = 1;
+            pacman.y = 1;
+            pacman.direction = 'right';
+            draw();
+            return;
+          }
         }
       }
       draw();
@@ -675,6 +683,12 @@
       if (map[ny] && (map[ny][nx] === 0 || map[ny][nx] === 2)) {
         pacman.x = nx;
         pacman.y = ny;
+        
+        // Update Pacman's direction based on movement
+        if (dx > 0) pacman.direction = 'right';
+        else if (dx < 0) pacman.direction = 'left';
+        else if (dy > 0) pacman.direction = 'down';
+        else if (dy < 0) pacman.direction = 'up';
         
         // Check if Pacman reached the door (win condition)
         if (map[ny][nx] === 2) {
@@ -731,9 +745,10 @@
             } else {
               document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
               message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
-              // Reset Pacman position
+              // Reset Pacman position and direction
               pacman.x = 1;
               pacman.y = 1;
+              pacman.direction = 'right';
               draw();
               return;
             }
