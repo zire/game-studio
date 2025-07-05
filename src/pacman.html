@@ -71,7 +71,7 @@
       max-width: 400px;
       margin-bottom: 10px;
       font-family: monospace;
-      font-size: 1.1em;
+      font-size: 0.9em;
       color: #FFD700;
     }
     
@@ -234,6 +234,7 @@
       <div class="level-info">
         <span id="levelDisplay">Level 1</span>
         <span id="livesDisplay">Lives: 5</span>
+        <span id="scoreDisplay">Total: 0 | Avg: 0</span>
       </div>
       <button id="newGameBtn">New Game</button>
       <canvas id="game" width="300" height="480"></canvas>
@@ -415,8 +416,8 @@
 
     // Get level parameters based on current level
     function getLevelParameters(level) {
-      // Lives: 5 at level 1, 1 at level 100
-      const lives = Math.max(1, 5 - Math.floor((level - 1) / 25));
+      // Lives: 1 at level 1, 5 at level 100 (more lives to battle more ghosts)
+      const lives = Math.min(5, 1 + Math.floor((level - 1) / 25));
       
       // Ghost count: 0 (1-3), 1 (4-15), 2 (16-30), 3 (31-50), 4 (51-75), 5 (76-100)
       let ghostCount;
@@ -433,12 +434,35 @@
       return { lives, ghostCount, targetPathLength };
     }
 
+    // Calculate score based on time, pellets collected, and lives remaining
+    function calculateScore(timeElapsed, pelletsCollected, totalPellets, livesRemaining, maxLives) {
+      // Time score: 0-40 points (faster = higher score)
+      const maxTime = 300; // 5 minutes max
+      const timeScore = Math.max(0, 40 - Math.floor((timeElapsed / 1000) * 40 / maxTime));
+      
+      // Pellet score: 0-40 points (more pellets = higher score)
+      const pelletScore = Math.floor((pelletsCollected / totalPellets) * 40);
+      
+      // Life score: 0-20 points (more lives = higher score)
+      const lifeScore = Math.floor((livesRemaining / maxLives) * 20);
+      
+      const totalScore = timeScore + pelletScore + lifeScore;
+      return Math.min(100, totalScore); // Cap at 100
+    }
+
     let map, pelletMap, pelletsLeft, pacman;
     let ghosts = [];
     let ghostMoveInterval = null;
     let currentLevel = 1;
     let playerLives = 5;
     let shortestPathLength = 0;
+    let levelStartTime = 0;
+    let currentScore = 0;
+    let totalScore = 0;
+    let completedLevels = 0;
+    let averageScore = 0;
+    let pelletsCollected = 0;
+    let totalPelletsInLevel = 0;
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const message = document.getElementById('message');
@@ -448,6 +472,9 @@
       // Get level parameters
       const { lives, ghostCount, targetPathLength } = getLevelParameters(currentLevel);
       playerLives = lives;
+      
+      // Start timing for this level
+      levelStartTime = Date.now();
       
       // Generate maze with appropriate difficulty
       let attempts = 0;
@@ -469,6 +496,8 @@
         return cell === 0 ? 1 : 0;
       }));
       pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
+      totalPelletsInLevel = pelletsLeft;
+      pelletsCollected = 0;
       pacman = { x: 1, y: 1 };
       
       // Generate ghosts based on level
@@ -497,6 +526,7 @@
       // Update display elements
       document.getElementById('levelDisplay').innerText = `Level ${currentLevel}`;
       document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
+      document.getElementById('scoreDisplay').innerText = `Total: ${totalScore} | Avg: ${averageScore}`;
       message.innerText = '';
       draw();
     }
@@ -648,17 +678,28 @@
         
         // Check if Pacman reached the door (win condition)
         if (map[ny][nx] === 2) {
+          // Calculate score for this level
+          const timeElapsed = Date.now() - levelStartTime;
+          const { lives: maxLives } = getLevelParameters(currentLevel);
+          currentScore = calculateScore(timeElapsed, pelletsCollected, totalPelletsInLevel, playerLives, maxLives);
+          totalScore += currentScore;
+          completedLevels++;
+          averageScore = Math.round(totalScore / completedLevels);
+          
           if (currentLevel >= 100) {
-            message.innerText = '🎉 Congratulations! You completed all 100 levels! 🎉';
+            message.innerText = `🎉 Congratulations! You completed all 100 levels! Final Total: ${totalScore}, Average: ${averageScore} 🎉`;
             clearInterval(ghostMoveInterval);
             setTimeout(() => {
               currentLevel = 1;
+              totalScore = 0;
+              completedLevels = 0;
+              averageScore = 0;
               resetGame();
             }, 3000);
             return;
           } else {
             currentLevel++;
-            message.innerText = `🎉 Level ${currentLevel - 1} Complete! 🎉`;
+            message.innerText = `🎉 Level ${currentLevel - 1} Complete! Score: ${currentScore}/100 (Total: ${totalScore}, Avg: ${averageScore}) 🎉`;
             clearInterval(ghostMoveInterval);
             setTimeout(resetGame, 1200);
             return;
@@ -668,6 +709,7 @@
         if (pelletMap[ny][nx] === 1) {
           pelletMap[ny][nx] = 0;
           pelletsLeft--;
+          pelletsCollected++;
           // Play waka-waka sound when eating a pellet
           try {
             wakaSound.currentTime = 0;
