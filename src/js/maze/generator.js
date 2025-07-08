@@ -30,7 +30,9 @@ export class MazeGenerator {
     newMap[0][0] = 0;
     
     // Place exit door at bottom-right corner
-    newMap[GAME_CONFIG.MAP_HEIGHT - 1][GAME_CONFIG.MAP_WIDTH - 1] = 2; // Door
+    const exitX = GAME_CONFIG.MAP_WIDTH - 1;
+    const exitY = GAME_CONFIG.MAP_HEIGHT - 1;
+    newMap[exitY][exitX] = 2; // Door
     
     // Ensure the door is accessible
     this.ensureDoorAccess(newMap);
@@ -110,7 +112,7 @@ export class MazeGenerator {
     const doorY = GAME_CONFIG.MAP_HEIGHT - 1;
     
     // Check if door is accessible from left or above
-    if (map[doorY][doorX - 1] === 1 && map[doorY - 1][doorX] === 1) {
+    if (map[doorY][doorX - 1] !== 0 && map[doorY - 1][doorX] !== 0) {
       // Door is blocked, create a path
       if (Math.random() > 0.5) {
         map[doorY][doorX - 1] = 0; // Open left

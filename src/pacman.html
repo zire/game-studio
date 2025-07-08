@@ -2004,6 +2004,9 @@
 
 
     function resetGame() {
+      // Change maze background for new game
+      changeMazeBackground();
+      
       // Reset celebration state
       isCelebrating = false;
       celebrationParticles = [];
@@ -3825,6 +3828,57 @@
        return buffer;
      }
 
+    // Maze Background Color System
+    let currentColorScheme = 0;
+    const colorSchemes = [
+      { name: 'Deep Space', background: '#0a0a1a', accent: '#4a90e2' },
+      { name: 'Sunset', background: '#2c1810', accent: '#ff6b35' },
+      { name: 'Ocean', background: '#0f1419', accent: '#00bfff' },
+      { name: 'Forest', background: '#0a1a0a', accent: '#228b22' },
+      { name: 'Purple', background: '#1a0a1a', accent: '#9370db' },
+      { name: 'Golden', background: '#1a1a0a', accent: '#ffd700' },
+      { name: 'Crimson', background: '#1a0a0a', accent: '#dc143c' },
+      { name: 'Arctic', background: '#0a1a1a', accent: '#87ceeb' }
+    ];
+
+    function changeMazeBackground() {
+      // Pick a random color scheme
+      currentColorScheme = Math.floor(Math.random() * colorSchemes.length);
+      const scheme = colorSchemes[currentColorScheme];
+      
+      console.log('Changing maze background to:', scheme.name);
+      
+      // Change maze container background
+      const mazeContainer = document.querySelector('.maze-container');
+      if (mazeContainer) {
+        mazeContainer.style.setProperty('background', scheme.background, 'important');
+        mazeContainer.style.transition = 'background 2s ease-in-out';
+        console.log('Maze container background changed to:', scheme.background);
+      }
+      
+      // Change canvas background (this is what you see behind the maze)
+      if (canvas) {
+        canvas.style.setProperty('background', scheme.background, 'important');
+        canvas.style.transition = 'background 2s ease-in-out';
+        console.log('Canvas background changed to:', scheme.background);
+      }
+      
+      // Also try changing the game container background
+      const gameContainer = document.querySelector('.game-container');
+      if (gameContainer) {
+        gameContainer.style.setProperty('background', scheme.background, 'important');
+        gameContainer.style.transition = 'background 2s ease-in-out';
+        console.log('Game container background changed to:', scheme.background);
+      }
+      
+      // Force a redraw
+      if (canvas) {
+        canvas.style.display = 'none';
+        canvas.offsetHeight; // Force reflow
+        canvas.style.display = 'block';
+      }
+    }
+
     // Initialize sounds and game
     console.log('Initializing game...');
     try {
@@ -3835,6 +3889,8 @@
     } catch (error) {
       console.error('Error initializing game:', error);
     }
+
+
     
     // PWA Service Worker Registration
     if ('serviceWorker' in navigator) {

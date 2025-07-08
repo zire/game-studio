@@ -1,3 +1,4 @@
+// Main game initialization
 import { GameEngine } from './game/engine.js';
 
 // Global game instance
@@ -125,7 +126,7 @@ function initializeControls() {
         case 'right': gameEngine.tryMove(1, 0); break;
       }
     });
-    
+
     // Prevent context menu on long press
     btn.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -145,7 +146,7 @@ function initializeControls() {
       touchStartTime = Date.now();
       btn.style.transform = 'scale(0.95)';
     });
-    
+
     btn.addEventListener('touchend', (e) => {
       e.preventDefault();
       if (btn.disabled) return;
@@ -168,6 +169,7 @@ function initializeControls() {
     // Handle mouse clicks for desktop
     btn.addEventListener('click', (e) => {
       e.preventDefault();
+      console.log('Weapon button clicked:', btn.dataset.weapon, 'disabled:', btn.disabled, 'gameEngine:', !!gameEngine);
       if (btn.disabled || !gameEngine) return;
       
       const weapon = btn.dataset.weapon;
@@ -176,7 +178,7 @@ function initializeControls() {
         case 'freeze': gameEngine.useFreezeWind(); break;
       }
     });
-    
+
     // Prevent context menu on long press
     btn.addEventListener('contextmenu', (e) => {
       e.preventDefault();
@@ -210,7 +212,7 @@ function initializeMenu() {
     
     hamburgerMenu.classList.add('active');
     menuOverlay.classList.add('active');
-    
+
     // Pause game when menu is open
     if (gameEngine) {
       gameEngine.pauseGame();
@@ -235,7 +237,7 @@ function initializeMenu() {
     if (gameEngine) {
       gameEngine.resumeGame();
     }
-    
+
     // Force a redraw to make sure everything is visible
     if (gameEngine) {
       gameEngine.draw();
@@ -308,7 +310,7 @@ function initializePWA() {
       }, 5000);
     }
   }
-  
+
   function installPWA() {
     if (deferredPrompt) {
       deferredPrompt.prompt();

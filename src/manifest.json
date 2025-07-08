@@ -2,7 +2,7 @@
   "name": "Brandon's Pacboy Game Studio",
   "short_name": "Pacboy Studio",
   "description": "Fun maze adventure game with weapons and ghosts by Brandon Yang",
-  "start_url": "/pacman.html",
+  "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#FFD700",
@@ -13,13 +13,13 @@
   "dir": "ltr",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "assets/images/bags_avatar.jpg",
       "sizes": "192x192",
-      "type": "image/png",
+      "type": "image/jpeg",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "assets/images/brandonator.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -27,15 +27,15 @@
   ],
   "screenshots": [
     {
-      "src": "screenshot-wide.png",
+      "src": "assets/images/brandonator.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide"
     },
     {
-      "src": "screenshot-narrow.png",
+      "src": "assets/images/bags_avatar.jpg",
       "sizes": "750x1334",
-      "type": "image/png",
+      "type": "image/jpeg",
       "form_factor": "narrow"
     }
   ]

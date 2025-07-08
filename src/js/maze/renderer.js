@@ -12,10 +12,11 @@ export class MazeRenderer {
   }
 
   drawMaze(map, horizontalWalls, verticalWalls, pelletMap) {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // Don't clear the canvas here - let the background generator handle it
+    // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Draw background (walkable areas)
-    this.ctx.fillStyle = '#1a1a2e';
+    // Draw maze background overlay (semi-transparent)
+    this.ctx.fillStyle = 'rgba(26, 26, 46, 0.7)';
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     
     // Draw thin dividers
@@ -279,6 +280,17 @@ export class MazeRenderer {
             this.ctx.textAlign = 'center';
             this.ctx.textBaseline = 'middle';
             this.ctx.fillText(particle.emoji, 0, 0);
+          } else if (particle.type === 'circle') {
+            this.ctx.beginPath();
+            this.ctx.arc(0, 0, currentSize * 0.3, 0, 2 * Math.PI);
+            this.ctx.fillStyle = particle.color;
+            this.ctx.fill();
+          } else if (particle.type === 'star') {
+            this.drawStar(0, 0, currentSize * 0.3, currentSize * 0.15, 5);
+            this.ctx.fillStyle = particle.color;
+            this.ctx.fill();
+          } else if (particle.type === 'sparkle') {
+            this.drawSparkle(0, 0, currentSize * 0.4);
           }
           
           this.ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
@@ -295,6 +307,17 @@ export class MazeRenderer {
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(particle.emoji, 0, 0);
+      } else if (particle.type === 'circle') {
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, currentSize * 0.5, 0, 2 * Math.PI);
+        this.ctx.fillStyle = particle.color;
+        this.ctx.fill();
+      } else if (particle.type === 'star') {
+        this.drawStar(0, 0, currentSize * 0.5, currentSize * 0.25, 5);
+        this.ctx.fillStyle = particle.color;
+        this.ctx.fill();
+      } else if (particle.type === 'sparkle') {
+        this.drawSparkle(0, 0, currentSize * 0.6);
       }
       
       this.ctx.restore();
@@ -320,9 +343,119 @@ export class MazeRenderer {
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText(particle.emoji, 0, 0);
+      } else if (particle.type === 'skull') {
+        this.drawSkull(0, 0, particle.size * 0.4);
+      } else if (particle.type === 'explosion') {
+        this.drawExplosion(0, 0, particle.size * 0.5);
+      } else if (particle.type === 'smoke') {
+        this.drawSmoke(0, 0, particle.size * 0.6);
       }
       
       this.ctx.restore();
     });
+  }
+
+  // Helper drawing functions
+  drawStar(cx, cy, outerRadius, innerRadius, points) {
+    this.ctx.beginPath();
+    for (let i = 0; i < points * 2; i++) {
+      const angle = (i * Math.PI) / points;
+      const radius = i % 2 === 0 ? outerRadius : innerRadius;
+      const x = cx + Math.cos(angle) * radius;
+      const y = cy + Math.sin(angle) * radius;
+      if (i === 0) {
+        this.ctx.moveTo(x, y);
+      } else {
+        this.ctx.lineTo(x, y);
+      }
+    }
+    this.ctx.closePath();
+  }
+
+  drawSparkle(x, y, size) {
+    this.ctx.strokeStyle = '#FFD700';
+    this.ctx.lineWidth = 2;
+    this.ctx.globalAlpha = 0.8;
+    
+    // Draw cross pattern
+    this.ctx.beginPath();
+    this.ctx.moveTo(x - size, y);
+    this.ctx.lineTo(x + size, y);
+    this.ctx.moveTo(x, y - size);
+    this.ctx.lineTo(x, y + size);
+    this.ctx.stroke();
+    
+    // Draw diagonal lines
+    this.ctx.beginPath();
+    this.ctx.moveTo(x - size * 0.7, y - size * 0.7);
+    this.ctx.lineTo(x + size * 0.7, y + size * 0.7);
+    this.ctx.moveTo(x - size * 0.7, y + size * 0.7);
+    this.ctx.lineTo(x + size * 0.7, y - size * 0.7);
+    this.ctx.stroke();
+  }
+
+  drawSkull(x, y, size) {
+    this.ctx.fillStyle = '#FFFFFF';
+    this.ctx.strokeStyle = '#000000';
+    this.ctx.lineWidth = 2;
+    
+    // Skull shape
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size, 0, 2 * Math.PI);
+    this.ctx.fill();
+    this.ctx.stroke();
+    
+    // Eye sockets
+    this.ctx.fillStyle = '#000000';
+    this.ctx.beginPath();
+    this.ctx.arc(x - size * 0.3, y - size * 0.2, size * 0.15, 0, 2 * Math.PI);
+    this.ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.15, 0, 2 * Math.PI);
+    this.ctx.fill();
+    
+    // Nose
+    this.ctx.beginPath();
+    this.ctx.arc(x, y + size * 0.1, size * 0.1, 0, 2 * Math.PI);
+    this.ctx.fill();
+  }
+
+  drawExplosion(x, y, size) {
+    this.ctx.strokeStyle = '#FF4500';
+    this.ctx.fillStyle = '#FF6347';
+    this.ctx.lineWidth = 3;
+    
+    // Draw explosion rays
+    for (let i = 0; i < 8; i++) {
+      const angle = (i * Math.PI) / 4;
+      const endX = x + Math.cos(angle) * size;
+      const endY = y + Math.sin(angle) * size;
+      
+      this.ctx.beginPath();
+      this.ctx.moveTo(x, y);
+      this.ctx.lineTo(endX, endY);
+      this.ctx.stroke();
+    }
+    
+    // Center explosion
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size * 0.3, 0, 2 * Math.PI);
+    this.ctx.fill();
+  }
+
+  drawSmoke(x, y, size) {
+    this.ctx.fillStyle = '#696969';
+    this.ctx.globalAlpha = 0.6;
+    
+    // Draw smoke cloud
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, size * 0.8, 0, 2 * Math.PI);
+    this.ctx.fill();
+    
+    this.ctx.beginPath();
+    this.ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.6, 0, 2 * Math.PI);
+    this.ctx.fill();
+    
+    this.ctx.beginPath();
+    this.ctx.arc(x - size * 0.2, y + size * 0.3, size * 0.5, 0, 2 * Math.PI);
+    this.ctx.fill();
   }
 } 
