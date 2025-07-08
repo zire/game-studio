@@ -39,6 +39,13 @@ This project is configured to deploy to the Internet Computer blockchain using D
    dfx canister open game_studio
    ```
 
+### Browser Compatibility Notes
+- **Safari**: Works well with automatic refresh
+- **Chrome**: Usually handles cache updates properly
+- **Firefox**: May require hard refresh after dfx deployments
+  - **Hard Refresh**: `Cmd + Shift + R` (Mac) or `Ctrl + Shift + R` (Windows/Linux)
+  - **Alternative**: Open Developer Tools (F12) → Network tab → Check "Disable cache"
+
 ### Production Deployment
 1. Deploy to mainnet:
    ```bash
