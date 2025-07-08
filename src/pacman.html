@@ -3034,14 +3034,22 @@
     
     function openMenu() {
       console.log('Opening menu...');
+      console.log('ghostMoveInterval before clear:', ghostMoveInterval);
+      console.log('weaponUpdateInterval before clear:', weaponUpdateInterval);
+      
       hamburgerMenu.classList.add('active');
       menuOverlay.classList.add('active');
+      
       // Pause game when menu is open
       if (ghostMoveInterval) {
         clearInterval(ghostMoveInterval);
+        ghostMoveInterval = null;
+        console.log('Cleared ghostMoveInterval');
       }
       if (weaponUpdateInterval) {
         clearInterval(weaponUpdateInterval);
+        weaponUpdateInterval = null;
+        console.log('Cleared weaponUpdateInterval');
       }
     }
     
@@ -3054,13 +3062,29 @@
     });
     
     function closeMenuFunction() {
+      console.log('Closing menu...');
+      console.log('ghostMoveInterval before restart:', ghostMoveInterval);
+      console.log('weaponUpdateInterval before restart:', weaponUpdateInterval);
+      
       hamburgerMenu.classList.remove('active');
       menuOverlay.classList.remove('active');
-      // Resume game when menu is closed
-      if (gameState === 'playing') {
-        startGhostMovement();
-        startWeaponUpdates();
+      
+      // Always restart intervals if they're null
+      if (!ghostMoveInterval) {
+        ghostMoveInterval = setInterval(moveGhosts, 350);
+        console.log('Restarted ghostMoveInterval:', ghostMoveInterval);
       }
+      if (!weaponUpdateInterval) {
+        weaponUpdateInterval = setInterval(() => {
+          updateWeaponParticles();
+          updateWeaponCooldowns();
+          draw();
+        }, 16);
+        console.log('Restarted weaponUpdateInterval:', weaponUpdateInterval);
+      }
+      
+      // Force a redraw to make sure everything is visible
+      draw();
     }
     
     // Close menu when clicking outside
@@ -3080,13 +3104,7 @@
     // Close menu with Escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
-        hamburgerMenu.classList.remove('active');
-        menuOverlay.classList.remove('active');
-        // Resume game when menu is closed
-        if (gameState === 'playing') {
-          startGhostMovement();
-          startWeaponUpdates();
-        }
+        closeMenuFunction();
       }
     });
   </script>
