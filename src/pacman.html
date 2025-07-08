@@ -1080,6 +1080,26 @@
       return { lives, ghostCount, targetPathLength };
     }
 
+    // Helper function to collect pellet at current position
+    function collectPelletAtPosition(x, y) {
+      console.log(`Checking for pellet at (${x}, ${y})`);
+      console.log(`pelletMap[${y}][${x}] = ${pelletMap[y] ? pelletMap[y][x] : 'undefined'}`);
+      if (pelletMap[y] && pelletMap[y][x] === 1) {
+        console.log(`Collecting pellet at (${x}, ${y})`);
+        pelletMap[y][x] = 0;
+        pelletsLeft--;
+        pelletsCollected++;
+        console.log(`Pellets left: ${pelletsLeft}, Pellets collected: ${pelletsCollected}`);
+        // Play waka-waka sound when eating a pellet
+        try {
+          wakaSound.currentTime = 0;
+          wakaSound.play();
+        } catch (e) {}
+      } else {
+        console.log(`No pellet to collect at (${x}, ${y})`);
+      }
+    }
+    
     // Calculate score based on time, pellets collected, and lives remaining
     function calculateScore(timeElapsed, pelletsCollected, totalPellets, livesRemaining, maxLives) {
       // Time score: 0-40 points (faster = higher score)
@@ -1130,6 +1150,7 @@
     let fireHitSound = null;
     let freezeSound = null;
     let gameOverSound = null;
+    let appleSound = null;
     
     // Weapon cooldown times (in milliseconds)
     const FIRE_BLAST_COOLDOWN = 5000; // 5 seconds
@@ -1192,6 +1213,8 @@
       pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
       totalPelletsInLevel = pelletsLeft;
       pelletsCollected = 0;
+      console.log(`Pellet map created. Pellet at (1,1): ${pelletMap[1][1]}`);
+      console.log(`Total pellets in level: ${totalPelletsInLevel}`);
       pacman = { x: 1, y: 1, direction: 'right' };
       
       // Generate ghosts based on level
@@ -2450,6 +2473,10 @@
             pacman.x = 1;
             pacman.y = 1;
             pacman.direction = 'right';
+            console.log(`Pacman respawned at (${pacman.x}, ${pacman.y})`);
+            console.log(`Pellet map at respawn:`, pelletMap[1][1]);
+            // Collect pellet if one exists at respawn position
+            collectPelletAtPosition(pacman.x, pacman.y);
             draw();
             return;
           }
@@ -2477,6 +2504,19 @@
           isCelebrating = true;
           celebrationParticles = [];
           createCelebrationParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
+
+          // Play apple sound effect
+          if (appleSound) {
+            try {
+              const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+              const source = audioContext.createBufferSource();
+              source.buffer = appleSound;
+              source.connect(audioContext.destination);
+              source.start();
+            } catch (e) {
+              console.log('Apple sound play failed:', e);
+            }
+          }
           
           // Start celebration animation loop
           const celebrationInterval = setInterval(() => {
@@ -2520,16 +2560,8 @@
           }
         }
         
-        if (pelletMap[ny][nx] === 1) {
-          pelletMap[ny][nx] = 0;
-          pelletsLeft--;
-          pelletsCollected++;
-          // Play waka-waka sound when eating a pellet
-          try {
-            wakaSound.currentTime = 0;
-            wakaSound.play();
-          } catch (e) {}
-        }
+        // Collect pellet at new position
+        collectPelletAtPosition(nx, ny);
                       // Check collision with ghosts after Pac-Man moves
       for (const ghost of ghosts) {
         if (ghost.x === pacman.x && ghost.y === pacman.y) {
@@ -2600,6 +2632,10 @@
               pacman.x = 1;
               pacman.y = 1;
               pacman.direction = 'right';
+              console.log(`Pacman respawned (tryMove) at (${pacman.x}, ${pacman.y})`);
+              console.log(`Pellet map at respawn:`, pelletMap[1][1]);
+              // Collect pellet if one exists at respawn position
+              collectPelletAtPosition(pacman.x, pacman.y);
               draw();
               return;
             }
@@ -2755,6 +2791,9 @@
         // Game over sound - dramatic failure
         gameOverSound = createGameOverSound(audioContext);
         
+        // Apple eating sound - fun and exciting
+        appleSound = createAppleSound(audioContext);
+        
       } catch (error) {
         console.log('Audio not supported, continuing without sound effects');
       }
@@ -2858,7 +2897,51 @@
        return buffer;
      }
 
-
+     // Create apple eating sound using Web Audio API
+     function createAppleSound(audioContext) {
+       const duration = 1.2;
+       const sampleRate = audioContext.sampleRate;
+       const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+       const data = buffer.getChannelData(0);
+       
+       for (let i = 0; i < buffer.length; i++) {
+         const t = i / sampleRate;
+         
+         // Create a cheerful ascending melody with multiple harmonics
+         const baseFreq = 400 + 300 * Math.sin(t * 8); // Ascending base frequency
+         const harmonic1 = 600 + 400 * Math.sin(t * 6); // Higher harmonic
+         const harmonic2 = 800 + 500 * Math.sin(t * 4); // Even higher harmonic
+         
+         // Create a bell-like sound with harmonics
+         const wave1 = Math.sin(2 * Math.PI * baseFreq * t);
+         const wave2 = Math.sin(2 * Math.PI * harmonic1 * t + Math.PI / 3);
+         const wave3 = Math.sin(2 * Math.PI * harmonic2 * t + Math.PI / 6);
+         
+         // Add some sparkle with high-frequency components
+         const sparkle = Math.sin(2 * Math.PI * 1200 * t) * 0.3;
+         
+         // Create a cheerful envelope with multiple stages
+         let amplitude;
+         if (t < 0.1) {
+           amplitude = 0.8; // Strong start
+         } else if (t < 0.4) {
+           amplitude = 0.6 * Math.exp(-(t - 0.1) * 2); // Quick decay
+         } else if (t < 0.8) {
+           amplitude = 0.4 * Math.exp(-(t - 0.4) * 1.5); // Medium decay
+         } else {
+           amplitude = 0.2 * Math.exp(-(t - 0.8) * 3); // Final fade
+         }
+         
+         // Add a slight vibrato effect for excitement
+         const vibrato = 1 + 0.1 * Math.sin(t * 20);
+         
+         // Combine all elements with vibrato
+         const combined = (wave1 + wave2 * 0.7 + wave3 * 0.5 + sparkle) * amplitude * vibrato;
+         data[i] = Math.max(-1, Math.min(1, combined)); // Clamp to valid range
+       }
+       
+       return buffer;
+     }
 
     // Initialize sounds and game
     initSounds();
