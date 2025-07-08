@@ -67,22 +67,7 @@
       max-height: 60vh;
     }
     
-    #newGameBtn {
-      font-size: 1.1em;
-      padding: 10px 20px;
-      background: #FF69B4;
-      color: #222;
-      border: 2px solid #FF69B4;
-      border-radius: 8px;
-      cursor: pointer;
-      font-family: monospace;
-      transition: all 0.3s ease;
-    }
-    
-    #newGameBtn:hover {
-      background: #FF1493;
-      color: #222;
-    }
+
     
     .level-info {
       display: flex;
@@ -597,7 +582,7 @@
         <span id="livesDisplay">Lives: 5</span>
         <span id="scoreDisplay">Total: 0 | Avg: 0</span>
       </div>
-      <button id="newGameBtn">New Game</button>
+  
       <canvas id="game" width="300" height="480"></canvas>
       <div id="message"></div>
     
@@ -1036,7 +1021,7 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const message = document.getElementById('message');
-    const newGameBtn = document.getElementById('newGameBtn');
+
 
     function resetGame() {
       // Reset celebration state
@@ -2729,7 +2714,7 @@
        return buffer;
      }
 
-    newGameBtn.addEventListener('click', resetGame);
+
 
     // Initialize sounds and game
     initSounds();
