@@ -1,167 +1,276 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Brandon's Pacboy">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#FFD700">
-  <meta name="description" content="Brandon's Pacboy Game Studio - Fun maze adventure game with weapons and ghosts">
-  <meta name="keywords" content="pacboy, game, maze, arcade, mobile, pwa">
-  <meta name="author" content="Brandon Yang">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="assets/images/bags_avatar.jpg">
-  <link rel="icon" type="image/jpeg" sizes="192x192" href="assets/images/bags_avatar.jpg">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/brandonator.png">
-  <title>Brandon's Pacboy Game Studio</title>
-  
-  <!-- CSS Files -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/controls.css">
-  <link rel="stylesheet" href="css/responsive.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Brandonator Awesome Game Studio (B·A·G·S) - Fun games created by 9-year-old game designer Brandon Yang">
+    <meta property="og:title" content="Brandonator Awesome Game Studio (B·A·G·S)">
+    <meta property="og:description" content="Fun games created by 9-year-old game designer Brandon Yang">
+    <meta property="og:image" content="assets/images/brandonator.png">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Brandonator Awesome Game Studio (B·A·G·S)">
+    <meta name="twitter:description" content="Fun games created by 9-year-old game designer Brandon Yang">
+    <meta name="twitter:image" content="assets/images/brandonator.png">
+    <meta name="twitter:image:alt" content="Brandonator Awesome Game Studio">
+    <link rel="icon" type="image/jpeg" href="assets/images/bags_avatar.jpg">
+    <link rel="apple-touch-icon" href="assets/images/bags_avatar.jpg">
+    <title>Brandonator Awesome Game Studio (B·A·G·S)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .developer-info {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .game-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #FFD700;
+        }
+
+        .game-description {
+            margin-bottom: 20px;
+            line-height: 1.6;
+            opacity: 0.9;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        .coming-soon {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        .coming-soon h3 {
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 0;
+            margin-top: 60px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .social-links {
+            margin-top: 20px;
+        }
+
+        .social-links a {
+            color: #FFD700;
+            margin: 0 10px;
+            font-size: 1.2rem;
+            text-decoration: none;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+            }
+            
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+
+        .pacman-preview {
+            width: 100%;
+            height: 200px;
+            background: #000;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pacman-preview::before {
+            content: '';
+            width: 40px;
+            height: 40px;
+            background: #FFD700;
+            border-radius: 50%;
+            animation: pacman-chomp 0.5s infinite;
+        }
+
+        @keyframes pacman-chomp {
+            0%, 100% { clip-path: polygon(50% 50%, 100% 0%, 100% 100%); }
+            50% { clip-path: polygon(50% 50%, 100% 25%, 100% 75%); }
+        }
+
+        .ghost {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50% 50% 0 0;
+            animation: ghost-float 3s infinite ease-in-out;
+        }
+
+        .ghost:nth-child(1) {
+            background: #FF5A36;
+            left: 20%;
+            animation-delay: 0s;
+        }
+
+        .ghost:nth-child(2) {
+            background: #00FFFF;
+            left: 40%;
+            animation-delay: 0.5s;
+        }
+
+        .ghost:nth-child(3) {
+            background: #FFB8FF;
+            left: 60%;
+            animation-delay: 1s;
+        }
+
+        .ghost:nth-child(4) {
+            background: #FFD700;
+            left: 80%;
+            animation-delay: 1.5s;
+        }
+
+        @keyframes ghost-float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+    </style>
 </head>
 <body>
-  <!-- Menu Overlay -->
-  <div class="menu-overlay" id="menuOverlay">
-    <div class="menu-content">
-      <button class="close-menu" id="closeMenu">×</button>
-      <h2>🎮 Pacboy Game Guide</h2>
-      
-      <h3>🎯 How to Play</h3>
-      <p>Navigate through the maze, collect all golden pellets, and reach the exit door while avoiding ghosts!</p>
-      
-      <h3>🎮 Controls</h3>
-      <ul>
-        <li><strong>Desktop:</strong> Arrow keys or WASD to move</li>
-        <li><strong>Mobile:</strong> Use the touch controls below the game</li>
-        <li><strong>Spacebar:</strong> Fire blast weapon 🔥</li>
-        <li><strong>F key:</strong> Freeze wind weapon ❄️</li>
-      </ul>
-      
-      <h3>⚔️ Weapons</h3>
-      <ul>
-        <li><strong>Fire Blast 🔥:</strong> Long-range, high damage, long cooldown</li>
-        <li><strong>Freeze Wind ❄️:</strong> Short-range, crowd control, medium cooldown</li>
-        <li>Weapons can defeat ghosts temporarily</li>
-        <li>Watch the cooldown circles on weapon buttons</li>
-      </ul>
-      
-      <h3>👻 Ghosts</h3>
-      <ul>
-        <li>Ghosts respawn after being defeated</li>
-        <li>They spawn at safe distances from Pacboy</li>
-        <li>More ghosts appear in higher levels</li>
-      </ul>
-      
-      <h3>📊 Scoring</h3>
-      <ul>
-        <li>Complete levels quickly for higher scores</li>
-        <li>Survive with more lives for bonus points</li>
-        <li>Track your progress across 100 levels!</li>
-      </ul>
-      
-      <h3>💡 Tips</h3>
-      <ul>
-        <li>Plan your route before moving</li>
-        <li>Use weapons strategically</li>
-        <li>Don't get cornered by ghosts</li>
-        <li>Practice makes perfect!</li>
-      </ul>
-      
-      <h3>📱 PWA Features</h3>
-      <p>This game works offline! Add it to your home screen for the best experience.</p>
-      
-      <h3>🎮 Player Tips</h3>
-      <ul>
-        <li><strong>Plan your route:</strong> Look ahead and plan your path before moving</li>
-        <li><strong>Use weapons wisely:</strong> Fire blast for long-range, freeze wind for crowd control</li>
-        <li><strong>Watch cooldowns:</strong> Don't waste weapons when they're recharging</li>
-        <li><strong>Stay mobile:</strong> Don't get cornered by ghosts</li>
-        <li><strong>Practice makes perfect:</strong> Higher levels get more challenging!</li>
-      </ul>
-      
-      <h3>📊 Game Statistics</h3>
-      <ul>
-        <li><strong>100 Levels:</strong> Progressive difficulty with more ghosts</li>
-        <li><strong>Scoring System:</strong> Time, pellets, and lives affect your score</li>
-        <li><strong>Weapon System:</strong> Two unique weapons with different strategies</li>
-        <li><strong>Ghost AI:</strong> Smart respawning at safe distances</li>
-      </ul>
-      
-      <h3>🎯 Advanced Strategies</h3>
-      <ul>
-        <li><strong>Weapon Timing:</strong> Use fire blast when ghosts are in a line</li>
-        <li><strong>Freeze Tactics:</strong> Freeze wind is perfect for escaping tight spots</li>
-        <li><strong>Route Optimization:</strong> Collect pellets efficiently to minimize time</li>
-        <li><strong>Ghost Psychology:</strong> Learn ghost movement patterns</li>
-      </ul>
-      
-      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #FFD700; text-align: center; font-size: 0.9em; opacity: 0.8;">
-        <p><strong>Produced by Brandon Yang</strong></p>
-        <p>Brandon's Epic Game Studio</p>
-        <p>© 2024 - All rights reserved</p>
-      </div>
-    </div>
-  </div>
-  
-  <div class="game-container">
-    <!-- Header Section -->
-    <div class="game-header">
-      <div class="header-left">
-        <div class="hamburger-menu" id="hamburgerMenu">
-          <div class="hamburger-icon">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="game-title">Pacboy 2025</div>
-        <div class="header-stats">
-          <span class="header-stat" id="levelDisplay"><span class="label">Level </span><span class="value">1</span></span>
-          <span class="header-stat" id="livesDisplay"><span class="label">Lives: </span><span class="value">5</span></span>
-          <span class="header-stat" id="scoreDisplay"><span class="label">Total: </span><span class="value">0</span></span>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Maze Container -->
-    <div class="maze-container">
-      <canvas id="game" width="300" height="480"></canvas>
-      <div class="game-message-overlay" id="message"></div>
-    </div>
-    
-    <!-- Controls Container -->
-    <div class="controls-container">
-      <!-- Mobile Controls -->
-      <div class="mobile-controls">
-        <button class="control-btn left" data-direction="left">←</button>
-        <button class="control-btn up" data-direction="up">↑</button>
-        <button class="control-btn down" data-direction="down">↓</button>
-        <button class="control-btn right" data-direction="right">→</button>
-      </div>
-      
-      <!-- Weapon Controls -->
-      <div class="weapon-controls">
-        <button class="weapon-btn fire-blast" data-weapon="fire" disabled>
-          <div class="cooldown-progress"></div>
-          <span class="weapon-icon">🔥</span>
-          <span class="cooldown-text">Ready</span>
-        </button>
-        <button class="weapon-btn freeze-wind" data-weapon="freeze" disabled>
-          <div class="cooldown-progress"></div>
-          <span class="weapon-icon">❄️</span>
-          <span class="cooldown-text">Ready</span>
-        </button>
-      </div>
-    </div>
-  </div>
+    <div class="container">
+        <header>
+            <img src="assets/images/brandonator.png" alt="Brandonator Awesome Game Studio" style="max-width: 400px; width: 100%; height: auto; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <h1 class="logo">🎮 Brandonator Awesome Game Studio 🎮</h1>
+            <p class="tagline">B·A·G·S - Where Fun Meets Imagination!</p>
+            
+            <div class="developer-info">
+                <h3>👨‍💻 Meet the Developer</h3>
+                <p>Hi! I'm Brandon Yang, a 9-year-old game designer who loves creating fun games for everyone to enjoy!</p>
+            </div>
+        </header>
 
-  <!-- JavaScript Files -->
-  <script type="module" src="js/main.js"></script>
+        <div class="games-grid">
+            <div class="game-card">
+                <div class="pacman-preview">
+                    <div class="ghost"></div>
+                    <div class="ghost"></div>
+                    <div class="ghost"></div>
+                    <div class="ghost"></div>
+                </div>
+                <h2 class="game-title">🎯 Pacman Adventure</h2>
+                <p class="game-description">
+                    Navigate through randomly generated mazes, collect golden pellets, and avoid the colorful ghosts! 
+                    Each game is unique with a new maze layout. Optimized for portrait mode on mobile phones with touch controls.
+                </p>
+                <a href="pacman.html" class="play-button">🎮 Play Now!</a>
+            </div>
+
+
+        </div>
+
+
+
+        <footer>
+            <p>&copy; 2025 Brandonator Awesome Game Studio (B·A·G·S). All games created with ❤️ by Brandon Yang</p>
+            <div class="social-links">
+                <a href="#" title="Follow us for updates">📱</a>
+                <a href="#" title="Join our community">👥</a>
+                <a href="#" title="Contact Brandon">📧</a>
+            </div>
+        </footer>
+    </div>
 </body>
 </html> 
