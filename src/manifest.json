@@ -1,6 +1,6 @@
 {
-  "name": "Brandon's Pacboy Game Studio",
-  "short_name": "Pacboy Studio",
+  "name": "Y3 Labs",
+  "short_name": "Y3 Labs",
   "description": "Fun maze adventure game with weapons and ghosts by Brandon Yang",
   "start_url": "/index.html",
   "display": "standalone",
