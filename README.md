@@ -1,6 +1,8 @@
-# Brandon's Pacboy Game Studio
+# Y3 Labs - Pacboy 2025
 
-A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate through randomly generated mazes, collect golden pellets, and avoid ghosts while using powerful weapons!
+A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate through randomly generated mazes, collect golden pellets, and avoid ghosts while using powerful weapons! Created by 9-year-old game designer Brandon Yang.
+
+🌐 **Live Website**: [https://viiha-gqaaa-aaaae-qfe4q-cai.ic0.app](https://viiha-gqaaa-aaaae-qfe4q-cai.ic0.app)
 
 ## 🎮 Features
 
@@ -11,12 +13,16 @@ A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate throug
 - **PWA Support**: Install as a native app
 - **Touch Controls**: Full mobile support with touch controls
 - **Particle Effects**: Celebration and game over animations
+- **Audio System**: Web Audio API with synthesized sounds
+- **Landing Page**: Professional Y3 Labs studio introduction
+- **Modern UI**: Clean, minimalist design with consistent branding
 
 ## 📁 Project Structure
 
 ```
 src/
-├── index.html                 # Main HTML file (minimal)
+├── index.html                 # Landing page (Y3 Labs)
+├── pacman.html               # Main game page (Pacboy 2025)
 ├── css/
 │   ├── main.css              # Main styles and layout
 │   ├── controls.css          # Mobile controls and menu styles
@@ -30,15 +36,19 @@ src/
 │   │   └── renderer.js       # Maze and game element rendering
 │   ├── game/
 │   │   └── engine.js         # Main game engine and logic
-│   ├── ui/                   # UI components (future)
-│   ├── audio/                # Audio system (future)
-│   └── weapons/              # Weapon system (future)
+│   ├── audio/
+│   │   └── sounds.js         # Audio system (Web Audio API)
+│   └── ui/                   # UI components
 ├── assets/
 │   ├── images/               # Game images and icons
+│   │   ├── brandonator.png   # Y3 Labs logo
+│   │   ├── bags_avatar.jpg   # Avatar image
+│   │   └── internet-computer-logo.png # Powered by logo
 │   └── sounds/               # Audio files
 ├── manifest.json             # PWA manifest
 ├── sw.js                     # Service worker
-└── offline.html              # Offline page
+├── offline.html              # Offline page
+└── waka.wav                  # Original sound file
 ```
 
 ## 🚀 Getting Started
@@ -115,6 +125,12 @@ The game is organized into logical modules:
 - Manages UI interactions
 - PWA setup
 
+#### **Audio System (`js/audio/sounds.js`)**
+- Web Audio API implementation
+- Synthesized waka sound
+- Audio context management
+- Sound effect controls
+
 ### Key Benefits
 
 1. **Maintainability**: Each module has a single responsibility
@@ -168,12 +184,19 @@ export const GAME_CONFIG = {
 
 ## 🔮 Future Enhancements
 
-### Planned Modules
-- **Audio System**: Sound effects and music
-- **Weapon System**: Advanced weapon mechanics
-- **UI Components**: Reusable UI elements
-- **Particle System**: Enhanced visual effects
+### Implemented Modules
+- **Audio System**: Web Audio API with synthesized sounds ✅
+- **Weapon System**: Fire blast and freeze wind mechanics ✅
+- **Particle System**: Celebration and game over effects ✅
+- **Landing Page**: Professional Y3 Labs studio introduction ✅
+
+### Future Enhancements
 - **Save System**: Progress persistence
+- **Level Editor**: Custom maze creation
+- **Multiplayer**: Real-time multiplayer
+- **Achievements**: Unlockable content
+- **Leaderboards**: Global scoring
+- **Themes**: Visual customization
 
 ### Potential Features
 - **Multiplayer**: Real-time multiplayer
@@ -201,13 +224,8 @@ localStorage.setItem('debug', 'true');
 
 ## 📄 License
 
-© 2024 Brandon Yang - All rights reserved
+© 2025 Y3 Labs - All rights reserved
 
 ## 🤝 Contributing
 
 This is a personal project, but suggestions and feedback are welcome!
-
----
-
-**Made with ❤️ by Brandon Yang**
-*Brandon's Epic Game Studio* 
