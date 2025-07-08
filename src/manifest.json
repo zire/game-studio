@@ -14,13 +14,13 @@
   "prefer_related_applications": false,
   "icons": [
     {
-      "src": "assets/images/bags_avatar.jpg",
+      "src": "assets/images/y3labs.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/images/brandonator.png",
+      "src": "assets/images/y3labs.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
