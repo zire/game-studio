@@ -1020,6 +1020,8 @@
     wakaSound.volume = 0.5;
 
     function generateRandomMap(level = 1) {
+      console.log('Generating maze for level:', level);
+      
       // Create maze with thin dividers on gridlines from level 1
       const newMap = [];
       for (let y = 0; y < mapHeight; y++) {
@@ -1030,12 +1032,12 @@
         newMap.push(row);
       }
       
-      // Calculate complexity based on level
-      const complexity = Math.min(1.0, (level - 1) / 19); // 0.0 to 1.0 based on level (level 1 = 0, level 20 = 1)
-      const wallDensity = 0.15 + (complexity * 0.45); // 15% to 60% wall density (minimum 15% from level 1)
+      // Clear existing walls
+      horizontalWalls.length = 0;
+      verticalWalls.length = 0;
       
-      // Add thin dividers for all levels (including level 1)
-      addThinDividers(newMap, wallDensity, level);
+      // Generate simple maze
+      generateSimpleMaze(level);
       
       // Ensure start position is open (top-left corner)
       newMap[0][0] = 0;
@@ -1046,127 +1048,77 @@
       // Ensure the door is accessible
       ensureDoorAccess(newMap);
       
+      console.log('Maze generation complete. Horizontal walls:', horizontalWalls.length, 'Vertical walls:', verticalWalls.length);
+      
       return newMap;
     }
     
+    function generateSimpleMaze(level) {
+      console.log('Generating simple maze for level:', level);
+      
+      // Calculate wall density based on level (more walls for higher levels)
+      const baseDensity = 0.15; // 15% base density
+      const levelDensity = Math.min(0.4, baseDensity + (level - 1) * 0.02); // Max 40% density
+      
+      console.log('Wall density:', levelDensity);
+      
+      // Create horizontal walls (dividing rows)
+      for (let y = 1; y < mapHeight - 1; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+          // Skip walls near start and end
+          if ((x === 0 && y === 0) || (x === mapWidth - 1 && y === mapHeight - 1)) {
+            continue;
+          }
+          
+          // Add wall with probability based on level
+          if (Math.random() < levelDensity) {
+            horizontalWalls.push({x, y});
+          }
+        }
+      }
+      
+      // Create vertical walls (dividing columns)
+      for (let y = 0; y < mapHeight; y++) {
+        for (let x = 1; x < mapWidth - 1; x++) {
+          // Skip walls near start and end
+          if ((x === 0 && y === 0) || (x === mapWidth - 1 && y === mapHeight - 1)) {
+            continue;
+          }
+          
+          // Add wall with probability based on level
+          if (Math.random() < levelDensity) {
+            verticalWalls.push({x, y});
+          }
+        }
+      }
+      
+      // Ensure we have a minimum number of walls for gameplay
+      if (horizontalWalls.length + verticalWalls.length < 10) {
+        console.log('Adding minimum walls for gameplay');
+        // Add some guaranteed walls
+        for (let i = 0; i < 5; i++) {
+          const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+          const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+          horizontalWalls.push({x, y});
+        }
+        for (let i = 0; i < 5; i++) {
+          const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+          const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+          verticalWalls.push({x, y});
+        }
+      }
+      
+      console.log('Simple maze generated. Total walls:', horizontalWalls.length + verticalWalls.length);
+    }
+    
+    // Removed complex Kruskal's algorithm - using simple maze generation instead
+    
+    // Removed complex maze functions - using simple maze generation instead
+    
     function addThinDividers(map, wallDensity, level) {
-      // Smart maze generation using different strategies based on level
-      if (level <= 3) {
-        // Simple corridor-based maze for early levels
-        createSimpleCorridorMaze(level);
-      } else if (level <= 10) {
-        // Room-based maze with corridors
-        createRoomBasedMaze(level);
-      } else if (level <= 20) {
-        // Complex maze with multiple paths
-        createComplexMaze(level);
-      } else {
-        // Advanced maze with strategic challenges
-        createAdvancedMaze(level);
-      }
-      
-      // Optimize the maze layout by merging adjacent walls
-      optimizeMazeLayout();
-      
-      // Ensure the maze is still solvable after optimization
-      if (!hasPathToExitWithDividers(map, horizontalWalls, verticalWalls)) {
-        console.warn('Maze became unsolvable after optimization, regenerating...');
-        horizontalWalls.length = 0;
-        verticalWalls.length = 0;
-        addThinDividers(map, wallDensity, level);
-      }
-    }
-    
-    // Smart maze generation strategies
-    function createSimpleCorridorMaze(level) {
-      // Create simple horizontal and vertical corridors with smart placement
-      const corridorCount = 8 + level * 2; // More corridors for higher levels
-      
-      // Create a main path first to ensure connectivity
-      createMainPath();
-      
-      // Add strategic horizontal corridors that don't block the main path
-      for (let i = 0; i < corridorCount / 2; i++) {
-        const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
-        const startX = 1 + Math.floor(Math.random() * (mapWidth - 3));
-        const length = 2 + Math.floor(Math.random() * 3);
-        
-        // Check if this corridor would create interesting gameplay
-        if (wouldCreateInterestingCorridor(startX, y, length, 'horizontal')) {
-          for (let j = 0; j < length && startX + j < mapWidth - 1; j++) {
-            if (!isNearStartOrEnd(startX + j, y)) {
-              horizontalWalls.push({x: startX + j, y: y});
-            }
-          }
-        }
-      }
-      
-      // Add strategic vertical corridors
-      for (let i = 0; i < corridorCount / 2; i++) {
-        const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
-        const startY = 1 + Math.floor(Math.random() * (mapHeight - 3));
-        const length = 2 + Math.floor(Math.random() * 3);
-        
-        // Check if this corridor would create interesting gameplay
-        if (wouldCreateInterestingCorridor(x, startY, length, 'vertical')) {
-          for (let j = 0; j < length && startY + j < mapHeight - 1; j++) {
-            if (!isNearStartOrEnd(x, startY + j)) {
-              verticalWalls.push({x: x, y: startY + j});
-            }
-          }
-        }
-      }
-    }
-    
-    function createRoomBasedMaze(level) {
-      // Create rooms with connecting corridors
-      const roomCount = 3 + Math.floor(level / 2);
-      const rooms = [];
-      
-      // Generate room positions
-      for (let i = 0; i < roomCount; i++) {
-        const roomWidth = 2 + Math.floor(Math.random() * 2);
-        const roomHeight = 2 + Math.floor(Math.random() * 2);
-        const x = 1 + Math.floor(Math.random() * (mapWidth - roomWidth - 2));
-        const y = 1 + Math.floor(Math.random() * (mapHeight - roomHeight - 2));
-        
-        rooms.push({x, y, width: roomWidth, height: roomHeight});
-      }
-      
-      // Create room walls
-      for (const room of rooms) {
-        // Horizontal walls for room
-        for (let x = room.x; x < room.x + room.width; x++) {
-          if (!isNearStartOrEnd(x, room.y)) {
-            horizontalWalls.push({x: x, y: room.y});
-          }
-          if (!isNearStartOrEnd(x, room.y + room.height)) {
-            horizontalWalls.push({x: x, y: room.y + room.height});
-          }
-        }
-        
-        // Vertical walls for room
-        for (let y = room.y; y < room.y + room.height; y++) {
-          if (!isNearStartOrEnd(room.x, y)) {
-            verticalWalls.push({x: room.x, y: y});
-          }
-          if (!isNearStartOrEnd(room.x + room.width, y)) {
-            verticalWalls.push({x: room.x + room.width, y: y});
-          }
-        }
-      }
-      
-      // Add connecting corridors between rooms
-      for (let i = 0; i < rooms.length - 1; i++) {
-        const room1 = rooms[i];
-        const room2 = rooms[i + 1];
-        
-        // Create corridor between room centers
-        const center1 = {x: room1.x + room1.width / 2, y: room1.y + room1.height / 2};
-        const center2 = {x: room2.x + room2.width / 2, y: room2.y + room2.height / 2};
-        
-        createCorridorBetween(center1, center2);
-      }
+      // This function is now replaced by generateSimpleMaze
+      // Keep for compatibility but it's no longer used
+      generateSimpleMaze(level);
     }
     
     function createComplexMaze(level) {
@@ -3874,8 +3826,15 @@
      }
 
     // Initialize sounds and game
-    initSounds();
-    resetGame();
+    console.log('Initializing game...');
+    try {
+      initSounds();
+      console.log('Sounds initialized');
+      resetGame();
+      console.log('Game reset complete');
+    } catch (error) {
+      console.error('Error initializing game:', error);
+    }
     
     // PWA Service Worker Registration
     if ('serviceWorker' in navigator) {
