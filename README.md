@@ -13,7 +13,40 @@ Welcome to Brandon's Epic Game Studio! This is a collection of fun games created
   - Responsive controls using arrow keys
 - **How to Play**: Use arrow keys to move Pacman around the maze. Collect all pellets while avoiding the ghosts!
 
-## 🚀 Deployment to Internet Computer
+## 🚀 Local Development & Testing
+
+### Quick Start (Local Testing)
+1. Start a local HTTP server:
+   ```bash
+   python3 -m http.server 8080 --bind 0.0.0.0
+   ```
+
+2. Find your computer's IP address:
+   ```bash
+   ifconfig | grep "inet " | grep -v 127.0.0.1
+   ```
+
+3. Access the game:
+   - **Desktop**: `http://localhost:8080/src/pacman.html`
+   - **Mobile/Tablet**: `http://[YOUR_IP]:8080/src/pacman.html`
+   
+   Example: `http://192.168.198.136:8080/src/pacman.html`
+
+### Mobile Testing
+- **iPhone/iPad**: Open Safari and navigate to the mobile URL
+- **Android**: Open Chrome and navigate to the mobile URL
+- **Features to test**:
+  - Touch controls (arrow buttons, weapon buttons)
+  - Weapon system (fire blast 🔥, freeze wind ❄️)
+  - Sound effects (tap screen first to enable audio)
+  - Responsive design and performance
+
+### Troubleshooting
+- **Port already in use**: Try different ports (3000, 5000, 8080)
+- **Connection issues**: Ensure both devices are on the same WiFi network
+- **Firewall blocking**: Check Mac's firewall settings
+
+## 🌐 Deployment to Internet Computer
 
 This project is configured to deploy to the Internet Computer blockchain using DFX.
 
@@ -28,7 +61,7 @@ This project is configured to deploy to the Internet Computer blockchain using D
    dfx start --background
    ```
 
-### Local Development
+### Local DFX Development
 1. Deploy to local network:
    ```bash
    dfx deploy
