@@ -163,5 +163,64 @@
 
   <!-- JavaScript Files -->
   <script type="module" src="js/main.js"></script>
+  
+  <script>
+    // PWA Installation Logic for Pacman page
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
+    // Handle iOS PWA specific behaviors
+    if (window.navigator.standalone) {
+      // App is running in standalone mode (installed)
+      document.body.classList.add('standalone');
+    }
+
+    // iOS Safari bottom bar hiding technique
+    function hideBottomBar() {
+      // Force scroll to trigger UI hiding
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+    }
+
+    // Hide bottom bar on page load
+    window.addEventListener('load', hideBottomBar);
+    
+    // Hide bottom bar on orientation change
+    window.addEventListener('orientationchange', () => {
+      setTimeout(hideBottomBar, 500);
+    });
+
+    // Hide bottom bar on focus (when returning to app)
+    window.addEventListener('focus', hideBottomBar);
+
+    // Prevent zoom on double tap (iOS)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
 </body>
 </html> 

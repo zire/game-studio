@@ -11,6 +11,7 @@
   "categories": ["games", "entertainment"],
   "lang": "en",
   "dir": "ltr",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "assets/images/bags_avatar.jpg",
