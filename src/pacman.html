@@ -742,8 +742,8 @@
     const wakaSound = new Audio('waka.wav');
     wakaSound.volume = 0.5;
 
-    function generateRandomMap() {
-      // Maze generation using randomized DFS
+    function generateRandomMap(level = 1) {
+      // Maze generation using randomized DFS with level-based complexity
       const newMap = [];
       for (let y = 0; y < mapHeight; y++) {
         const row = [];
@@ -752,6 +752,11 @@
         }
         newMap.push(row);
       }
+      
+      // Calculate complexity based on level
+      const complexity = Math.min(1.0, level / 50); // 0.0 to 1.0 based on level
+      const extraOpenRate = 0.05 + (complexity * 0.15); // 5% to 20% extra openings
+      const deadEndDensity = complexity * 0.3; // 0% to 30% chance of creating dead ends
 
       // Helper to shuffle directions
       function shuffle(arr) {
@@ -777,17 +782,6 @@
 
       carve(1, 1); // Start maze at (1,1)
 
-      // Optionally open a few more random cells for pellet variety
-      let extraOpens = Math.floor((mapWidth * mapHeight) * 0.1);
-      while (extraOpens > 0) {
-        const rx = 1 + Math.floor(Math.random() * (mapWidth - 2));
-        const ry = 1 + Math.floor(Math.random() * (mapHeight - 2));
-        if (newMap[ry][rx] === 1) {
-          newMap[ry][rx] = 0;
-          extraOpens--;
-        }
-      }
-
       // Ensure (1,1) is open
       newMap[1][1] = 0;
       
@@ -810,8 +804,119 @@
       if (!doorConnected) {
         newMap[mapHeight - 2][mapWidth - 3] = 0; // Open the cell to the left of the door
       }
+
+      // Now add extra openings while maintaining connectivity
+      let extraOpens = Math.floor((mapWidth * mapHeight) * extraOpenRate);
+      let attempts = 0;
+      const maxAttempts = extraOpens * 10; // Limit attempts to prevent infinite loop
+      
+      while (extraOpens > 0 && attempts < maxAttempts) {
+        const rx = 1 + Math.floor(Math.random() * (mapWidth - 2));
+        const ry = 1 + Math.floor(Math.random() * (mapHeight - 2));
+        
+        // Only open walls that are adjacent to existing paths
+        if (newMap[ry][rx] === 1 && isAdjacentToPath(newMap, rx, ry, deadEndDensity)) {
+          // Temporarily open the wall
+          newMap[ry][rx] = 0;
+          
+          // Check if this creates any isolated areas
+          if (!createsIsolatedAreas(newMap, rx, ry)) {
+            extraOpens--;
+          } else {
+            // Revert if it creates isolated areas
+            newMap[ry][rx] = 1;
+          }
+        }
+        attempts++;
+      }
       
       return newMap;
+    }
+
+    // Check if a wall is adjacent to an existing path
+    function isAdjacentToPath(map, x, y, deadEndDensity = 0) {
+      const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+      let pathCount = 0;
+      
+      for (const [dx, dy] of directions) {
+        const nx = x + dx;
+        const ny = y + dy;
+        
+        if (ny >= 0 && ny < mapHeight && nx >= 0 && nx < mapWidth && 
+            (map[ny][nx] === 0 || map[ny][nx] === 2)) {
+          pathCount++;
+        }
+      }
+      
+      // For higher levels, allow more dead ends and complex paths
+      if (deadEndDensity > 0 && Math.random() < deadEndDensity) {
+        // Allow dead ends (adjacent to only 1 path) more frequently
+        return pathCount >= 1 && pathCount <= 3;
+      } else {
+        // Standard logic: avoid dead ends and isolated areas
+        return pathCount >= 1 && pathCount <= 2;
+      }
+    }
+
+    // Check if opening a wall creates isolated areas
+    function createsIsolatedAreas(map, x, y) {
+      // Temporarily open the wall
+      const originalValue = map[y][x];
+      map[y][x] = 0;
+      
+      // Count connected accessible areas
+      const visited = new Set();
+      const accessibleAreas = [];
+      
+      // Find all accessible areas
+      for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+          if ((map[y][x] === 0 || map[y][x] === 2) && !visited.has(`${x},${y}`)) {
+            const areaSize = floodFill(map, x, y, visited);
+            if (areaSize > 0) {
+              accessibleAreas.push(areaSize);
+            }
+          }
+        }
+      }
+      
+      // Restore the wall
+      map[y][x] = originalValue;
+      
+      // If there's more than one accessible area, we've created isolation
+      return accessibleAreas.length > 1;
+    }
+
+    // Flood fill to count connected accessible cells
+    function floodFill(map, startX, startY, visited) {
+      const queue = [{x: startX, y: startY}];
+      let count = 0;
+      
+      while (queue.length > 0) {
+        const {x, y} = queue.shift();
+        const key = `${x},${y}`;
+        
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
+        if (map[y][x] === 0 || map[y][x] === 2) {
+          count++;
+          
+          // Check all 4 directions
+          const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+          for (const [dx, dy] of directions) {
+            const nx = x + dx;
+            const ny = y + dy;
+            
+            if (ny >= 0 && ny < mapHeight && nx >= 0 && nx < mapWidth && 
+                (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+              queue.push({x: nx, y: ny});
+            }
+          }
+        }
+      }
+      
+      return count;
     }
 
     // Calculate shortest path length using BFS
@@ -853,14 +958,13 @@
       // Lives: 1 at level 1, 5 at level 100 (more lives to battle more ghosts)
       const lives = Math.min(5, 1 + Math.floor((level - 1) / 25));
       
-      // Ghost count: For testing, add ghosts to level 1
+      // Ghost count: Progressive difficulty
       let ghostCount;
-      if (level <= 3) ghostCount = 2; // Changed from 0 to 2 for testing
-      else if (level <= 15) ghostCount = 1;
-      else if (level <= 30) ghostCount = 2;
-      else if (level <= 50) ghostCount = 3;
-      else if (level <= 75) ghostCount = 4;
-      else ghostCount = 5;
+      if (level <= 10) ghostCount = 1;      // Levels 1-10: 1 ghost
+      else if (level <= 30) ghostCount = 2; // Levels 11-30: 2 ghosts
+      else if (level <= 50) ghostCount = 3; // Levels 31-50: 3 ghosts
+      else if (level <= 75) ghostCount = 4; // Levels 51-75: 4 ghosts
+      else ghostCount = 5;                  // Levels 76-100: 5 ghosts
       
       // Target path length: shorter paths for higher levels (more difficult)
       const targetPathLength = Math.max(15, 50 - Math.floor((level - 1) / 2));
@@ -964,7 +1068,7 @@
       let pathLength;
       
       do {
-        generatedMap = generateRandomMap();
+        generatedMap = generateRandomMap(currentLevel);
         pathLength = calculateShortestPath(generatedMap);
         attempts++;
       } while (pathLength > targetPathLength + 10 && attempts < 20); // Try to get close to target path length
@@ -987,6 +1091,8 @@
       const ghostNames = ['Clement', 'Chase', 'Ray', 'Jayden', 'Andrew'];
       const ghostColors = ['#147880', '#60EEE3', '#25BF94', '#E9E12E', '#FF6B41'];
       
+      console.log(`Level ${currentLevel}: Spawning ${ghostCount} ghosts`);
+      
       for (let i = 0; i < ghostCount; i++) {
         let x, y;
         do {
@@ -1002,6 +1108,8 @@
         });
       }
       
+      console.log(`Initial ghost count: ${ghosts.length}`);
+      
       if (ghostMoveInterval) clearInterval(ghostMoveInterval);
       ghostMoveInterval = setInterval(moveGhosts, 350);
       
@@ -1012,6 +1120,14 @@
         updateWeaponCooldowns(); // Update cooldowns more frequently
         draw(); // Redraw to show updated particles
       }, 16); // Update every 16ms (60fps) for smooth animation
+      
+      // Debug: Log ghost count every 5 seconds
+      setInterval(() => {
+        console.log(`Current ghost count: ${ghosts.length}`);
+        ghosts.forEach((ghost, index) => {
+          console.log(`  Ghost ${index}: ${ghost.name} at (${ghost.x}, ${ghost.y})`);
+        });
+      }, 5000);
       
       // Update display elements
       document.getElementById('levelDisplay').innerText = `Level ${currentLevel}`;
@@ -1697,6 +1813,7 @@
           
           // Remove ghost from current position
           ghosts.splice(ghostIndex, 1);
+          console.log(`Ghost ${ghost.name} removed. Total ghosts: ${ghosts.length}`);
           
           // Respawn ghost after 3 seconds
           setTimeout(() => {
@@ -1900,32 +2017,65 @@
     }
 
     function respawnGhost(ghostData) {
-      // Find a random empty position for respawn
-      let x, y;
-      let attempts = 0;
-      const maxAttempts = 50;
+      // Find a safe, distant respawn location
+      const respawnLocation = findSafeRespawnLocation();
       
-      do {
-        x = 1 + Math.floor(Math.random() * (mapWidth - 3));
-        y = 1 + Math.floor(Math.random() * (mapHeight - 3));
-        attempts++;
-      } while ((map[y][x] !== 0 || 
-                ghosts.some(g => g.x === x && g.y === y) ||
-                (x === pacman.x && y === pacman.y)) && 
-               attempts < maxAttempts);
-      
-      if (attempts < maxAttempts) {
+      if (respawnLocation) {
         // Create new ghost with same properties
         const newGhost = {
-          x: x,
-          y: y,
+          x: respawnLocation.x,
+          y: respawnLocation.y,
           color: ghostData.color,
           name: ghostData.name
         };
         
         ghosts.push(newGhost);
-        console.log(`Ghost ${ghostData.name} respawned at (${x}, ${y})`);
+        console.log(`Ghost ${ghostData.name} respawned at (${respawnLocation.x}, ${respawnLocation.y}) - Distance from Pacman: ${respawnLocation.distance}`);
+        console.log(`Total ghosts after respawn: ${ghosts.length}`);
+      } else {
+        console.log(`Failed to find safe respawn location for ${ghostData.name}`);
       }
+    }
+
+    function findSafeRespawnLocation() {
+      const minDistance = 8; // Minimum distance from Pacman
+      const maxAttempts = 100;
+      let attempts = 0;
+      
+      // Get all valid respawn positions
+      const validPositions = [];
+      
+      for (let y = 1; y < mapHeight - 1; y++) {
+        for (let x = 1; x < mapWidth - 1; x++) {
+          // Check if position is valid (empty and not occupied)
+          if (map[y][x] === 0 && 
+              !ghosts.some(g => g.x === x && g.y === y) &&
+              (x !== pacman.x || y !== pacman.y)) {
+            
+            // Calculate distance from Pacman
+            const distance = Math.abs(x - pacman.x) + Math.abs(y - pacman.y);
+            
+            if (distance >= minDistance) {
+              validPositions.push({x, y, distance});
+            }
+          }
+        }
+      }
+      
+      // Sort by distance (farthest first) and add some randomness
+      validPositions.sort((a, b) => {
+        // Prefer farther positions but add some randomness
+        const distanceWeight = 0.7;
+        const randomWeight = 0.3;
+        
+        const distanceScore = (b.distance - a.distance) * distanceWeight;
+        const randomScore = (Math.random() - 0.5) * randomWeight;
+        
+        return distanceScore + randomScore;
+      });
+      
+      // Return the best position (farthest with some randomness)
+      return validPositions.length > 0 ? validPositions[0] : null;
     }
 
     function draw() {
