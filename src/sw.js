@@ -1,9 +1,12 @@
-const CACHE_NAME = 'pacman-v1';
+const CACHE_NAME = 'pacman-v2';
 const urlsToCache = [
   '/',
   '/pacman.html',
   '/waka.wav',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/offline.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -20,7 +23,39 @@ self.addEventListener('fetch', (event) => {
     caches.match(event.request)
       .then((response) => {
         // Return cached version or fetch from network
-        return response || fetch(event.request);
+        return response || fetch(event.request)
+          .then((fetchResponse) => {
+            // Cache successful responses for future use
+            if (fetchResponse && fetchResponse.status === 200 && fetchResponse.type === 'basic') {
+              const responseToCache = fetchResponse.clone();
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  cache.put(event.request, responseToCache);
+                });
+            }
+            return fetchResponse;
+          })
+          .catch(() => {
+            // If offline and requesting a page, show offline page
+            if (event.request.mode === 'navigate') {
+              return caches.match('/offline.html');
+            }
+          });
       })
+  );
+});
+
+// Clean up old caches
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
   );
 }); 

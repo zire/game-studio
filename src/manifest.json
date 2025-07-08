@@ -1,13 +1,16 @@
 {
   "name": "Brandon's Pacman Game Studio",
   "short_name": "Pacman Studio",
-  "description": "Fun maze adventure game by Brandon Yang",
-  "start_url": "/",
+  "description": "Fun maze adventure game with weapons and ghosts by Brandon Yang",
+  "start_url": "/pacman.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#FFD700",
   "orientation": "portrait",
   "scope": "/",
+  "categories": ["games", "entertainment"],
+  "lang": "en",
+  "dir": "ltr",
   "icons": [
     {
       "src": "icon-192.png",
@@ -20,6 +23,20 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-wide.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshot-narrow.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 } 

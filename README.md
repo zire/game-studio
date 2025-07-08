@@ -9,9 +9,11 @@ Welcome to Brandon's Epic Game Studio! This is a collection of fun games created
 - **Features**: 
   - Random maze generation for unique gameplay every time
   - 4 colorful ghosts with different personalities
-  - Sound effects for pellet collection
-  - Responsive controls using arrow keys
-- **How to Play**: Use arrow keys to move Pacman around the maze. Collect all pellets while avoiding the ghosts!
+  - **Weapon System**: Fire blast 🔥 and freeze wind ❄️ weapons
+  - Sound effects for pellet collection and weapons
+  - Responsive controls using arrow keys and touch
+  - **PWA Ready**: Install as mobile app for offline play
+- **How to Play**: Use arrow keys or touch controls to move Pacman. Collect all pellets while avoiding ghosts. Use weapons to defend yourself!
 
 ## 🚀 Local Development & Testing
 
@@ -40,6 +42,13 @@ Welcome to Brandon's Epic Game Studio! This is a collection of fun games created
   - Weapon system (fire blast 🔥, freeze wind ❄️)
   - Sound effects (tap screen first to enable audio)
   - Responsive design and performance
+  - **PWA Installation**: Look for "Add to Home Screen" option
+
+### PWA Features
+- **Offline Play**: Game works without internet connection
+- **App-like Experience**: Install on home screen for quick access
+- **Touch Optimized**: Designed specifically for mobile devices
+- **Auto-updates**: Game updates automatically when online
 
 ### Troubleshooting
 - **Port already in use**: Try different ports (3000, 5000, 8080)
