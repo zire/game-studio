@@ -60,7 +60,7 @@
       justify-content: flex-start;
       gap: 10px;
       padding: 10px;
-      padding-top: max(54px, env(safe-area-inset-top) + 54px);
+      padding-top: max(10px, env(safe-area-inset-top) + 10px);
       width: 100%;
       max-width: 400px;
       min-height: 100vh;
@@ -69,12 +69,116 @@
       overflow-x: hidden;
     }
     
+    /* Full width for larger screens */
+    @media (min-width: 430px) {
+      .game-container {
+        max-width: 100%;
+      }
+    }
+    
+    /* Header Section */
+    .game-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 15px 10px 5px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex: 1;
+    }
+    
+    .game-title {
+      color: #FF69B4;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      white-space: nowrap;
+      margin-bottom: 3px;
+    }
+    
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: monospace;
+      font-size: 0.8em;
+      color: #FFD700;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      justify-content: flex-end;
+    }
+    
+    .header-stat {
+      white-space: nowrap;
+    }
+    
+    .header-stat .label {
+      color: #FFD700;
+    }
+    
+    .header-stat .value {
+      color: #FFFFFF;
+    }
+    
+    /* Maze Container */
+    .maze-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      flex: 1;
+    }
+    
+    /* Game Message Overlay */
+    .game-message-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: yellow;
+      font-family: monospace;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-shadow: 2px 2px 8px #000, -2px -2px 8px #000;
+      text-align: center;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      max-width: 90%;
+      word-wrap: break-word;
+    }
+    
+    .game-message-overlay.show {
+      opacity: 1;
+    }
+    
+    /* Controls Container */
+    .controls-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      margin-top: 15px;
+    }
+    
     /* Hamburger Menu */
     .hamburger-menu {
-      position: fixed;
-      top: max(10px, env(safe-area-inset-top) + 10px);
-      left: max(10px, env(safe-area-inset-left) + 10px);
-      z-index: 1000;
+      position: relative;
       background: rgba(0, 0, 0, 0.8);
       border: 2px solid #FFD700;
       border-radius: 8px;
@@ -101,11 +205,15 @@
     
     .hamburger-menu:hover {
       background: rgba(255, 215, 0, 0.2);
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
     }
     
     .hamburger-menu:active {
       transform: scale(0.95);
     }
+    
+
     
     .hamburger-icon {
       width: 20px;
@@ -144,24 +252,29 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       z-index: 999;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       padding: 20px;
       box-sizing: border-box;
-      transition: all 0.3s ease;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.8s ease;
+      transform: scale(0);
     }
     
     .menu-overlay.active {
-      display: flex;
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
     }
     
     .menu-content {
-      background: rgba(17, 17, 17, 0.65);
+      background: rgba(17, 17, 17, 0.75);
       border: 2px solid #FFD700;
       border-radius: 12px;
       padding: 20px;
@@ -170,9 +283,16 @@
       overflow-y: auto;
       color: #FFD700;
       font-family: Arial, sans-serif;
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+      transform: scale(0.8);
+      transition: transform 0.8s ease 0.2s;
+    }
+    
+    .menu-overlay.active .menu-content {
+      transform: scale(1);
     }
     
     .menu-content h2 {
@@ -204,20 +324,31 @@
     
     .close-menu {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
-      border: none;
-      color: #FFD700;
-      font-size: 24px;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #FFFFFF;
+      color: #FFFFFF;
+      font-size: 20px;
       cursor: pointer;
-      padding: 5px;
-      border-radius: 4px;
-      transition: background 0.3s ease;
+      padding: 6px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
     }
     
     .close-menu:hover {
       background: rgba(255, 215, 0, 0.2);
+      transform: scale(1.1);
+    }
+    
+    .close-menu:active {
+      transform: scale(0.95);
     }
     
     canvas { 
@@ -226,7 +357,7 @@
       display: block; 
       margin: 0 auto;
       max-width: 100%;
-      max-height: 60vh;
+      max-height: 70vh;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
       -webkit-tap-highlight-color: transparent;
@@ -234,20 +365,6 @@
     }
     
 
-    
-    .level-info {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 8px;
-      font-family: monospace;
-      font-size: 0.85em;
-      color: #FFD700;
-      gap: 15px;
-      flex-wrap: nowrap;
-    }
     
     #levelDisplay, #livesDisplay, #scoreDisplay {
       background: none;
@@ -258,22 +375,12 @@
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     }
     
-    #message {
-      color: yellow;
-      font-family: monospace;
-      font-size: 1.5em;
-      text-shadow: 2px 2px 8px #000;
-      text-align: center;
-      min-height: 40px;
-    }
-    
     /* Mobile Controls */
     .mobile-controls {
       display: none;
       flex-direction: row;
       justify-content: center;
       gap: 15px;
-      margin-top: 15px;
       padding: 0 10px;
     }
     
@@ -321,7 +428,6 @@
       flex-direction: row;
       justify-content: center;
       gap: 20px;
-      margin-top: 15px;
       padding: 0 10px;
     }
     
@@ -432,9 +538,8 @@
       
 
       
-      #message {
+      .game-message-overlay {
         font-size: 1.3em;
-        min-height: 35px;
       }
       
       #newGameBtn {
@@ -442,10 +547,9 @@
         padding: 8px 16px;
       }
       
-      .level-info {
+      .header-stats {
         font-size: 0.8em;
         gap: 12px;
-        margin-bottom: 6px;
       }
       
       #levelDisplay, #livesDisplay, #scoreDisplay {
@@ -456,10 +560,31 @@
     
     @media (max-width: 480px) {
       .game-container {
-        padding: 8px;
-        gap: 12px;
+        padding: 8px 0px;
+        gap: 8px;
         justify-content: flex-start;
         padding-top: max(8px, env(safe-area-inset-top) + 8px);
+        max-width: 100%;
+      }
+      
+      .game-header {
+        padding: 8px 12px 8px 4px;
+        margin-bottom: 8px;
+        width: 100%;
+      }
+      
+      .header-right {
+        align-items: flex-end;
+      }
+      
+      .header-stats {
+        gap: 8px;
+        font-size: 0.75em;
+        justify-content: flex-end;
+      }
+      
+      .game-title {
+        font-size: 1.1em;
       }
       
       .control-btn {
@@ -487,13 +612,9 @@
         margin-top: 12px;
       }
       
-      .level-info {
+      .header-stats {
         font-size: 0.75em;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
         gap: 8px;
-        margin-bottom: 4px;
       }
       
       #levelDisplay, #livesDisplay, #scoreDisplay {
@@ -506,16 +627,30 @@
     @media (max-width: 430px) and (min-height: 800px) {
       .game-container {
         padding-top: max(15px, env(safe-area-inset-top) + 15px);
+        padding-left: 0px;
+        padding-right: 0px;
         gap: 8px;
+        max-width: 100%;
       }
       
-      .level-info {
-        font-size: 0.8em;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
+      .game-header {
+        padding: 10px 20px 10px 5px;
+        margin-bottom: 10px;
         width: 100%;
-        max-width: 350px;
+      }
+      
+      .header-right {
+        align-items: flex-end;
+      }
+      
+      .header-stats {
+        gap: 6px;
+        font-size: 0.7em;
+        justify-content: flex-end;
+      }
+      
+      .header-stats {
+        font-size: 0.8em;
         gap: 10px;
       }
       
@@ -525,7 +660,7 @@
       }
       
       canvas {
-        max-height: 60vh;
+        max-height: 70vh;
       }
       
       .mobile-controls {
@@ -537,13 +672,33 @@
     @media (max-width: 360px) {
       .game-container {
         padding-top: max(6px, env(safe-area-inset-top) + 6px);
+        padding-left: 0px;
+        padding-right: 0px;
+        max-width: 100%;
       }
       
-      .level-info {
+      .game-header {
+        padding: 6px 10px 6px 3px;
+        margin-bottom: 6px;
+        width: 100%;
+      }
+      
+      .header-right {
+        align-items: flex-end;
+      }
+      
+      .header-stats {
+        gap: 4px;
+        font-size: 0.65em;
+        justify-content: flex-end;
+      }
+      
+      .game-title {
+        font-size: 1em;
+      }
+      
+      .header-stats {
         font-size: 0.7em;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
         gap: 6px;
       }
       
@@ -611,7 +766,7 @@
       }
       
       canvas {
-        max-height: 60vh;
+        max-height: 70vh;
       }
       
       #message {
@@ -627,7 +782,7 @@
       }
       
       canvas {
-        max-height: 60vh;
+        max-height: 70vh;
       }
     }
     
@@ -659,14 +814,6 @@
   </style>
 </head>
   <body>
-    <!-- Hamburger Menu Button -->
-    <div class="hamburger-menu" id="hamburgerMenu">
-      <div class="hamburger-icon">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
     
     <!-- Menu Overlay -->
     <div class="menu-overlay" id="menuOverlay">
@@ -760,48 +907,65 @@
     </div>
     
     <div class="game-container">
-      <div class="level-info">
-        <span id="levelDisplay">Level 1</span>
-        <span id="livesDisplay">Lives: 5</span>
-        <span id="scoreDisplay">Total: 0 | Avg: 0</span>
+      <!-- Header Section -->
+      <div class="game-header">
+        <div class="header-left">
+          <div class="hamburger-menu" id="hamburgerMenu">
+            <div class="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="game-title">Pacboy 2025</div>
+          <div class="header-stats">
+            <span class="header-stat" id="levelDisplay"><span class="label">Level </span><span class="value">1</span></span>
+            <span class="header-stat" id="livesDisplay"><span class="label">Lives: </span><span class="value">5</span></span>
+            <span class="header-stat" id="scoreDisplay"><span class="label">Total: </span><span class="value">0</span></span>
+          </div>
+        </div>
       </div>
-  
-      <canvas id="game" width="300" height="480"></canvas>
-      <div id="message"></div>
-    
-    <!-- Mobile Controls -->
-    <div class="mobile-controls">
-      <button class="control-btn left" data-direction="left">←</button>
-      <button class="control-btn up" data-direction="up">↑</button>
-      <button class="control-btn down" data-direction="down">↓</button>
-      <button class="control-btn right" data-direction="right">→</button>
+      
+      <!-- Maze Container -->
+      <div class="maze-container">
+        <canvas id="game" width="300" height="480"></canvas>
+        <div class="game-message-overlay" id="message"></div>
+      </div>
+      
+      <!-- Controls Container -->
+      <div class="controls-container">
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+          <button class="control-btn left" data-direction="left">←</button>
+          <button class="control-btn up" data-direction="up">↑</button>
+          <button class="control-btn down" data-direction="down">↓</button>
+          <button class="control-btn right" data-direction="right">→</button>
+        </div>
+        
+        <!-- Weapon Controls -->
+        <div class="weapon-controls">
+          <button class="weapon-btn fire-blast" data-weapon="fire" disabled>
+            <div class="cooldown-progress"></div>
+            <span class="weapon-icon">🔥</span>
+            <span class="cooldown-text">Ready</span>
+          </button>
+          <button class="weapon-btn freeze-wind" data-weapon="freeze" disabled>
+            <div class="cooldown-progress"></div>
+            <span class="weapon-icon">❄️</span>
+            <span class="cooldown-text">Ready</span>
+          </button>
+        </div>
+      </div>
     </div>
-    
-    <!-- Weapon Controls -->
-    <div class="weapon-controls">
-      <button class="weapon-btn fire-blast" data-weapon="fire" disabled>
-        <div class="cooldown-progress"></div>
-        <span class="weapon-icon">🔥</span>
-        <span class="cooldown-text">Ready</span>
-      </button>
-      <button class="weapon-btn freeze-wind" data-weapon="freeze" disabled>
-        <div class="cooldown-progress"></div>
-        <span class="weapon-icon">❄️</span>
-        <span class="cooldown-text">Ready</span>
-      </button>
-    </div>
-    
-
-    
-
-  </div>
 
   <script>
     // Portrait-optimized maze dimensions
     const mapWidth = 10;  // Back to original size
     const mapHeight = 16; // Taller for portrait
     
-    // Responsive canvas sizing for portrait mode
+    // Responsive canvas sizing for full-screen width
     function resizeCanvas() {
       const canvas = document.getElementById('game');
       
@@ -809,30 +973,35 @@
       const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0');
       const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0');
       
-      const availableWidth = window.innerWidth - 20;
-      const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom - 200; // Account for UI elements
-      
-      const maxWidth = Math.min(availableWidth, 350);
-      const maxHeight = Math.min(availableHeight, 480);
-      
-      // For portrait mode, prioritize height
-      let size;
-      if (window.innerHeight > window.innerWidth) {
-        // Portrait mode - use height as primary constraint
-        size = Math.min(maxHeight / mapHeight, maxWidth / mapWidth);
-      } else {
-        // Landscape mode - use width as primary constraint
-        size = Math.min(maxWidth / mapWidth, maxHeight / mapHeight);
+      // Use full screen width minus padding (zero on mobile)
+      let horizontalPadding = 20;
+      if (window.innerWidth <= 480) {
+        horizontalPadding = 0; // No horizontal padding on mobile
       }
       
-      // Ensure minimum size for playability
-      size = Math.max(size, 15);
+      const availableWidth = window.innerWidth - horizontalPadding;
+      const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom - 120; // Reduced UI space
       
-      const canvasWidth = mapWidth * size;
-      const canvasHeight = mapHeight * size;
+      // Calculate the largest size that fits while preserving aspect ratio
+      const aspect = mapWidth / mapHeight;
+      let canvasWidth = availableWidth;
+      let canvasHeight = availableWidth / aspect;
+      if (canvasHeight > availableHeight) {
+        canvasHeight = availableHeight;
+        canvasWidth = canvasHeight * aspect;
+      }
       
+      // Calculate tile size
+      let size = canvasWidth / mapWidth;
+      size = Math.max(size, 20); // Ensure minimum size for playability
+      canvasWidth = mapWidth * size;
+      canvasHeight = mapHeight * size;
+      
+      // Set canvas size and style
       canvas.style.width = canvasWidth + 'px';
       canvas.style.height = canvasHeight + 'px';
+      canvas.width = Math.round(canvasWidth);
+      canvas.height = Math.round(canvasHeight);
       
       // Update tile size based on canvas size
       window.tileSize = size;
@@ -1165,6 +1334,29 @@
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const message = document.getElementById('message');
+    
+    // Function to show messages in the overlay
+    function showMessage(text, duration = 3000) {
+      message.textContent = text;
+      message.classList.add('show');
+      
+      if (duration > 0) {
+        setTimeout(() => {
+          message.classList.remove('show');
+          setTimeout(() => {
+            message.textContent = '';
+          }, 300); // Wait for fade out animation
+        }, duration);
+      }
+    }
+    
+    // Function to clear message
+    function clearMessage() {
+      message.classList.remove('show');
+      setTimeout(() => {
+        message.textContent = '';
+      }, 300);
+    }
 
 
     function resetGame() {
@@ -1263,10 +1455,10 @@
       }, 5000);
       
       // Update display elements
-      document.getElementById('levelDisplay').innerText = `Level ${currentLevel}`;
-      document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-      document.getElementById('scoreDisplay').innerText = `Total: ${totalScore} | Avg: ${averageScore}`;
-      message.innerText = '';
+      document.getElementById('levelDisplay').querySelector('.value').innerText = currentLevel;
+      document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+      document.getElementById('scoreDisplay').innerHTML = `<span class="label">Total: </span><span class="value">${totalScore}</span><span class="label"> | Avg: </span><span class="value">${averageScore}</span>`;
+      clearMessage();
       draw();
     }
 
@@ -2438,7 +2630,7 @@
               }
             }, 50);
             
-            message.innerText = 'Game Over!';
+            showMessage('Game Over!', 2000);
             clearInterval(ghostMoveInterval);
             if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
                           setTimeout(() => {
@@ -2467,8 +2659,8 @@
               }
             }, 50);
             
-            document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-            message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
+            document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+            showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
             // Reset Pacman position and direction
             pacman.x = 1;
             pacman.y = 1;
@@ -2539,7 +2731,7 @@
           averageScore = Math.round(totalScore / completedLevels);
           
           if (currentLevel >= 100) {
-            message.innerText = `🎉 Congratulations! You completed all 100 levels! Final Total: ${totalScore}, Average: ${averageScore} 🎉`;
+            showMessage(`🎉 Congratulations! You completed all 100 levels! Final Total: ${totalScore}, Average: ${averageScore} 🎉`, 4000);
             clearInterval(ghostMoveInterval);
             if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
             setTimeout(() => {
@@ -2552,7 +2744,7 @@
             return;
           } else {
             currentLevel++;
-            message.innerText = `🎉 Level ${currentLevel - 1} Complete! Score: ${currentScore}/100 (Total: ${totalScore}, Avg: ${averageScore}) 🎉`;
+            showMessage(`🎉 Level ${currentLevel - 1} Complete! Score: ${currentScore}/100 (Total: ${totalScore}, Avg: ${averageScore}) 🎉`, 3000);
             clearInterval(ghostMoveInterval);
             if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
             setTimeout(resetGame, 2000);
@@ -2597,7 +2789,7 @@
                 }
               }, 50);
               
-              message.innerText = 'Game Over!';
+              showMessage('Game Over!', 2000);
               clearInterval(ghostMoveInterval);
               if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
               setTimeout(() => {
@@ -2626,8 +2818,8 @@
                 }
               }, 50);
               
-              document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-              message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
+              document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+              showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
               // Reset Pacman position and direction
               pacman.x = 1;
               pacman.y = 1;
@@ -2978,17 +3170,14 @@
       console.log('PWA install prompt available');
       
       // Optional: Show a small install notification
-      if (document.getElementById('message').textContent === '') {
-        document.getElementById('message').textContent = '💡 Tap to install as app';
-        document.getElementById('message').style.cursor = 'pointer';
-        document.getElementById('message').addEventListener('click', installPWA);
+      if (message.textContent === '') {
+        showMessage('💡 Tap to install as app', 5000);
+        message.style.cursor = 'pointer';
+        message.addEventListener('click', installPWA);
         
         // Auto-hide after 5 seconds
         setTimeout(() => {
-          if (document.getElementById('message').textContent === '💡 Tap to install as app') {
-            document.getElementById('message').textContent = '';
-            document.getElementById('message').style.cursor = 'default';
-          }
+          message.style.cursor = 'default';
         }, 5000);
       }
     }
@@ -3010,16 +3199,15 @@
     // Handle successful installation
     window.addEventListener('appinstalled', (evt) => {
       console.log('PWA was installed');
-      document.getElementById('message').textContent = '🎉 App installed!';
-      setTimeout(() => {
-        document.getElementById('message').textContent = '';
-      }, 3000);
+      showMessage('🎉 App installed!', 3000);
     });
     
     // Hamburger Menu Functionality
     const hamburgerMenu = document.getElementById('hamburgerMenu');
     const menuOverlay = document.getElementById('menuOverlay');
     const closeMenu = document.getElementById('closeMenu');
+    
+
     
     // Hamburger menu click and touch handling
     hamburgerMenu.addEventListener('click', openMenu);
@@ -3033,6 +3221,14 @@
       console.log('Opening menu...');
       console.log('ghostMoveInterval before clear:', ghostMoveInterval);
       console.log('weaponUpdateInterval before clear:', weaponUpdateInterval);
+      
+      // Get burger button position to start the expansion from there
+      const burgerRect = hamburgerMenu.getBoundingClientRect();
+      const startX = burgerRect.left + burgerRect.width / 2;
+      const startY = burgerRect.top + burgerRect.height / 2;
+      
+      // Set transform origin to burger button position
+      menuOverlay.style.transformOrigin = `${startX}px ${startY}px`;
       
       hamburgerMenu.classList.add('active');
       menuOverlay.classList.add('active');
