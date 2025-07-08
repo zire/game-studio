@@ -69,6 +69,147 @@
       overflow-x: hidden;
     }
     
+    /* Hamburger Menu */
+    .hamburger-menu {
+      position: fixed;
+      top: max(10px, env(safe-area-inset-top) + 10px);
+      left: max(10px, env(safe-area-inset-left) + 10px);
+      z-index: 1000;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    
+    .hamburger-menu:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+    
+    .hamburger-menu:active {
+      transform: scale(0.95);
+    }
+    
+    .hamburger-icon {
+      width: 20px;
+      height: 16px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .hamburger-icon span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background: #FFD700;
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+    
+    .hamburger-menu.active .hamburger-icon span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .hamburger-menu.active .hamburger-icon span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger-menu.active .hamburger-icon span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+    
+    /* Menu Overlay */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    
+    .menu-overlay.active {
+      display: flex;
+    }
+    
+    .menu-content {
+      background: #111;
+      border: 2px solid #FFD700;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 80%;
+      overflow-y: auto;
+      color: #FFD700;
+      font-family: Arial, sans-serif;
+    }
+    
+    .menu-content h2 {
+      margin: 0 0 15px 0;
+      text-align: center;
+      font-size: 1.5em;
+    }
+    
+    .menu-content h3 {
+      margin: 15px 0 8px 0;
+      color: #FFD700;
+      font-size: 1.2em;
+    }
+    
+    .menu-content p {
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+    
+    .menu-content ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+    
+    .menu-content li {
+      margin: 4px 0;
+      line-height: 1.3;
+    }
+    
+    .close-menu {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      color: #FFD700;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 4px;
+      transition: background 0.3s ease;
+    }
+    
+    .close-menu:hover {
+      background: rgba(255, 215, 0, 0.2);
+    }
+    
     canvas { 
       border: 2px solid #fff; 
       background: #111; 
@@ -590,8 +731,69 @@
     }
   </style>
 </head>
-<body>
-      <div class="game-container">
+  <body>
+    <!-- Hamburger Menu Button -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+      <div class="hamburger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+    
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay">
+      <div class="menu-content">
+        <button class="close-menu" id="closeMenu">×</button>
+        <h2>🎮 Pacman Game Guide</h2>
+        
+        <h3>🎯 How to Play</h3>
+        <p>Navigate through the maze, collect all golden pellets, and reach the exit door while avoiding ghosts!</p>
+        
+        <h3>🎮 Controls</h3>
+        <ul>
+          <li><strong>Desktop:</strong> Arrow keys or WASD to move</li>
+          <li><strong>Mobile:</strong> Use the touch controls below the game</li>
+          <li><strong>Spacebar:</strong> Fire blast weapon 🔥</li>
+          <li><strong>F key:</strong> Freeze wind weapon ❄️</li>
+        </ul>
+        
+        <h3>⚔️ Weapons</h3>
+        <ul>
+          <li><strong>Fire Blast 🔥:</strong> Long-range, high damage, long cooldown</li>
+          <li><strong>Freeze Wind ❄️:</strong> Short-range, crowd control, medium cooldown</li>
+          <li>Weapons can defeat ghosts temporarily</li>
+          <li>Watch the cooldown circles on weapon buttons</li>
+        </ul>
+        
+        <h3>👻 Ghosts</h3>
+        <ul>
+          <li>Ghosts respawn after being defeated</li>
+          <li>They spawn at safe distances from Pacman</li>
+          <li>More ghosts appear in higher levels</li>
+        </ul>
+        
+        <h3>📊 Scoring</h3>
+        <ul>
+          <li>Complete levels quickly for higher scores</li>
+          <li>Survive with more lives for bonus points</li>
+          <li>Track your progress across 100 levels!</li>
+        </ul>
+        
+        <h3>💡 Tips</h3>
+        <ul>
+          <li>Plan your route before moving</li>
+          <li>Use weapons strategically</li>
+          <li>Don't get cornered by ghosts</li>
+          <li>Practice makes perfect!</li>
+        </ul>
+        
+        <h3>📱 PWA Features</h3>
+        <p>This game works offline! Add it to your home screen for the best experience.</p>
+      </div>
+    </div>
+    
+    <div class="game-container">
       <div class="level-info">
         <span id="levelDisplay">Level 1</span>
         <span id="livesDisplay">Lives: 5</span>
@@ -2507,13 +2709,13 @@
     
     // Prevent default touch behaviors that might interfere with game
     document.addEventListener('touchstart', (e) => {
-      if (e.target.tagName !== 'BUTTON') {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('.hamburger-menu') && !e.target.closest('.menu-overlay')) {
         e.preventDefault();
       }
     }, { passive: false });
     
     document.addEventListener('touchmove', (e) => {
-      if (e.target.tagName !== 'BUTTON') {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('.hamburger-menu') && !e.target.closest('.menu-overlay')) {
         e.preventDefault();
       }
     }, { passive: false });
@@ -2815,6 +3017,77 @@
       setTimeout(() => {
         document.getElementById('message').textContent = '';
       }, 3000);
+    });
+    
+    // Hamburger Menu Functionality
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const closeMenu = document.getElementById('closeMenu');
+    
+    // Hamburger menu click and touch handling
+    hamburgerMenu.addEventListener('click', openMenu);
+    hamburgerMenu.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openMenu();
+    });
+    
+    function openMenu() {
+      console.log('Opening menu...');
+      hamburgerMenu.classList.add('active');
+      menuOverlay.classList.add('active');
+      // Pause game when menu is open
+      if (ghostMoveInterval) {
+        clearInterval(ghostMoveInterval);
+      }
+      if (weaponUpdateInterval) {
+        clearInterval(weaponUpdateInterval);
+      }
+    }
+    
+    // Close menu handling
+    closeMenu.addEventListener('click', closeMenuFunction);
+    closeMenu.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMenuFunction();
+    });
+    
+    function closeMenuFunction() {
+      hamburgerMenu.classList.remove('active');
+      menuOverlay.classList.remove('active');
+      // Resume game when menu is closed
+      if (gameState === 'playing') {
+        startGhostMovement();
+        startWeaponUpdates();
+      }
+    }
+    
+    // Close menu when clicking outside
+    menuOverlay.addEventListener('click', (e) => {
+      if (e.target === menuOverlay) {
+        closeMenuFunction();
+      }
+    });
+    
+    menuOverlay.addEventListener('touchstart', (e) => {
+      if (e.target === menuOverlay) {
+        e.preventDefault();
+        closeMenuFunction();
+      }
+    });
+    
+    // Close menu with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+        hamburgerMenu.classList.remove('active');
+        menuOverlay.classList.remove('active');
+        // Resume game when menu is closed
+        if (gameState === 'playing') {
+          startGhostMovement();
+          startWeaponUpdates();
+        }
+      }
     });
   </script>
 </body>
