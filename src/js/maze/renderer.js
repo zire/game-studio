@@ -156,31 +156,11 @@ export class MazeRenderer {
         this.ctx.fill();
       }
       
-      // Draw ghost body
-      this.ctx.beginPath();
-      this.ctx.arc(
-        ghost.x * this.tileSize + this.tileSize / 2,
-        ghost.y * this.tileSize + this.tileSize / 2,
-        this.tileSize / 2 - 3,
-        Math.PI, 0, false
-      );
-      this.ctx.lineTo(ghost.x * this.tileSize + this.tileSize - 3, ghost.y * this.tileSize + this.tileSize - 3);
-      this.ctx.lineTo(ghost.x * this.tileSize + 3, ghost.y * this.tileSize + this.tileSize - 3);
-      this.ctx.closePath();
-      this.ctx.fillStyle = ghost.color;
-      this.ctx.fill();
-      
-      // Eyes
-      this.ctx.beginPath();
-      this.ctx.arc(ghost.x * this.tileSize + this.tileSize/2 - 4, ghost.y * this.tileSize + this.tileSize/2 - 1, 2, 0, 2 * Math.PI);
-      this.ctx.arc(ghost.x * this.tileSize + this.tileSize/2 + 4, ghost.y * this.tileSize + this.tileSize/2 - 1, 2, 0, 2 * Math.PI);
-      this.ctx.fillStyle = '#fff';
-      this.ctx.fill();
-      this.ctx.beginPath();
-      this.ctx.arc(ghost.x * this.tileSize + this.tileSize/2 - 4, ghost.y * this.tileSize + this.tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
-      this.ctx.arc(ghost.x * this.tileSize + this.tileSize/2 + 4, ghost.y * this.tileSize + this.tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
-      this.ctx.fillStyle = '#222';
-      this.ctx.fill();
+      // Draw ghost emoji (updated)
+      this.ctx.font = `${this.tileSize - 4}px Arial`;
+      this.ctx.textAlign = 'center';
+      this.ctx.textBaseline = 'middle';
+      this.ctx.fillText('👻', ghost.x * this.tileSize + this.tileSize / 2, ghost.y * this.tileSize + this.tileSize / 2);
       
       // Draw ghost name above
       this.ctx.font = 'bold 10px monospace';

@@ -44,18 +44,7 @@ export class GameEngine {
     this.levelStartTime = 0;
     this.currentScore = 0;
     
-    // Background color system
-    this.currentColorScheme = 0;
-    this.colorSchemes = [
-      { name: 'Deep Space', background: '#0a0a1a', accent: '#4a90e2' },
-      { name: 'Sunset', background: '#2c1810', accent: '#ff6b35' },
-      { name: 'Ocean', background: '#0f1419', accent: '#00bfff' },
-      { name: 'Forest', background: '#0a1a0a', accent: '#228b22' },
-      { name: 'Purple', background: '#1a0a1a', accent: '#9370db' },
-      { name: 'Golden', background: '#1a1a0a', accent: '#ffd700' },
-      { name: 'Crimson', background: '#1a0a0a', accent: '#dc143c' },
-      { name: 'Arctic', background: '#0a1a1a', accent: '#87ceeb' }
-    ];
+
     
     // Weapon cooldown system
     this.fireBlastCooldown = 0;
@@ -115,9 +104,6 @@ export class GameEngine {
 
   resetGame() {
     console.log('Resetting game...');
-    
-    // Change background color for new level
-    this.changeBackgroundColor();
     
     // Reset celebration state
     this.isCelebrating = false;
@@ -401,19 +387,19 @@ export class GameEngine {
     this.showMessage(`Lost a life! Lives remaining: ${this.playerLives}`, 2000);
   }
 
-  collectPelletAtPosition(x, y) {
+  async collectPelletAtPosition(x, y) {
     if (this.pelletMap[y] && this.pelletMap[y][x] === 1) {
       this.pelletMap[y][x] = 0;
       this.pelletsLeft--;
       this.pelletsCollected++;
       
       // Play waka sound
-      this.playWakaSound();
+      await this.playWakaSound();
     }
   }
 
-  playWakaSound() {
-    this.audioManager.playWakaSound();
+  async playWakaSound() {
+    await this.audioManager.playWakaSound();
   }
 
   showMessage(text, duration = 3000) {
@@ -488,33 +474,7 @@ export class GameEngine {
     });
   }
 
-  changeBackgroundColor() {
-    // Cycle to next color scheme
-    this.currentColorScheme = (this.currentColorScheme + 1) % this.colorSchemes.length;
-    const scheme = this.colorSchemes[this.currentColorScheme];
-    
-    console.log('Changing maze background to:', scheme.name);
-    
-    // Change maze container and canvas background
-    const mazeContainer = document.querySelector('.maze-container');
-    if (mazeContainer) {
-      mazeContainer.style.background = scheme.background + ' !important';
-      mazeContainer.style.transition = 'background 2s ease-in-out';
-    }
-    
-    // Change canvas background
-    if (this.canvas) {
-      this.canvas.style.background = scheme.background + ' !important';
-      this.canvas.style.transition = 'background 2s ease-in-out';
-    }
-    
-    // Also change game container background
-    const gameContainer = document.querySelector('.game-container');
-    if (gameContainer) {
-      gameContainer.style.background = scheme.background + ' !important';
-      gameContainer.style.transition = 'background 2s ease-in-out';
-    }
-  }
+
 
   pauseGame() {
     if (this.ghostMoveInterval) {
@@ -536,7 +496,7 @@ export class GameEngine {
   }
 
   // Core movement method
-  tryMove(dx, dy) {
+  async tryMove(dx, dy) {
     if (this.state !== GAME_STATES.PLAYING) return;
     
     const newX = this.pacman.x + dx;
@@ -554,7 +514,7 @@ export class GameEngine {
       else if (dy < 0) this.pacman.direction = 'up';
       
       // Collect pellet at new position
-      this.collectPelletAtPosition(this.pacman.x, this.pacman.y);
+      await this.collectPelletAtPosition(this.pacman.x, this.pacman.y);
       
       // Check for level completion (either all pellets collected or reached exit)
       if (this.pelletsLeft === 0 || this.map[this.pacman.y][this.pacman.x] === 2) {

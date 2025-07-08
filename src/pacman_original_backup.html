@@ -1,0 +1,4058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Brandon's Pacboy">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#FFD700">
+  <meta name="description" content="Brandon's Pacboy Game Studio - Fun maze adventure game with weapons and ghosts">
+  <meta name="keywords" content="pacboy, game, maze, arcade, mobile, pwa">
+  <meta name="author" content="Brandon Yang">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+  <title>Brandon's Pacboy Game Studio</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --sat: env(safe-area-inset-top);
+      --sab: env(safe-area-inset-bottom);
+      --sal: env(safe-area-inset-left);
+      --sar: env(safe-area-inset-right);
+    }
+    
+    body { 
+      background: #000; 
+      margin: 0; 
+      padding: 0;
+      padding-top: var(--sat);
+      padding-bottom: var(--sab);
+      padding-left: var(--sal);
+      padding-right: var(--sar);
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      min-height: 100vh;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+    
+    .game-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      padding: 10px;
+      padding-top: max(10px, env(safe-area-inset-top) + 10px);
+      width: 100%;
+      max-width: 400px;
+      min-height: 100vh;
+      box-sizing: border-box;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+    
+    /* Full width for larger screens */
+    @media (min-width: 430px) {
+      .game-container {
+        max-width: 100%;
+      }
+    }
+    
+    /* Header Section */
+    .game-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      width: 100%;
+      padding: 10px 15px 10px 5px;
+      margin-bottom: 10px;
+      box-sizing: border-box;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    .header-right {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex: 1;
+    }
+    
+    .game-title {
+      color: #FF69B4;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+      white-space: nowrap;
+      margin-bottom: 3px;
+    }
+    
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: monospace;
+      font-size: 0.8em;
+      color: #FFD700;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      justify-content: flex-end;
+    }
+    
+    .header-stat {
+      white-space: nowrap;
+    }
+    
+    .header-stat .label {
+      color: #FFD700;
+    }
+    
+    .header-stat .value {
+      color: #FFFFFF;
+    }
+    
+    /* Maze Container */
+    .maze-container {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 100%;
+      flex: 1;
+    }
+    
+    /* Game Message Overlay */
+    .game-message-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: yellow;
+      font-family: monospace;
+      font-size: 1.5em;
+      font-weight: bold;
+      text-shadow: 2px 2px 8px #000, -2px -2px 8px #000;
+      text-align: center;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      max-width: 90%;
+      word-wrap: break-word;
+    }
+    
+    .game-message-overlay.show {
+      opacity: 1;
+    }
+    
+    /* Controls Container */
+    .controls-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      width: 100%;
+      margin-top: 15px;
+    }
+    
+    /* Hamburger Menu */
+    .hamburger-menu {
+      position: relative;
+      background: rgba(0, 0, 0, 0.8);
+      border: 2px solid #FFD700;
+      border-radius: 8px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    
+    .hamburger-menu.active {
+      display: none;
+    }
+    
+    .hamburger-menu:hover {
+      background: rgba(255, 215, 0, 0.2);
+      transform: scale(1.05);
+      box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+    }
+    
+    .hamburger-menu:active {
+      transform: scale(0.95);
+    }
+    
+
+    
+    .hamburger-icon {
+      width: 20px;
+      height: 16px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    
+    .hamburger-icon span {
+      display: block;
+      height: 2px;
+      width: 100%;
+      background: #FFD700;
+      border-radius: 1px;
+      transition: all 0.3s ease;
+    }
+    
+    .hamburger-menu.active .hamburger-icon span:nth-child(1) {
+      transform: rotate(45deg) translate(5px, 5px);
+    }
+    
+    .hamburger-menu.active .hamburger-icon span:nth-child(2) {
+      opacity: 0;
+    }
+    
+    .hamburger-menu.active .hamburger-icon span:nth-child(3) {
+      transform: rotate(-45deg) translate(7px, -6px);
+    }
+    
+    /* Menu Overlay */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.8s ease;
+      transform: scale(0);
+    }
+    
+    .menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+    
+    .menu-content {
+      background: rgba(17, 17, 17, 0.75);
+      border: 2px solid #FFD700;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 90%;
+      max-height: 80%;
+      overflow-y: auto;
+      color: #FFD700;
+      font-family: Arial, sans-serif;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      position: relative;
+      transform: scale(0.8);
+      transition: transform 0.8s ease 0.2s;
+    }
+    
+    .menu-overlay.active .menu-content {
+      transform: scale(1);
+    }
+    
+    .menu-content h2 {
+      margin: 0 0 15px 0;
+      text-align: center;
+      font-size: 1.5em;
+    }
+    
+    .menu-content h3 {
+      margin: 15px 0 8px 0;
+      color: #FFD700;
+      font-size: 1.2em;
+    }
+    
+    .menu-content p {
+      margin: 8px 0;
+      line-height: 1.4;
+    }
+    
+    .menu-content ul {
+      margin: 8px 0;
+      padding-left: 20px;
+    }
+    
+    .menu-content li {
+      margin: 4px 0;
+      line-height: 1.3;
+    }
+    
+    .close-menu {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid #FFFFFF;
+      color: #FFFFFF;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    
+    .close-menu:hover {
+      background: rgba(255, 215, 0, 0.2);
+      transform: scale(1.1);
+    }
+    
+    .close-menu:active {
+      transform: scale(0.95);
+    }
+    
+    canvas { 
+      border: 2px solid #fff; 
+      background: #111; 
+      display: block; 
+      margin: 0 auto;
+      max-width: 100%;
+      max-height: 70vh;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: none;
+    }
+    
+
+    
+    #levelDisplay, #livesDisplay, #scoreDisplay {
+      background: none;
+      padding: 0;
+      border: none;
+      font-size: inherit;
+      white-space: nowrap;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Mobile Controls */
+    .mobile-controls {
+      display: none;
+      flex-direction: row;
+      justify-content: center;
+      gap: 15px;
+      padding: 0 10px;
+    }
+    
+    .control-row {
+      display: none;
+    }
+    
+    .control-btn {
+      width: 55px;
+      height: 55px;
+      background: rgba(255, 215, 0, 0.2);
+      border: 2px solid #FFD700;
+      border-radius: 50%;
+      color: #FFD700;
+      font-size: 22px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      touch-action: manipulation;
+      margin: 0;
+    }
+    
+    .control-btn:active {
+      background: rgba(255, 215, 0, 0.5);
+      transform: scale(0.95);
+    }
+    
+    .control-btn.up { font-size: 20px; }
+    .control-btn.down { font-size: 20px; }
+    .control-btn.left { font-size: 20px; }
+    .control-btn.right { font-size: 20px; }
+    
+    /* Weapon Controls */
+    .weapon-controls {
+      display: none;
+      flex-direction: row;
+      justify-content: center;
+      gap: 20px;
+      padding: 0 10px;
+    }
+    
+    .weapon-btn {
+      width: 70px;
+      height: 70px;
+      background: rgba(255, 69, 0, 0.2);
+      border: 2px solid #FF4500;
+      border-radius: 50%;
+      color: #FF4500;
+      font-size: 24px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      -khtml-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      touch-action: manipulation;
+      margin: 0;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .weapon-btn.freeze-wind {
+      background: rgba(0, 191, 255, 0.2);
+      border-color: #00BFFF;
+      color: #00BFFF;
+    }
+    
+    .weapon-btn:disabled {
+      opacity: 0.3;
+      background: rgba(100, 100, 100, 0.3);
+      border-color: #666;
+      color: #666;
+      cursor: not-allowed;
+    }
+    
+    .weapon-btn.freeze-wind:disabled {
+      background: rgba(100, 100, 100, 0.3);
+      border-color: #666;
+      color: #666;
+    }
+    
+    .weapon-btn:active:not(:disabled) {
+      transform: scale(0.95);
+    }
+    
+    .weapon-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .weapon-icon {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+    
+    .cooldown-text {
+      font-size: 8px;
+      font-family: monospace;
+      text-align: center;
+      line-height: 1;
+    }
+    
+    .cooldown-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: conic-gradient(from 0deg, transparent 0deg, transparent 0deg);
+      transition: background 0.05s linear;
+      pointer-events: none;
+      z-index: 1;
+    }
+    
+    .weapon-btn .weapon-icon,
+    .weapon-btn .cooldown-text {
+      position: relative;
+      z-index: 2;
+    }
+    
+
+    
+
+    
+
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .mobile-controls {
+        display: flex;
+      }
+      
+      .weapon-controls {
+        display: flex;
+      }
+      
+
+      
+
+      
+      .game-message-overlay {
+        font-size: 1.3em;
+      }
+      
+      #newGameBtn {
+        font-size: 1em;
+        padding: 8px 16px;
+      }
+      
+      .header-stats {
+        font-size: 0.8em;
+        gap: 12px;
+      }
+      
+      #levelDisplay, #livesDisplay, #scoreDisplay {
+        font-size: inherit;
+        padding: 0;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .game-container {
+        padding: 8px 0px;
+        gap: 8px;
+        justify-content: flex-start;
+        padding-top: max(8px, env(safe-area-inset-top) + 8px);
+        max-width: 100%;
+      }
+      
+      .game-header {
+        padding: 8px 12px 8px 4px;
+        margin-bottom: 8px;
+        width: 100%;
+      }
+      
+      .header-right {
+        align-items: flex-end;
+      }
+      
+      .header-stats {
+        gap: 8px;
+        font-size: 0.75em;
+        justify-content: flex-end;
+      }
+      
+      .game-title {
+        font-size: 1.1em;
+      }
+      
+      .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+      
+      .weapon-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 20px;
+      }
+      
+      .weapon-icon {
+        font-size: 18px;
+      }
+      
+      .cooldown-text {
+        font-size: 7px;
+      }
+      
+      .mobile-controls {
+        gap: 10px;
+        margin-top: 12px;
+      }
+      
+      .header-stats {
+        font-size: 0.75em;
+        gap: 8px;
+      }
+      
+      #levelDisplay, #livesDisplay, #scoreDisplay {
+        font-size: inherit;
+        padding: 0;
+      }
+    }
+    
+    /* iPhone 16 Pro Max and similar large phones */
+    @media (max-width: 430px) and (min-height: 800px) {
+      .game-container {
+        padding-top: max(15px, env(safe-area-inset-top) + 15px);
+        padding-left: 0px;
+        padding-right: 0px;
+        gap: 8px;
+        max-width: 100%;
+      }
+      
+      .game-header {
+        padding: 10px 20px 10px 5px;
+        margin-bottom: 10px;
+        width: 100%;
+      }
+      
+      .header-right {
+        align-items: flex-end;
+      }
+      
+      .header-stats {
+        gap: 6px;
+        font-size: 0.7em;
+        justify-content: flex-end;
+      }
+      
+      .header-stats {
+        font-size: 0.8em;
+        gap: 10px;
+      }
+      
+      #levelDisplay, #livesDisplay, #scoreDisplay {
+        font-size: inherit;
+        padding: 0;
+      }
+      
+      canvas {
+        max-height: 70vh;
+      }
+      
+      .mobile-controls {
+        margin-top: 15px;
+      }
+    }
+    
+    /* Ultra-wide phones */
+    @media (max-width: 360px) {
+      .game-container {
+        padding-top: max(6px, env(safe-area-inset-top) + 6px);
+        padding-left: 0px;
+        padding-right: 0px;
+        max-width: 100%;
+      }
+      
+      .game-header {
+        padding: 6px 10px 6px 3px;
+        margin-bottom: 6px;
+        width: 100%;
+      }
+      
+      .header-right {
+        align-items: flex-end;
+      }
+      
+      .header-stats {
+        gap: 4px;
+        font-size: 0.65em;
+        justify-content: flex-end;
+      }
+      
+      .game-title {
+        font-size: 1em;
+      }
+      
+      .header-stats {
+        font-size: 0.7em;
+        gap: 6px;
+      }
+      
+      #levelDisplay, #livesDisplay, #scoreDisplay {
+        font-size: inherit;
+        padding: 0;
+      }
+      
+      .control-btn {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+      }
+      
+      .weapon-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 18px;
+      }
+      
+      .weapon-icon {
+        font-size: 16px;
+      }
+      
+      .cooldown-text {
+        font-size: 6px;
+      }
+      
+      .mobile-controls {
+        gap: 8px;
+        margin-top: 10px;
+      }
+      
+      .studio-credit {
+        font-size: 10px;
+        margin-top: 12px;
+        margin-bottom: 8px;
+      }
+      
+      .player-tips {
+        padding: 8px;
+        margin: 6px 0;
+      }
+      
+      .tips-header {
+        font-size: 12px;
+      }
+      
+      .tip-item {
+        font-size: 9px;
+        gap: 5px;
+      }
+      
+      .tip-icon {
+        font-size: 11px;
+        min-width: 16px;
+      }
+    }
+    
+    /* Portrait mode optimizations */
+    @media (orientation: portrait) {
+      .game-container {
+        max-width: 350px;
+        height: 100vh;
+      }
+      
+      canvas {
+        max-height: 70vh;
+      }
+      
+      #message {
+        font-size: 1.1em;
+      }
+    }
+    
+    /* Portrait mode optimizations */
+    @media (orientation: portrait) {
+      .game-container {
+        max-width: 350px;
+        height: 100vh;
+      }
+      
+      canvas {
+        max-height: 70vh;
+      }
+    }
+    
+    /* Firefox mobile specific fixes */
+    @-moz-document url-prefix() {
+      body {
+        height: 100vh;
+        min-height: 100vh;
+      }
+      
+      .game-container {
+        height: 100vh;
+        min-height: 100vh;
+      }
+    }
+    
+    /* Dynamic Island and notch devices */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      .game-container {
+        padding-top: max(10px, env(safe-area-inset-top) + 10px);
+      }
+      
+      @media (max-width: 430px) and (min-height: 800px) {
+        .game-container {
+          padding-top: max(20px, env(safe-area-inset-top) + 20px);
+        }
+      }
+    }
+  </style>
+</head>
+  <body>
+    
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay">
+      <div class="menu-content">
+        <button class="close-menu" id="closeMenu">×</button>
+        <h2>🎮 Pacboy Game Guide</h2>
+        
+        <h3>🎯 How to Play</h3>
+        <p>Navigate through the maze, collect all golden pellets, and reach the exit door while avoiding ghosts!</p>
+        
+        <h3>🎮 Controls</h3>
+        <ul>
+          <li><strong>Desktop:</strong> Arrow keys or WASD to move</li>
+          <li><strong>Mobile:</strong> Use the touch controls below the game</li>
+          <li><strong>Spacebar:</strong> Fire blast weapon 🔥</li>
+          <li><strong>F key:</strong> Freeze wind weapon ❄️</li>
+        </ul>
+        
+        <h3>⚔️ Weapons</h3>
+        <ul>
+          <li><strong>Fire Blast 🔥:</strong> Long-range, high damage, long cooldown</li>
+          <li><strong>Freeze Wind ❄️:</strong> Short-range, crowd control, medium cooldown</li>
+          <li>Weapons can defeat ghosts temporarily</li>
+          <li>Watch the cooldown circles on weapon buttons</li>
+        </ul>
+        
+        <h3>👻 Ghosts</h3>
+        <ul>
+          <li>Ghosts respawn after being defeated</li>
+                      <li>They spawn at safe distances from Pacboy</li>
+          <li>More ghosts appear in higher levels</li>
+        </ul>
+        
+        <h3>📊 Scoring</h3>
+        <ul>
+          <li>Complete levels quickly for higher scores</li>
+          <li>Survive with more lives for bonus points</li>
+          <li>Track your progress across 100 levels!</li>
+        </ul>
+        
+        <h3>💡 Tips</h3>
+        <ul>
+          <li>Plan your route before moving</li>
+          <li>Use weapons strategically</li>
+          <li>Don't get cornered by ghosts</li>
+          <li>Practice makes perfect!</li>
+        </ul>
+        
+        <h3>🎮 Controls</h3>
+        <ul>
+          <li><strong>Desktop:</strong> Arrow keys or WASD to move</li>
+          <li><strong>Mobile:</strong> Use the touch controls below the game</li>
+          <li><strong>Spacebar:</strong> Fire blast weapon 🔥</li>
+          <li><strong>F key:</strong> Freeze wind weapon ❄️</li>
+        </ul>
+        
+        <h3>📱 PWA Features</h3>
+        <p>This game works offline! Add it to your home screen for the best experience.</p>
+        
+        <h3>🎮 Player Tips</h3>
+        <ul>
+          <li><strong>Plan your route:</strong> Look ahead and plan your path before moving</li>
+          <li><strong>Use weapons wisely:</strong> Fire blast for long-range, freeze wind for crowd control</li>
+          <li><strong>Watch cooldowns:</strong> Don't waste weapons when they're recharging</li>
+          <li><strong>Stay mobile:</strong> Don't get cornered by ghosts</li>
+          <li><strong>Practice makes perfect:</strong> Higher levels get more challenging!</li>
+        </ul>
+        
+        <h3>📊 Game Statistics</h3>
+        <ul>
+          <li><strong>100 Levels:</strong> Progressive difficulty with more ghosts</li>
+          <li><strong>Scoring System:</strong> Time, pellets, and lives affect your score</li>
+          <li><strong>Weapon System:</strong> Two unique weapons with different strategies</li>
+          <li><strong>Ghost AI:</strong> Smart respawning at safe distances</li>
+        </ul>
+        
+        <h3>🎯 Advanced Strategies</h3>
+        <ul>
+          <li><strong>Weapon Timing:</strong> Use fire blast when ghosts are in a line</li>
+          <li><strong>Freeze Tactics:</strong> Freeze wind is perfect for escaping tight spots</li>
+          <li><strong>Route Optimization:</strong> Collect pellets efficiently to minimize time</li>
+          <li><strong>Ghost Psychology:</strong> Learn ghost movement patterns</li>
+        </ul>
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #FFD700; text-align: center; font-size: 0.9em; opacity: 0.8;">
+          <p><strong>Produced by Brandon Yang</strong></p>
+          <p>Brandon's Epic Game Studio</p>
+          <p>© 2024 - All rights reserved</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="game-container">
+      <!-- Header Section -->
+      <div class="game-header">
+        <div class="header-left">
+          <div class="hamburger-menu" id="hamburgerMenu">
+            <div class="hamburger-icon">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="game-title">Pacboy 2025</div>
+          <div class="header-stats">
+            <span class="header-stat" id="levelDisplay"><span class="label">Level </span><span class="value">1</span></span>
+            <span class="header-stat" id="livesDisplay"><span class="label">Lives: </span><span class="value">5</span></span>
+            <span class="header-stat" id="scoreDisplay"><span class="label">Total: </span><span class="value">0</span></span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Maze Container -->
+      <div class="maze-container">
+        <canvas id="game" width="300" height="480"></canvas>
+        <div class="game-message-overlay" id="message"></div>
+      </div>
+      
+      <!-- Controls Container -->
+      <div class="controls-container">
+        <!-- Mobile Controls -->
+        <div class="mobile-controls">
+          <button class="control-btn left" data-direction="left">←</button>
+          <button class="control-btn up" data-direction="up">↑</button>
+          <button class="control-btn down" data-direction="down">↓</button>
+          <button class="control-btn right" data-direction="right">→</button>
+        </div>
+        
+        <!-- Weapon Controls -->
+        <div class="weapon-controls">
+          <button class="weapon-btn fire-blast" data-weapon="fire" disabled>
+            <div class="cooldown-progress"></div>
+            <span class="weapon-icon">🔥</span>
+            <span class="cooldown-text">Ready</span>
+          </button>
+          <button class="weapon-btn freeze-wind" data-weapon="freeze" disabled>
+            <div class="cooldown-progress"></div>
+            <span class="weapon-icon">❄️</span>
+            <span class="cooldown-text">Ready</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  <script>
+    // Portrait-optimized maze dimensions
+    const mapWidth = 10;  // Back to original size
+    const mapHeight = 16; // Taller for portrait
+    
+    // Responsive canvas sizing for full-screen width
+    function resizeCanvas() {
+      const canvas = document.getElementById('game');
+      
+      // Account for safe areas on mobile devices
+      const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0');
+      const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0');
+      
+      // Use full screen width minus padding (zero on mobile)
+      let horizontalPadding = 20;
+      if (window.innerWidth <= 480) {
+        horizontalPadding = 0; // No horizontal padding on mobile
+      }
+      
+      const availableWidth = window.innerWidth - horizontalPadding;
+      const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom - 120; // Reduced UI space
+      
+      // Calculate the largest size that fits while preserving aspect ratio
+      const aspect = mapWidth / mapHeight;
+      let canvasWidth = availableWidth;
+      let canvasHeight = availableWidth / aspect;
+      if (canvasHeight > availableHeight) {
+        canvasHeight = availableHeight;
+        canvasWidth = canvasHeight * aspect;
+      }
+      
+      // Calculate tile size
+      let size = canvasWidth / mapWidth;
+      size = Math.max(size, 20); // Ensure minimum size for playability
+      canvasWidth = mapWidth * size;
+      canvasHeight = mapHeight * size;
+      
+      // Set canvas size and style
+      canvas.style.width = canvasWidth + 'px';
+      canvas.style.height = canvasHeight + 'px';
+      canvas.width = Math.round(canvasWidth);
+      canvas.height = Math.round(canvasHeight);
+      
+      // Update tile size based on canvas size
+      window.tileSize = size;
+    }
+    
+    // Initialize responsive design
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+
+    
+
+
+    // Load waka-waka sound effect
+    const wakaSound = new Audio('waka.wav');
+    wakaSound.volume = 0.5;
+
+    function generateRandomMap(level = 1) {
+      console.log('Generating maze for level:', level);
+      
+      // Create maze with thin dividers on gridlines from level 1
+      const newMap = [];
+      for (let y = 0; y < mapHeight; y++) {
+        const row = [];
+        for (let x = 0; x < mapWidth; x++) {
+          row.push(0); // Start with all walkable space
+        }
+        newMap.push(row);
+      }
+      
+      // Clear existing walls
+      horizontalWalls.length = 0;
+      verticalWalls.length = 0;
+      
+      // Generate simple maze
+      generateSimpleMaze(level);
+      
+      // Ensure start position is open (top-left corner)
+      newMap[0][0] = 0;
+      
+      // Place exit door at bottom-right corner
+      newMap[mapHeight - 1][mapWidth - 1] = 2; // Door
+      
+      // Ensure the door is accessible
+      ensureDoorAccess(newMap);
+      
+      console.log('Maze generation complete. Horizontal walls:', horizontalWalls.length, 'Vertical walls:', verticalWalls.length);
+      
+      return newMap;
+    }
+    
+    function generateSimpleMaze(level) {
+      console.log('Generating simple maze for level:', level);
+      
+      // Calculate wall density based on level (more walls for higher levels)
+      const baseDensity = 0.15; // 15% base density
+      const levelDensity = Math.min(0.4, baseDensity + (level - 1) * 0.02); // Max 40% density
+      
+      console.log('Wall density:', levelDensity);
+      
+      // Create horizontal walls (dividing rows)
+      for (let y = 1; y < mapHeight - 1; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+          // Skip walls near start and end
+          if ((x === 0 && y === 0) || (x === mapWidth - 1 && y === mapHeight - 1)) {
+            continue;
+          }
+          
+          // Add wall with probability based on level
+          if (Math.random() < levelDensity) {
+            horizontalWalls.push({x, y});
+          }
+        }
+      }
+      
+      // Create vertical walls (dividing columns)
+      for (let y = 0; y < mapHeight; y++) {
+        for (let x = 1; x < mapWidth - 1; x++) {
+          // Skip walls near start and end
+          if ((x === 0 && y === 0) || (x === mapWidth - 1 && y === mapHeight - 1)) {
+            continue;
+          }
+          
+          // Add wall with probability based on level
+          if (Math.random() < levelDensity) {
+            verticalWalls.push({x, y});
+          }
+        }
+      }
+      
+      // Ensure we have a minimum number of walls for gameplay
+      if (horizontalWalls.length + verticalWalls.length < 10) {
+        console.log('Adding minimum walls for gameplay');
+        // Add some guaranteed walls
+        for (let i = 0; i < 5; i++) {
+          const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+          const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+          horizontalWalls.push({x, y});
+        }
+        for (let i = 0; i < 5; i++) {
+          const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+          const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+          verticalWalls.push({x, y});
+        }
+      }
+      
+      console.log('Simple maze generated. Total walls:', horizontalWalls.length + verticalWalls.length);
+    }
+    
+    // Removed complex Kruskal's algorithm - using simple maze generation instead
+    
+    // Removed complex maze functions - using simple maze generation instead
+    
+    function addThinDividers(map, wallDensity, level) {
+      // This function is now replaced by generateSimpleMaze
+      // Keep for compatibility but it's no longer used
+      generateSimpleMaze(level);
+    }
+    
+    function createComplexMaze(level) {
+      // Create a more complex maze with multiple paths and dead ends
+      const complexity = Math.min(1.0, (level - 10) / 10);
+      
+      // Create main path from start to end
+      createMainPath();
+      
+      // Add branching paths
+      const branchCount = 5 + Math.floor(complexity * 10);
+      for (let i = 0; i < branchCount; i++) {
+        createBranchingPath();
+      }
+      
+      // Add some dead ends for challenge
+      const deadEndCount = 3 + Math.floor(complexity * 5);
+      for (let i = 0; i < deadEndCount; i++) {
+        createDeadEnd();
+      }
+    }
+    
+    function createAdvancedMaze(level) {
+      // Create advanced maze with strategic elements
+      const difficulty = Math.min(1.0, (level - 20) / 30);
+      
+      // Create multiple main paths
+      createMultipleMainPaths();
+      
+      // Add strategic bottlenecks
+      const bottleneckCount = 2 + Math.floor(difficulty * 3);
+      for (let i = 0; i < bottleneckCount; i++) {
+        createStrategicBottleneck();
+      }
+      
+      // Add maze-like patterns
+      createMazePatterns(difficulty);
+    }
+    
+    // Helper functions for smart maze generation
+    function isNearStartOrEnd(x, y) {
+      const startDistance = Math.abs(x - 0) + Math.abs(y - 0);
+      const endDistance = Math.abs(x - (mapWidth - 1)) + Math.abs(y - (mapHeight - 1));
+      return startDistance <= 1 || endDistance <= 1;
+    }
+    
+    function wouldCreateInterestingCorridor(x, y, length, direction) {
+      // Check if this corridor would create interesting gameplay
+      // Avoid creating corridors that are too close to each other
+      const minDistance = 2;
+      
+      if (direction === 'horizontal') {
+        // Check distance from existing horizontal walls
+        for (const wall of horizontalWalls) {
+          if (Math.abs(wall.y - y) < minDistance) {
+            // Check if there's overlap
+            for (let i = 0; i < length; i++) {
+              if (Math.abs(wall.x - (x + i)) < minDistance) {
+                return false; // Too close to existing wall
+              }
+            }
+          }
+        }
+      } else if (direction === 'vertical') {
+        // Check distance from existing vertical walls
+        for (const wall of verticalWalls) {
+          if (Math.abs(wall.x - x) < minDistance) {
+            // Check if there's overlap
+            for (let i = 0; i < length; i++) {
+              if (Math.abs(wall.y - (y + i)) < minDistance) {
+                return false; // Too close to existing wall
+              }
+            }
+          }
+        }
+      }
+      
+      // Check if this would create a good gameplay area (not too cramped)
+      const areaSize = calculateAreaSize(x, y, length, direction);
+      return areaSize >= 4; // Minimum area size for interesting gameplay
+    }
+    
+    function calculateAreaSize(x, y, length, direction) {
+      // Calculate the size of the area this corridor would create
+      let areaSize = 0;
+      
+      if (direction === 'horizontal') {
+        // Count walkable tiles in the area above and below the corridor
+        for (let i = 0; i < length; i++) {
+          if (y > 0) areaSize++; // Above
+          if (y < mapHeight - 1) areaSize++; // Below
+        }
+      } else if (direction === 'vertical') {
+        // Count walkable tiles in the area left and right of the corridor
+        for (let i = 0; i < length; i++) {
+          if (x > 0) areaSize++; // Left
+          if (x < mapWidth - 1) areaSize++; // Right
+        }
+      }
+      
+      return areaSize;
+    }
+    
+    function findStrategicGhostPosition(ghostIndex, totalGhosts) {
+      // Find strategic positions for ghosts based on maze layout
+      const validPositions = [];
+      
+      // Find all valid positions
+      for (let y = 1; y < mapHeight - 1; y++) {
+        for (let x = 1; x < mapWidth - 1; x++) {
+          if (map[y][x] === 0 && 
+              !ghosts.some(g => g.x === x && g.y === y) && 
+              (x !== 0 || y !== 0)) {
+            validPositions.push({x, y});
+          }
+        }
+      }
+      
+      if (validPositions.length === 0) {
+        // Fallback to random position
+        return {
+          x: 1 + Math.floor(Math.random() * (mapWidth - 2)),
+          y: 1 + Math.floor(Math.random() * (mapHeight - 2))
+        };
+      }
+      
+      // Score positions based on strategic value
+      const scoredPositions = validPositions.map(pos => {
+        let score = 0;
+        
+        // Prefer positions near bottlenecks or chokepoints
+        const bottleneckScore = calculateBottleneckScore(pos);
+        score += bottleneckScore * 10;
+        
+        // Prefer positions that can patrol different areas
+        const patrolScore = calculatePatrolScore(pos);
+        score += patrolScore * 5;
+        
+        // Avoid positions too close to start
+        const startDistance = Math.abs(pos.x - 0) + Math.abs(pos.y - 0);
+        if (startDistance < 3) score -= 20;
+        
+        // Avoid positions too close to other ghosts
+        for (const ghost of ghosts) {
+          const ghostDistance = Math.abs(pos.x - ghost.x) + Math.abs(pos.y - ghost.y);
+          if (ghostDistance < 2) score -= 15;
+        }
+        
+        // Prefer positions near the middle of the maze for better coverage
+        const centerX = mapWidth / 2;
+        const centerY = mapHeight / 2;
+        const centerDistance = Math.abs(pos.x - centerX) + Math.abs(pos.y - centerY);
+        score += (10 - centerDistance) * 2;
+        
+        return {pos, score};
+      });
+      
+      // Sort by score and pick the best position
+      scoredPositions.sort((a, b) => b.score - a.score);
+      
+      // Add some randomness to avoid predictable placement
+      const randomFactor = Math.random();
+      if (randomFactor < 0.7) {
+        return scoredPositions[0].pos; // Best position
+      } else if (randomFactor < 0.9) {
+        return scoredPositions[Math.floor(scoredPositions.length * 0.3)].pos; // Top 30%
+      } else {
+        return scoredPositions[Math.floor(scoredPositions.length * 0.6)].pos; // Top 60%
+      }
+    }
+    
+    function calculateBottleneckScore(position) {
+      // Calculate how close this position is to potential bottlenecks
+      let score = 0;
+      
+      // Check for narrow passages (bottlenecks)
+      for (let dx = -2; dx <= 2; dx++) {
+        for (let dy = -2; dy <= 2; dy++) {
+          const checkX = position.x + dx;
+          const checkY = position.y + dy;
+          
+          if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+            // Count walls around this position
+            const wallCount = countNearbyWalls(checkX, checkY);
+            if (wallCount >= 3) { // Potential bottleneck
+              const distance = Math.abs(dx) + Math.abs(dy);
+              score += (3 - distance) * 2; // Closer bottlenecks get higher score
+            }
+          }
+        }
+      }
+      
+      return score;
+    }
+    
+    function calculatePatrolScore(position) {
+      // Calculate how good this position is for patrolling
+      let score = 0;
+      
+      // Count accessible directions
+      const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+      let accessibleDirections = 0;
+      
+      for (const [dx, dy] of directions) {
+        const checkX = position.x + dx;
+        const checkY = position.y + dy;
+        
+        if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight &&
+            map[checkY][checkX] === 0 && !isMoveBlockedByDivider(position.x, position.y, checkX, checkY)) {
+          accessibleDirections++;
+        }
+      }
+      
+      // Prefer positions with 2-3 accessible directions (good for patrolling)
+      if (accessibleDirections >= 2 && accessibleDirections <= 3) {
+        score += 10;
+      } else if (accessibleDirections === 1) {
+        score += 5; // Dead end, less ideal
+      } else if (accessibleDirections >= 4) {
+        score += 3; // Too open, less strategic
+      }
+      
+      return score;
+    }
+    
+    function countNearbyWalls(x, y) {
+      // Count walls within 1 tile distance
+      let wallCount = 0;
+      
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const checkX = x + dx;
+          const checkY = y + dy;
+          
+          if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+            // Check for horizontal walls
+            if (horizontalWalls.some(wall => wall.x === checkX && wall.y === checkY)) {
+              wallCount++;
+            }
+            // Check for vertical walls
+            if (verticalWalls.some(wall => wall.x === checkX && wall.y === checkY)) {
+              wallCount++;
+            }
+          }
+        }
+      }
+      
+      return wallCount;
+    }
+    
+    function optimizeMazeLayout() {
+      // Remove redundant walls and optimize the maze layout
+      const optimizedHorizontalWalls = [];
+      const optimizedVerticalWalls = [];
+      
+      // Group horizontal walls by row and merge adjacent ones
+      const horizontalGroups = {};
+      for (const wall of horizontalWalls) {
+        if (!horizontalGroups[wall.y]) horizontalGroups[wall.y] = [];
+        horizontalGroups[wall.y].push(wall.x);
+      }
+      
+      for (const [y, xs] of Object.entries(horizontalGroups)) {
+        xs.sort((a, b) => a - b);
+        let start = xs[0];
+        let end = xs[0];
+        
+        for (let i = 1; i < xs.length; i++) {
+          if (xs[i] === end + 1) {
+            end = xs[i];
+          } else {
+            // Add the merged wall
+            for (let x = start; x <= end; x++) {
+              optimizedHorizontalWalls.push({x, y: parseInt(y)});
+            }
+            start = end = xs[i];
+          }
+        }
+        // Add the last merged wall
+        for (let x = start; x <= end; x++) {
+          optimizedHorizontalWalls.push({x, y: parseInt(y)});
+        }
+      }
+      
+      // Group vertical walls by column and merge adjacent ones
+      const verticalGroups = {};
+      for (const wall of verticalWalls) {
+        if (!verticalGroups[wall.x]) verticalGroups[wall.x] = [];
+        verticalGroups[wall.x].push(wall.y);
+      }
+      
+      for (const [x, ys] of Object.entries(verticalGroups)) {
+        ys.sort((a, b) => a - b);
+        let start = ys[0];
+        let end = ys[0];
+        
+        for (let i = 1; i < ys.length; i++) {
+          if (ys[i] === end + 1) {
+            end = ys[i];
+          } else {
+            // Add the merged wall
+            for (let y = start; y <= end; y++) {
+              optimizedVerticalWalls.push({x: parseInt(x), y});
+            }
+            start = end = ys[i];
+          }
+        }
+        // Add the last merged wall
+        for (let y = start; y <= end; y++) {
+          optimizedVerticalWalls.push({x: parseInt(x), y});
+        }
+      }
+      
+      horizontalWalls.length = 0;
+      verticalWalls.length = 0;
+      horizontalWalls.push(...optimizedHorizontalWalls);
+      verticalWalls.push(...optimizedVerticalWalls);
+    }
+    
+    function createCorridorBetween(point1, point2) {
+      // Create L-shaped corridor between two points
+      const midX = Math.floor((point1.x + point2.x) / 2);
+      const midY = Math.floor((point1.y + point2.y) / 2);
+      
+      // Horizontal part
+      const startX = Math.min(point1.x, midX);
+      const endX = Math.max(point1.x, midX);
+      for (let x = startX; x < endX; x++) {
+        if (!isNearStartOrEnd(x, point1.y)) {
+          horizontalWalls.push({x: x, y: point1.y});
+        }
+      }
+      
+      // Vertical part
+      const startY = Math.min(point1.y, point2.y);
+      const endY = Math.max(point1.y, point2.y);
+      for (let y = startY; y < endY; y++) {
+        if (!isNearStartOrEnd(midX, y)) {
+          verticalWalls.push({x: midX, y: y});
+        }
+      }
+    }
+    
+    function createMainPath() {
+      // Create a winding path from start to end
+      const path = generatePathFromStartToEnd();
+      
+      // Add walls around the path to create corridors
+      for (let i = 0; i < path.length - 1; i++) {
+        const current = path[i];
+        const next = path[i + 1];
+        
+        // Add walls perpendicular to the path direction
+        if (next.x > current.x) { // Moving right
+          if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+          if (current.y < mapHeight - 1) horizontalWalls.push({x: current.x, y: current.y + 1});
+        } else if (next.x < current.x) { // Moving left
+          if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+          if (current.y < mapHeight - 1) horizontalWalls.push({x: current.x, y: current.y + 1});
+        } else if (next.y > current.y) { // Moving down
+          if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+          if (current.x < mapWidth - 1) verticalWalls.push({x: current.x + 1, y: current.y});
+        } else if (next.y < current.y) { // Moving up
+          if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+          if (current.x < mapWidth - 1) verticalWalls.push({x: current.x + 1, y: current.y});
+        }
+      }
+    }
+    
+    function generatePathFromStartToEnd() {
+      // Generate a path from start to end using A* or similar algorithm
+      const path = [{x: 0, y: 0}];
+      let current = {x: 0, y: 0};
+      const target = {x: mapWidth - 1, y: mapHeight - 1};
+      
+      while (current.x !== target.x || current.y !== target.y) {
+        // Simple pathfinding: move towards target with some randomness
+        const dx = target.x - current.x;
+        const dy = target.y - current.y;
+        
+        let nextX = current.x;
+        let nextY = current.y;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+          nextX += dx > 0 ? 1 : -1;
+        } else {
+          nextY += dy > 0 ? 1 : -1;
+        }
+        
+        // Add some randomness to make path more interesting
+        if (Math.random() < 0.3) {
+          if (Math.random() < 0.5 && nextX !== current.x) {
+            nextX = current.x;
+            nextY += Math.random() < 0.5 ? 1 : -1;
+          } else if (nextY !== current.y) {
+            nextY = current.y;
+            nextX += Math.random() < 0.5 ? 1 : -1;
+          }
+        }
+        
+        // Ensure we stay within bounds
+        nextX = Math.max(0, Math.min(mapWidth - 1, nextX));
+        nextY = Math.max(0, Math.min(mapHeight - 1, nextY));
+        
+        current = {x: nextX, y: nextY};
+        path.push(current);
+        
+        // Prevent infinite loops
+        if (path.length > mapWidth * mapHeight) break;
+      }
+      
+      return path;
+    }
+    
+    function createBranchingPath() {
+      // Create a branching path from a random point
+      const startX = 2 + Math.floor(Math.random() * (mapWidth - 4));
+      const startY = 2 + Math.floor(Math.random() * (mapHeight - 4));
+      
+      const path = [{x: startX, y: startY}];
+      let current = {x: startX, y: startY};
+      const length = 3 + Math.floor(Math.random() * 4);
+      
+      for (let i = 0; i < length; i++) {
+        const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        const direction = directions[Math.floor(Math.random() * directions.length)];
+        
+        const nextX = current.x + direction[0];
+        const nextY = current.y + direction[1];
+        
+        if (nextX >= 1 && nextX < mapWidth - 1 && nextY >= 1 && nextY < mapHeight - 1) {
+          current = {x: nextX, y: nextY};
+          path.push(current);
+        }
+      }
+      
+      // Add walls around the branching path
+      for (let i = 0; i < path.length - 1; i++) {
+        const current = path[i];
+        const next = path[i + 1];
+        
+        if (next.x > current.x) { // Moving right
+          if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+          if (current.y < mapHeight - 1) horizontalWalls.push({x: current.x, y: current.y + 1});
+        } else if (next.y > current.y) { // Moving down
+          if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+          if (current.x < mapWidth - 1) verticalWalls.push({x: current.x + 1, y: current.y});
+        }
+      }
+    }
+    
+    function createDeadEnd() {
+      // Create a dead end path
+      const startX = 2 + Math.floor(Math.random() * (mapWidth - 4));
+      const startY = 2 + Math.floor(Math.random() * (mapHeight - 4));
+      
+      const path = [{x: startX, y: startY}];
+      let current = {x: startX, y: startY};
+      const length = 2 + Math.floor(Math.random() * 3);
+      
+      for (let i = 0; i < length; i++) {
+        const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        const direction = directions[Math.floor(Math.random() * directions.length)];
+        
+        const nextX = current.x + direction[0];
+        const nextY = current.y + direction[1];
+        
+        if (nextX >= 1 && nextX < mapWidth - 1 && nextY >= 1 && nextY < mapHeight - 1) {
+          current = {x: nextX, y: nextY};
+          path.push(current);
+        }
+      }
+      
+      // Block the end of the path
+      const end = path[path.length - 1];
+      if (end.x > 0) verticalWalls.push({x: end.x - 1, y: end.y});
+      if (end.x < mapWidth - 1) verticalWalls.push({x: end.x + 1, y: end.y});
+      if (end.y > 0) horizontalWalls.push({x: end.x, y: end.y - 1});
+      if (end.y < mapHeight - 1) horizontalWalls.push({x: end.x, y: end.y + 1});
+    }
+    
+    function createMultipleMainPaths() {
+      // Create multiple paths from start to end
+      const pathCount = 2 + Math.floor(Math.random() * 2);
+      
+      for (let i = 0; i < pathCount; i++) {
+        const path = generatePathFromStartToEnd();
+        
+        // Add walls to create separate corridors
+        for (let j = 0; j < path.length - 1; j++) {
+          const current = path[j];
+          const next = path[j + 1];
+          
+          // Add walls with some spacing to create corridors
+          if (j % 2 === 0) {
+            if (next.x > current.x) { // Moving right
+              if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+            } else if (next.y > current.y) { // Moving down
+              if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+            }
+          }
+        }
+      }
+    }
+    
+    function createStrategicBottleneck() {
+      // Create a strategic bottleneck that forces players to make choices
+      const x = 3 + Math.floor(Math.random() * (mapWidth - 6));
+      const y = 3 + Math.floor(Math.random() * (mapHeight - 6));
+      
+      // Create a narrow passage
+      for (let i = 0; i < 3; i++) {
+        if (x + i < mapWidth - 1) {
+          horizontalWalls.push({x: x + i, y: y - 1});
+          horizontalWalls.push({x: x + i, y: y + 1});
+        }
+      }
+    }
+    
+    function createMazePatterns(difficulty) {
+      // Create classic maze patterns
+      const patternCount = 3 + Math.floor(difficulty * 5);
+      
+      for (let i = 0; i < patternCount; i++) {
+        const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+        const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+        
+        // Create spiral or maze-like patterns
+        if (Math.random() < 0.5) {
+          // Spiral pattern
+          for (let j = 0; j < 4; j++) {
+            if (x + j < mapWidth - 1) horizontalWalls.push({x: x + j, y: y});
+            if (y + j < mapHeight - 1) verticalWalls.push({x: x, y: y + j});
+          }
+        } else {
+          // Grid pattern
+          for (let j = 0; j < 3; j++) {
+            if (x + j < mapWidth - 1) horizontalWalls.push({x: x + j, y: y});
+            if (x + j < mapWidth - 1) horizontalWalls.push({x: x + j, y: y + 2});
+            if (y + j < mapHeight - 1) verticalWalls.push({x: x, y: y + j});
+            if (y + j < mapHeight - 1) verticalWalls.push({x: x + 2, y: y + j});
+          }
+        }
+      }
+    }
+    
+    function canPlaceThinDivider(map, dividerType, x, y) {
+      // Don't block start or end positions
+      if ((x === 0 && y === 0) || (x === mapWidth - 1 && y === mapHeight - 1)) {
+        return false;
+      }
+      
+      // Check if the divider would block all paths to the exit
+      const testMap = map.map(row => [...row]);
+      const testHorizontalWalls = [...horizontalWalls];
+      const testVerticalWalls = [...verticalWalls];
+      placeThinDivider(testMap, dividerType, x, y);
+      
+      // Simple connectivity check - ensure there's still a path from start to end
+      return hasPathToExitWithDividers(testMap, testHorizontalWalls, testVerticalWalls);
+    }
+    
+    function placeThinDivider(map, dividerType, x, y) {
+      switch (dividerType) {
+        case 'horizontal':
+          // Horizontal divider (3-5 gridlines)
+          const hLength = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < hLength && x + i < mapWidth - 1; i++) {
+            if (x + i !== 0 || y !== 0) { // Don't block start
+              // Add horizontal wall at gridline between y and y+1
+              horizontalWalls.push({x: x + i, y: y});
+            }
+          }
+          break;
+          
+        case 'vertical':
+          // Vertical divider (3-5 gridlines)
+          const vLength = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < vLength && y + i < mapHeight - 1; i++) {
+            if (y + i !== 0 || x !== 0) { // Don't block start
+              // Add vertical wall at gridline between x and x+1
+              verticalWalls.push({x: x, y: y + i});
+            }
+          }
+          break;
+          
+        case 'lshape':
+          // L-shaped divider
+          if (x + 1 < mapWidth - 1 && y + 1 < mapHeight - 1) {
+            horizontalWalls.push({x: x, y: y});
+            horizontalWalls.push({x: x + 1, y: y});
+            verticalWalls.push({x: x, y: y});
+            verticalWalls.push({x: x, y: y + 1});
+          }
+          break;
+          
+        case 'tshape':
+          // T-shaped divider
+          if (x + 1 < mapWidth - 1 && y + 1 < mapHeight - 1 && y > 0) {
+            horizontalWalls.push({x: x, y: y});
+            horizontalWalls.push({x: x + 1, y: y});
+            verticalWalls.push({x: x, y: y - 1});
+            verticalWalls.push({x: x, y: y});
+            verticalWalls.push({x: x, y: y + 1});
+          }
+          break;
+          
+        case 'cross':
+          // Cross-shaped divider
+          if (x + 1 < mapWidth - 1 && y + 1 < mapHeight - 1 && x > 0 && y > 0) {
+            horizontalWalls.push({x: x - 1, y: y});
+            horizontalWalls.push({x: x, y: y});
+            horizontalWalls.push({x: x + 1, y: y});
+            verticalWalls.push({x: x, y: y - 1});
+            verticalWalls.push({x: x, y: y});
+            verticalWalls.push({x: x, y: y + 1});
+          }
+          break;
+      }
+    }
+    
+    function hasPathToExitWithDividers(map, hWalls, vWalls) {
+      // Simple BFS to check if there's a path from start to end considering dividers
+      const visited = new Set();
+      const queue = [{x: 0, y: 0}];
+      
+      while (queue.length > 0) {
+        const {x, y} = queue.shift();
+        const key = `${x},${y}`;
+        
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
+        // Check if we reached the exit
+        if (x === mapWidth - 1 && y === mapHeight - 1) {
+          return true;
+        }
+        
+        // Check all 4 directions
+        const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        for (const [dx, dy] of directions) {
+          const nx = x + dx;
+          const ny = y + dy;
+          
+          if (nx >= 0 && nx < mapWidth && ny >= 0 && ny < mapHeight && 
+              (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+            
+            // Check if there's a divider blocking this move
+            let blocked = false;
+            
+            if (dx === 1) { // Moving right
+              // Check for vertical wall at current x position
+              blocked = vWalls.some(wall => wall.x === x && wall.y === y);
+            } else if (dx === -1) { // Moving left
+              // Check for vertical wall at target x position
+              blocked = vWalls.some(wall => wall.x === nx && wall.y === y);
+            } else if (dy === 1) { // Moving down
+              // Check for horizontal wall at current y position
+              blocked = hWalls.some(wall => wall.x === x && wall.y === y);
+            } else if (dy === -1) { // Moving up
+              // Check for horizontal wall at target y position
+              blocked = hWalls.some(wall => wall.x === x && wall.y === ny);
+            }
+            
+            if (!blocked) {
+              queue.push({x: nx, y: ny});
+            }
+          }
+        }
+      }
+      
+      return false;
+    }
+    
+    function ensureDoorAccess(map) {
+      // Ensure there's a path to the door
+      const doorX = mapWidth - 1;
+      const doorY = mapHeight - 1;
+      
+      // Check if door is accessible from left or above
+      if (map[doorY][doorX - 1] === 1 && map[doorY - 1][doorX] === 1) {
+        // Door is blocked, create a path
+        if (Math.random() > 0.5) {
+          map[doorY][doorX - 1] = 0; // Open left
+        } else {
+          map[doorY - 1][doorX] = 0; // Open above
+        }
+      }
+    }
+    
+
+
+    // Generate pellets for the new maze system
+    function generatePellets(map) {
+      const pelletMap = [];
+      for (let y = 0; y < mapHeight; y++) {
+        const row = [];
+        for (let x = 0; x < mapWidth; x++) {
+          row.push(0);
+        }
+        pelletMap.push(row);
+      }
+      
+      let pelletCount = 0;
+      
+      // Place pellets on ALL walkable areas (not walls or door)
+      for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+          // Place pellets on all walkable areas (not walls or door)
+          if (map[y][x] === 0) {
+            pelletMap[y][x] = 1;
+            pelletCount++;
+          }
+        }
+      }
+      
+      return pelletMap;
+    }
+
+    // Calculate shortest path length using BFS
+    function calculateShortestPath(map) {
+      const queue = [{x: 1, y: 1, distance: 0}];
+      const visited = new Set();
+      const targetX = mapWidth - 2;
+      const targetY = mapHeight - 2;
+      
+      while (queue.length > 0) {
+        const {x, y, distance} = queue.shift();
+        const key = `${x},${y}`;
+        
+        if (visited.has(key)) continue;
+        visited.add(key);
+        
+        if (x === targetX && y === targetY) {
+          return distance;
+        }
+        
+        // Check all 4 directions
+        const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        for (const [dx, dy] of directions) {
+          const nx = x + dx;
+          const ny = y + dy;
+          
+          if (ny >= 0 && ny < mapHeight && nx >= 0 && nx < mapWidth && 
+              (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+            queue.push({x: nx, y: ny, distance: distance + 1});
+          }
+        }
+      }
+      
+      return Infinity; // No path found
+    }
+
+    // Get level parameters based on current level
+    function getLevelParameters(level) {
+      // Lives: 1 at level 1, 5 at level 100 (more lives to battle more ghosts)
+      const lives = Math.min(5, 1 + Math.floor((level - 1) / 25));
+      
+      // Ghost count: Progressive difficulty
+      let ghostCount;
+      if (level <= 10) ghostCount = 1;      // Levels 1-10: 1 ghost
+      else if (level <= 30) ghostCount = 2; // Levels 11-30: 2 ghosts
+      else if (level <= 50) ghostCount = 3; // Levels 31-50: 3 ghosts
+      else if (level <= 75) ghostCount = 4; // Levels 51-75: 4 ghosts
+      else ghostCount = 5;                  // Levels 76-100: 5 ghosts
+      
+      // Target path length: shorter paths for higher levels (more difficult)
+      const targetPathLength = Math.max(15, 50 - Math.floor((level - 1) / 2));
+      
+      return { lives, ghostCount, targetPathLength };
+    }
+
+    // Helper function to collect pellet at current position
+    function collectPelletAtPosition(x, y) {
+      console.log(`Checking for pellet at (${x}, ${y})`);
+      console.log(`pelletMap[${y}][${x}] = ${pelletMap[y] ? pelletMap[y][x] : 'undefined'}`);
+      if (pelletMap[y] && pelletMap[y][x] === 1) {
+        console.log(`Collecting pellet at (${x}, ${y})`);
+        pelletMap[y][x] = 0;
+        pelletsLeft--;
+        pelletsCollected++;
+        console.log(`Pellets left: ${pelletsLeft}, Pellets collected: ${pelletsCollected}`);
+        // Play waka-waka sound when eating a pellet
+        try {
+          wakaSound.currentTime = 0;
+          wakaSound.play();
+        } catch (e) {}
+      } else {
+        console.log(`No pellet to collect at (${x}, ${y})`);
+      }
+    }
+    
+    // Calculate score based on time, pellets collected, and lives remaining
+    function calculateScore(timeElapsed, pelletsCollected, totalPellets, livesRemaining, maxLives) {
+      // Time score: 0-40 points (faster = higher score)
+      const maxTime = 300; // 5 minutes max
+      const timeScore = Math.max(0, 40 - Math.floor((timeElapsed / 1000) * 40 / maxTime));
+      
+      // Pellet score: 0-40 points (more pellets = higher score)
+      const pelletScore = Math.floor((pelletsCollected / totalPellets) * 40);
+      
+      // Life score: 0-20 points (more lives = higher score)
+      const lifeScore = Math.floor((livesRemaining / maxLives) * 20);
+      
+      const totalScore = timeScore + pelletScore + lifeScore;
+      return Math.min(100, totalScore); // Cap at 100
+    }
+
+    let map, pelletMap, pelletsLeft, pacman;
+    let horizontalWalls = []; // Array to store horizontal wall positions
+    let verticalWalls = [];   // Array to store vertical wall positions
+    let ghosts = [];
+    let ghostMoveInterval = null;
+    let currentLevel = 1;
+    let playerLives = 5;
+    let shortestPathLength = 0;
+    let levelStartTime = 0;
+    let currentScore = 0;
+    let totalScore = 0;
+    let completedLevels = 0;
+    let averageScore = 0;
+    let pelletsCollected = 0;
+    let totalPelletsInLevel = 0;
+    let celebrationParticles = [];
+    let isCelebrating = false;
+    let gameOverParticles = [];
+    let isGameOverAnimating = false;
+    
+    // Weapon system variables
+    let weaponParticles = [];
+    let fireBlastCooldown = 0;
+    let freezeWindCooldown = 0;
+    let frozenGhosts = [];
+    let burningGhosts = [];
+    let weaponEffects = [];
+    let weaponUpdateInterval = null;
+    let lastWeaponUpdateTime = Date.now();
+    let respawnQueue = [];
+    
+    // Sound effects
+    let fireSound = null;
+    let fireHitSound = null;
+    let freezeSound = null;
+    let gameOverSound = null;
+    let appleSound = null;
+    
+    // Weapon cooldown times (in milliseconds)
+    const FIRE_BLAST_COOLDOWN = 5000; // 5 seconds
+    const FREEZE_WIND_COOLDOWN = 3000; // 3 seconds
+    
+    // Weapon damage and effects
+    const FIRE_BLAST_DAMAGE = 50; // High DPS
+    const FREEZE_WIND_DURATION = 2000; // 2 seconds freeze
+    const FIRE_BLAST_RANGE = 5; // Long range
+    const FREEZE_WIND_RANGE = 3; // Medium range (increased from 2)
+    
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const message = document.getElementById('message');
+    
+    // Function to show messages in the overlay
+    function showMessage(text, duration = 3000) {
+      message.textContent = text;
+      message.classList.add('show');
+      
+      if (duration > 0) {
+        setTimeout(() => {
+          message.classList.remove('show');
+          setTimeout(() => {
+            message.textContent = '';
+          }, 300); // Wait for fade out animation
+        }, duration);
+      }
+    }
+    
+    // Function to clear message
+    function clearMessage() {
+      message.classList.remove('show');
+      setTimeout(() => {
+        message.textContent = '';
+      }, 300);
+    }
+
+
+    function resetGame() {
+      // Change maze background for new game
+      changeMazeBackground();
+      
+      // Reset celebration state
+      isCelebrating = false;
+      celebrationParticles = [];
+      
+      // Reset game over animation state
+      isGameOverAnimating = false;
+      gameOverParticles = [];
+      
+      // Reset weapon system
+      weaponParticles = [];
+      fireBlastCooldown = 0;
+      freezeWindCooldown = 0;
+      frozenGhosts = [];
+      burningGhosts = [];
+      weaponEffects = [];
+      
+      // Reset wall arrays
+      horizontalWalls = [];
+      verticalWalls = [];
+      
+      // Get level parameters
+      const { lives, ghostCount, targetPathLength } = getLevelParameters(currentLevel);
+      playerLives = lives;
+      
+      // Start timing for this level
+      levelStartTime = Date.now();
+      
+      // Generate maze with appropriate difficulty
+      let attempts = 0;
+      let generatedMap;
+      let pathLength;
+      
+      do {
+        generatedMap = generateRandomMap(currentLevel);
+        pathLength = calculateShortestPath(generatedMap);
+        attempts++;
+      } while (pathLength > targetPathLength + 10 && attempts < 20); // Try to get close to target path length
+      
+      map = generatedMap;
+      shortestPathLength = pathLength;
+      
+      // Generate pellets using the new system
+      pelletMap = generatePellets(map);
+      pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
+      totalPelletsInLevel = pelletsLeft;
+      pelletsCollected = 0;
+      console.log(`Pellet map created. Pellet at (0,0): ${pelletMap[0][0]}`);
+      console.log(`Total pellets in level: ${totalPelletsInLevel}`);
+      pacman = { x: 0, y: 0, direction: 'right' };
+      
+      // Generate ghosts based on level with smart placement
+      ghosts = []; // Clear existing ghosts
+      const ghostNames = ['Clement', 'Chase', 'Ray', 'Jayden', 'Andrew'];
+      const ghostColors = ['#147880', '#60EEE3', '#25BF94', '#E9E12E', '#FF6B41'];
+      
+      console.log(`Level ${currentLevel}: Spawning ${ghostCount} ghosts`);
+      console.log(`Current level: ${currentLevel}, Ghost count should be: ${ghostCount}`);
+      
+      for (let i = 0; i < ghostCount; i++) {
+        const ghostPosition = findStrategicGhostPosition(i, ghostCount);
+        
+        ghosts.push({
+          x: ghostPosition.x,
+          y: ghostPosition.y,
+          color: ghostColors[i],
+          name: ghostNames[i]
+        });
+      }
+      
+      console.log(`Initial ghost count: ${ghosts.length}`);
+      console.log(`Ghosts spawned:`, ghosts.map(g => `${g.name} at (${g.x}, ${g.y})`));
+      
+      if (ghostMoveInterval) clearInterval(ghostMoveInterval);
+      ghostMoveInterval = setInterval(moveGhosts, 350);
+      
+      // Start weapon particle update interval
+      if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
+      weaponUpdateInterval = setInterval(() => {
+        updateWeaponParticles();
+        updateWeaponCooldowns(); // Update cooldowns more frequently
+        draw(); // Redraw to show updated particles
+      }, 16); // Update every 16ms (60fps) for smooth animation
+      
+      // Debug: Log ghost count every 5 seconds
+      setInterval(() => {
+        console.log(`Current ghost count: ${ghosts.length}`);
+        ghosts.forEach((ghost, index) => {
+          console.log(`  Ghost ${index}: ${ghost.name} at (${ghost.x}, ${ghost.y})`);
+        });
+      }, 5000);
+      
+      // Update display elements
+      document.getElementById('levelDisplay').querySelector('.value').innerText = currentLevel;
+      document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+      document.getElementById('scoreDisplay').innerHTML = `<span class="label">Total: </span><span class="value">${totalScore}</span><span class="label"> | Avg: </span><span class="value">${averageScore}</span>`;
+      clearMessage();
+      draw();
+    }
+
+    function createCelebrationParticles(x, y) {
+      const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#FF9F43', '#00D2D3', '#54A0FF', '#5F27CD'];
+      const emojis = ['🎉', '⭐', '🎊', '🏆', '💎', '🌟', '✨', '🎯', '🎨', '🚀', '🌈', '🎪', '🎭', '🎪', '🎡', '🎢'];
+      const particleTypes = ['emoji', 'circle', 'star', 'sparkle'];
+      
+      // Random number of particles (20-30)
+      const particleCount = 20 + Math.floor(Math.random() * 11);
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particleType = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+        const isSpecial = Math.random() < 0.15; // 15% chance for special particles
+        
+        celebrationParticles.push({
+          x: x + (window.tileSize || 20) / 2,
+          y: y + (window.tileSize || 20) / 2,
+          vx: (Math.random() - 0.5) * (8 + Math.random() * 6), // More varied velocity
+          vy: (Math.random() - 0.5) * (8 + Math.random() * 6) - 3,
+          life: 0.8 + Math.random() * 0.4, // Varied starting life
+          decay: 0.01 + Math.random() * 0.025, // Varied decay rates
+          color: colors[Math.floor(Math.random() * colors.length)],
+          emoji: emojis[Math.floor(Math.random() * emojis.length)],
+          size: 15 + Math.random() * 20, // More size variation
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * (0.2 + Math.random() * 0.4), // Varied rotation
+          bounce: 0.6 + Math.random() * 0.4, // Varied bounce
+          gravity: 0.3 + Math.random() * 0.3, // Varied gravity
+          type: particleType,
+          isSpecial: isSpecial,
+          pulse: Math.random() < 0.3, // 30% chance to pulse
+          pulseSpeed: 0.05 + Math.random() * 0.1,
+          pulsePhase: Math.random() * Math.PI * 2,
+          trail: Math.random() < 0.2, // 20% chance for trail effect
+          trailLength: 3 + Math.floor(Math.random() * 5),
+          trailPositions: []
+        });
+      }
+    }
+
+    function updateCelebrationParticles() {
+      for (let i = celebrationParticles.length - 1; i >= 0; i--) {
+        const particle = celebrationParticles[i];
+        
+        // Update trail positions
+        if (particle.trail) {
+          particle.trailPositions.unshift({x: particle.x, y: particle.y, life: particle.life});
+          if (particle.trailPositions.length > particle.trailLength) {
+            particle.trailPositions.pop();
+          }
+        }
+        
+        particle.x += particle.vx;
+        particle.y += particle.vy;
+        particle.vy += particle.gravity;
+        particle.life -= particle.decay;
+        particle.rotation += particle.rotationSpeed;
+        
+        // Update pulse phase
+        if (particle.pulse) {
+          particle.pulsePhase += particle.pulseSpeed;
+        }
+        
+        // Special particles have different behaviors
+        if (particle.isSpecial) {
+          // Special particles might change direction randomly
+          if (Math.random() < 0.02) {
+            particle.vx += (Math.random() - 0.5) * 2;
+            particle.vy += (Math.random() - 0.5) * 2;
+          }
+        }
+        
+        // Bounce off canvas edges
+        const tileSize = window.tileSize || 20;
+        const canvasWidth = mapWidth * tileSize;
+        const canvasHeight = mapHeight * tileSize;
+        
+        if (particle.x <= 0 || particle.x >= canvasWidth) {
+          particle.vx *= -particle.bounce;
+          particle.x = Math.max(0, Math.min(canvasWidth, particle.x));
+        }
+        if (particle.y >= canvasHeight) {
+          particle.vy *= -particle.bounce;
+          particle.y = canvasHeight;
+        }
+        
+        if (particle.life <= 0) {
+          celebrationParticles.splice(i, 1);
+        }
+      }
+    }
+
+    function drawCelebrationParticles() {
+      celebrationParticles.forEach(particle => {
+        ctx.save();
+        
+        // Calculate size with pulse effect
+        let currentSize = particle.size;
+        if (particle.pulse) {
+          currentSize *= 0.8 + 0.4 * Math.sin(particle.pulsePhase);
+        }
+        
+        // Draw trail if enabled
+        if (particle.trail && particle.trailPositions.length > 0) {
+          particle.trailPositions.forEach((pos, index) => {
+            const trailAlpha = (particle.trailPositions.length - index) / particle.trailPositions.length * particle.life * 0.3;
+            ctx.globalAlpha = trailAlpha;
+            ctx.translate(pos.x, pos.y);
+            ctx.rotate(particle.rotation);
+            
+            if (particle.type === 'emoji') {
+              ctx.font = `${currentSize * 0.6}px Arial`;
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(particle.emoji, 0, 0);
+            } else if (particle.type === 'circle') {
+              ctx.beginPath();
+              ctx.arc(0, 0, currentSize * 0.3, 0, 2 * Math.PI);
+              ctx.fillStyle = particle.color;
+              ctx.fill();
+            } else if (particle.type === 'star') {
+              drawStar(ctx, 0, 0, currentSize * 0.3, currentSize * 0.15, 5);
+              ctx.fillStyle = particle.color;
+              ctx.fill();
+            } else if (particle.type === 'sparkle') {
+              drawSparkle(ctx, 0, 0, currentSize * 0.4);
+            }
+            
+            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
+          });
+        }
+        
+        // Draw main particle
+        ctx.globalAlpha = particle.life;
+        ctx.translate(particle.x, particle.y);
+        ctx.rotate(particle.rotation);
+        
+        if (particle.type === 'emoji') {
+          ctx.font = `${currentSize}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, 0, 0);
+        } else if (particle.type === 'circle') {
+          ctx.beginPath();
+          ctx.arc(0, 0, currentSize * 0.5, 0, 2 * Math.PI);
+          ctx.fillStyle = particle.color;
+          ctx.fill();
+        } else if (particle.type === 'star') {
+          drawStar(ctx, 0, 0, currentSize * 0.5, currentSize * 0.25, 5);
+          ctx.fillStyle = particle.color;
+          ctx.fill();
+        } else if (particle.type === 'sparkle') {
+          drawSparkle(ctx, 0, 0, currentSize * 0.6);
+        }
+        
+        ctx.restore();
+      });
+    }
+
+    function drawStar(ctx, cx, cy, outerRadius, innerRadius, points) {
+      ctx.beginPath();
+      for (let i = 0; i < points * 2; i++) {
+        const angle = (i * Math.PI) / points;
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const x = cx + Math.cos(angle) * radius;
+        const y = cy + Math.sin(angle) * radius;
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+      }
+      ctx.closePath();
+    }
+
+    function drawSparkle(ctx, x, y, size) {
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = 0.8;
+      
+      // Draw cross pattern
+      ctx.beginPath();
+      ctx.moveTo(x - size, y);
+      ctx.lineTo(x + size, y);
+      ctx.moveTo(x, y - size);
+      ctx.lineTo(x, y + size);
+      ctx.stroke();
+      
+      // Draw diagonal lines
+      ctx.beginPath();
+      ctx.moveTo(x - size * 0.7, y - size * 0.7);
+      ctx.lineTo(x + size * 0.7, y + size * 0.7);
+      ctx.moveTo(x - size * 0.7, y + size * 0.7);
+      ctx.lineTo(x + size * 0.7, y - size * 0.7);
+      ctx.stroke();
+    }
+
+    function createGameOverParticles(x, y) {
+      const colors = ['#FF0000', '#8B0000', '#DC143C', '#B22222', '#CD5C5C', '#F08080'];
+      const emojis = ['💀', '👻', '💥', '💢', '😵', '💀', '⚰️', '🪦'];
+      const particleTypes = ['emoji', 'skull', 'explosion', 'smoke'];
+      
+      // Create more dramatic effect for game over
+      const particleCount = 30 + Math.floor(Math.random() * 15);
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particleType = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+        const isDramatic = Math.random() < 0.25; // 25% chance for dramatic particles
+        
+        gameOverParticles.push({
+          x: x + (window.tileSize || 20) / 2,
+          y: y + (window.tileSize || 20) / 2,
+          vx: (Math.random() - 0.5) * (12 + Math.random() * 8), // Faster, more explosive
+          vy: (Math.random() - 0.5) * (12 + Math.random() * 8) - 5, // More upward movement
+          life: 1.0 + Math.random() * 0.5, // Longer life for dramatic effect
+          decay: 0.008 + Math.random() * 0.015, // Slower decay
+          color: colors[Math.floor(Math.random() * colors.length)],
+          emoji: emojis[Math.floor(Math.random() * emojis.length)],
+          size: 20 + Math.random() * 25, // Larger particles
+          rotation: Math.random() * Math.PI * 2,
+          rotationSpeed: (Math.random() - 0.5) * (0.3 + Math.random() * 0.5), // Faster rotation
+          bounce: 0.4 + Math.random() * 0.3, // Less bounce for dramatic effect
+          gravity: 0.2 + Math.random() * 0.4, // Varied gravity
+          type: particleType,
+          isDramatic: isDramatic,
+          shake: Math.random() < 0.4, // 40% chance to shake
+          shakeIntensity: 0.5 + Math.random() * 1.5,
+          shakeSpeed: 0.1 + Math.random() * 0.2,
+          shakePhase: Math.random() * Math.PI * 2,
+          smoke: Math.random() < 0.3, // 30% chance for smoke effect
+          smokeOpacity: 0.3 + Math.random() * 0.4,
+          originalX: x + (window.tileSize || 20) / 2,
+          originalY: y + (window.tileSize || 20) / 2
+        });
+      }
+    }
+
+    function updateGameOverParticles() {
+      for (let i = gameOverParticles.length - 1; i >= 0; i--) {
+        const particle = gameOverParticles[i];
+        
+        // Update shake effect
+        if (particle.shake) {
+          particle.shakePhase += particle.shakeSpeed;
+          particle.x = particle.originalX + Math.sin(particle.shakePhase) * particle.shakeIntensity;
+          particle.y = particle.originalY + Math.cos(particle.shakePhase) * particle.shakeIntensity;
+        } else {
+          particle.x += particle.vx;
+          particle.y += particle.vy;
+        }
+        
+        particle.vy += particle.gravity;
+        particle.life -= particle.decay;
+        particle.rotation += particle.rotationSpeed;
+        
+        // Dramatic particles have special behaviors
+        if (particle.isDramatic) {
+          // Dramatic particles might explode outward more
+          if (Math.random() < 0.03) {
+            particle.vx *= 1.2;
+            particle.vy *= 1.2;
+          }
+        }
+        
+        // Bounce off canvas edges
+        const tileSize = window.tileSize || 20;
+        const canvasWidth = mapWidth * tileSize;
+        const canvasHeight = mapHeight * tileSize;
+        
+        if (particle.x <= 0 || particle.x >= canvasWidth) {
+          particle.vx *= -particle.bounce;
+          particle.x = Math.max(0, Math.min(canvasWidth, particle.x));
+        }
+        if (particle.y >= canvasHeight) {
+          particle.vy *= -particle.bounce;
+          particle.y = canvasHeight;
+        }
+        
+        if (particle.life <= 0) {
+          gameOverParticles.splice(i, 1);
+        }
+      }
+    }
+
+    function drawGameOverParticles() {
+      gameOverParticles.forEach(particle => {
+        ctx.save();
+        
+        // Calculate opacity with smoke effect
+        let opacity = particle.life;
+        if (particle.smoke) {
+          opacity *= particle.smokeOpacity;
+        }
+        
+        ctx.globalAlpha = opacity;
+        ctx.translate(particle.x, particle.y);
+        ctx.rotate(particle.rotation);
+        
+        if (particle.type === 'emoji') {
+          ctx.font = `${particle.size}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, 0, 0);
+        } else if (particle.type === 'skull') {
+          drawSkull(ctx, 0, 0, particle.size * 0.4);
+        } else if (particle.type === 'explosion') {
+          drawExplosion(ctx, 0, 0, particle.size * 0.5);
+        } else if (particle.type === 'smoke') {
+          drawSmoke(ctx, 0, 0, particle.size * 0.6);
+        }
+        
+        ctx.restore();
+      });
+    }
+
+    function drawSkull(ctx, x, y, size) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 2;
+      
+      // Skull shape
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.stroke();
+      
+      // Eye sockets
+      ctx.fillStyle = '#000000';
+      ctx.beginPath();
+      ctx.arc(x - size * 0.3, y - size * 0.2, size * 0.15, 0, 2 * Math.PI);
+      ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.15, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      // Nose
+      ctx.beginPath();
+      ctx.arc(x, y + size * 0.1, size * 0.1, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    function drawExplosion(ctx, x, y, size) {
+      ctx.strokeStyle = '#FF4500';
+      ctx.fillStyle = '#FF6347';
+      ctx.lineWidth = 3;
+      
+      // Draw explosion rays
+      for (let i = 0; i < 8; i++) {
+        const angle = (i * Math.PI) / 4;
+        const endX = x + Math.cos(angle) * size;
+        const endY = y + Math.sin(angle) * size;
+        
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+      }
+      
+      // Center explosion
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.3, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    function drawSmoke(ctx, x, y, size) {
+      ctx.fillStyle = '#696969';
+      ctx.globalAlpha = 0.6;
+      
+      // Draw smoke cloud
+      ctx.beginPath();
+      ctx.arc(x, y, size * 0.8, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.6, 0, 2 * Math.PI);
+      ctx.fill();
+      
+      ctx.beginPath();
+      ctx.arc(x - size * 0.2, y + size * 0.3, size * 0.5, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+
+    // Weapon system functions
+    function useFireBlast() {
+      if (fireBlastCooldown > 0) return;
+      
+      // Play fire blast sound
+      if (fireSound) {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const source = audioContext.createBufferSource();
+          source.buffer = fireSound;
+          source.connect(audioContext.destination);
+          source.start();
+        } catch (e) {
+          console.log('Fire sound play failed:', e);
+        }
+      }
+      
+      fireBlastCooldown = FIRE_BLAST_COOLDOWN;
+      createFireBlastEffect();
+      
+      // Find the first ghost in line of sight
+      const hitGhost = findFirstGhostInLineOfSight(FIRE_BLAST_RANGE);
+      
+      if (hitGhost) {
+        // Apply fire damage to only the first ghost hit
+        if (!burningGhosts.includes(hitGhost)) {
+          burningGhosts.push(hitGhost);
+          createFireDamageEffect(hitGhost);
+        }
+      }
+      
+      updateWeaponUI();
+    }
+
+    function useFreezeWind() {
+      if (freezeWindCooldown > 0) return;
+      
+      // Play freeze wind sound
+      if (freezeSound) {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const source = audioContext.createBufferSource();
+          source.buffer = freezeSound;
+          source.connect(audioContext.destination);
+          source.start();
+        } catch (e) {
+          console.log('Freeze sound play failed:', e);
+        }
+      }
+      
+      freezeWindCooldown = FREEZE_WIND_COOLDOWN;
+      createFreezeWindEffect();
+      
+      // Find the first ghost in line of sight
+      const hitGhost = findFirstGhostInLineOfSight(FREEZE_WIND_RANGE);
+      
+      if (hitGhost) {
+        // Freeze only the first ghost hit
+        if (!frozenGhosts.includes(hitGhost)) {
+          createFreezeEffect(hitGhost);
+        }
+      }
+      
+      updateWeaponUI();
+    }
+
+    function createFireBlastEffect() {
+      const tileSize = window.tileSize || 20;
+      const startX = pacman.x * tileSize + tileSize / 2;
+      const startY = pacman.y * tileSize + tileSize / 2;
+      
+      // Fire emojis for variety
+      const fireEmojis = ['🔥', '💥', '⚡', '🔥', '💥'];
+      
+      // Create fire blast projectile - travels in straight line
+      const direction = pacman.direction;
+      let vx = 0, vy = 0;
+      const speed = 4; // Consistent speed
+      
+      switch (direction) {
+        case 'right':
+          vx = speed;
+          vy = 0;
+          break;
+        case 'left':
+          vx = -speed;
+          vy = 0;
+          break;
+        case 'up':
+          vx = 0;
+          vy = -speed;
+          break;
+        case 'down':
+          vx = 0;
+          vy = speed;
+          break;
+      }
+      
+      // Create multiple particles in a line formation
+      for (let i = 0; i < 8; i++) {
+        const offset = i * 8; // Space particles along the line
+        let offsetX = 0, offsetY = 0;
+        
+        switch (direction) {
+          case 'right':
+            offsetX = -offset;
+            break;
+          case 'left':
+            offsetX = offset;
+            break;
+          case 'up':
+            offsetY = offset;
+            break;
+          case 'down':
+            offsetY = -offset;
+            break;
+        }
+        
+        weaponParticles.push({
+          x: startX + offsetX,
+          y: startY + offsetY,
+          vx: vx,
+          vy: vy,
+          life: 1.0,
+          decay: 0.008, // Slower decay so particles last longer
+          color: '#FF4500',
+          size: 14 + Math.random() * 6,
+          type: 'fire',
+          direction: direction,
+          emoji: fireEmojis[Math.floor(Math.random() * fireEmojis.length)]
+        });
+      }
+    }
+
+    // Find the first ghost in line of sight along the weapon's path
+    function findFirstGhostInLineOfSight(range) {
+      const direction = pacman.direction;
+      let dx = 0, dy = 0;
+      
+      // Set direction vector
+      switch (direction) {
+        case 'right': dx = 1; break;
+        case 'left': dx = -1; break;
+        case 'up': dy = -1; break;
+        case 'down': dy = 1; break;
+      }
+      
+      // Check each tile along the path
+      for (let distance = 1; distance <= range; distance++) {
+        const checkX = pacman.x + dx * distance;
+        const checkY = pacman.y + dy * distance;
+        
+        // Check bounds
+        if (checkX < 0 || checkX >= mapWidth || checkY < 0 || checkY >= mapHeight) {
+          break; // Out of bounds
+        }
+        
+        // Check if we hit a wall
+        if (map[checkY] && map[checkY][checkX] === 1) {
+          break; // Hit a wall
+        }
+        
+        // Check if there's a ghost at this position
+        const ghostAtPosition = ghosts.find(ghost => ghost.x === checkX && ghost.y === checkY);
+        if (ghostAtPosition) {
+          return ghostAtPosition; // Found the first ghost in line of sight
+        }
+      }
+      
+      return null; // No ghost found in line of sight
+    }
+
+    function createFreezeWindEffect() {
+      const tileSize = window.tileSize || 20;
+      const startX = pacman.x * tileSize + tileSize / 2;
+      const startY = pacman.y * tileSize + tileSize / 2;
+      
+      // Ice and snow emojis for variety
+      const iceEmojis = ['❄️', '🌨️', '💨', '❄️', '🌨️', '💨'];
+      
+      // Create freeze wind projectile - travels in straight line
+      const direction = pacman.direction;
+      let vx = 0, vy = 0;
+      const speed = 3; // Slightly slower than fire
+      
+      switch (direction) {
+        case 'right':
+          vx = speed;
+          vy = 0;
+          break;
+        case 'left':
+          vx = -speed;
+          vy = 0;
+          break;
+        case 'up':
+          vx = 0;
+          vy = -speed;
+          break;
+        case 'down':
+          vx = 0;
+          vy = speed;
+          break;
+      }
+      
+      // Create multiple particles in a line formation
+      for (let i = 0; i < 6; i++) {
+        const offset = i * 6; // Space particles along the line
+        let offsetX = 0, offsetY = 0;
+        
+        switch (direction) {
+          case 'right':
+            offsetX = -offset;
+            break;
+          case 'left':
+            offsetX = offset;
+            break;
+          case 'up':
+            offsetY = offset;
+            break;
+          case 'down':
+            offsetY = -offset;
+            break;
+        }
+        
+        weaponParticles.push({
+          x: startX + offsetX,
+          y: startY + offsetY,
+          vx: vx,
+          vy: vy,
+          life: 1.0,
+          decay: 0.006, // Much slower decay so particles last longer
+          color: '#00BFFF',
+          size: 12 + Math.random() * 4,
+          type: 'ice',
+          direction: direction,
+          emoji: iceEmojis[Math.floor(Math.random() * iceEmojis.length)]
+        });
+      }
+    }
+
+    function createFireDamageEffect(ghost) {
+      const tileSize = window.tileSize || 20;
+      const ghostX = ghost.x * tileSize + tileSize / 2;
+      const ghostY = ghost.y * tileSize + tileSize / 2;
+      
+      // Play fire hit sound
+      if (fireHitSound) {
+        try {
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const source = audioContext.createBufferSource();
+          source.buffer = fireHitSound;
+          source.connect(audioContext.destination);
+          source.start();
+        } catch (e) {
+          console.log('Fire hit sound play failed:', e);
+        }
+      }
+      
+      // Stop ghost movement immediately
+      ghost.isBurning = true;
+      ghost.burnStartTime = Date.now();
+      
+      // Dramatic fire engulfment effect
+      const engulfEmojis = ['🔥', '💥', '🔥', '💥', '🔥', '💥'];
+      
+      // Create intense fire engulfment particles
+      for (let i = 0; i < 15; i++) {
+        weaponParticles.push({
+          x: ghostX + (Math.random() - 0.5) * 30,
+          y: ghostY + (Math.random() - 0.5) * 30,
+          vx: (Math.random() - 0.5) * 3,
+          vy: -3 - Math.random() * 3,
+          life: 1.0,
+          decay: 0.02,
+          color: '#FF4500',
+          size: 12 + Math.random() * 8,
+          type: 'engulf',
+          emoji: engulfEmojis[Math.floor(Math.random() * engulfEmojis.length)]
+        });
+      }
+      
+      // Remove ghost after dramatic burning effect and schedule respawn
+      setTimeout(() => {
+        const index = burningGhosts.indexOf(ghost);
+        if (index > -1) {
+          burningGhosts.splice(index, 1);
+        }
+        
+        const ghostIndex = ghosts.indexOf(ghost);
+        if (ghostIndex > -1) {
+          // Store ghost data for respawn
+          const ghostData = {
+            color: ghost.color,
+            name: ghost.name
+          };
+          
+          // Remove ghost from current position
+          ghosts.splice(ghostIndex, 1);
+          console.log(`Ghost ${ghost.name} removed. Total ghosts: ${ghosts.length}`);
+          
+          // Respawn ghost after 3 seconds
+          setTimeout(() => {
+            respawnGhost(ghostData);
+          }, 3000);
+        }
+      }, 1500); // Increased burn time for more dramatic effect
+    }
+
+    function createFreezeEffect(ghost) {
+      console.log('Freezing ghost:', ghost.name, 'at position:', ghost.x, ghost.y);
+      
+      const tileSize = window.tileSize || 20;
+      const ghostX = ghost.x * tileSize + tileSize / 2;
+      const ghostY = ghost.y * tileSize + tileSize / 2;
+      
+      // Freeze effect emojis
+      const freezeEmojis = ['❄️', '🧊', '❄️', '🧊', '💎', '❄️'];
+      
+      // Create dramatic freeze effect particles
+      for (let i = 0; i < 12; i++) {
+        weaponParticles.push({
+          x: ghostX + (Math.random() - 0.5) * 20,
+          y: ghostY + (Math.random() - 0.5) * 20,
+          vx: (Math.random() - 0.5) * 2,
+          vy: -2 - Math.random() * 2,
+          life: 1.0,
+          decay: 0.02,
+          color: '#87CEEB',
+          size: 10 + Math.random() * 5,
+          type: 'freeze',
+          emoji: freezeEmojis[Math.floor(Math.random() * freezeEmojis.length)]
+        });
+      }
+      
+      // Add to frozen ghosts list
+      if (!frozenGhosts.includes(ghost)) {
+        frozenGhosts.push(ghost);
+        console.log('Ghost added to frozen list. Total frozen:', frozenGhosts.length);
+      }
+      
+      // Remove freeze effect after 2 seconds
+      setTimeout(() => {
+        const index = frozenGhosts.indexOf(ghost);
+        if (index > -1) {
+          frozenGhosts.splice(index, 1);
+          console.log('Ghost unfrozen:', ghost.name);
+        }
+      }, 2000);
+    }
+
+    function updateWeaponParticles() {
+      const tileSize = window.tileSize || 20;
+      
+      for (let i = weaponParticles.length - 1; i >= 0; i--) {
+        const particle = weaponParticles[i];
+        
+        // Calculate new position
+        const newX = particle.x + particle.vx;
+        const newY = particle.y + particle.vy;
+        
+        // Check if particle would hit a wall
+        const gridX = Math.floor(newX / tileSize);
+        const gridY = Math.floor(newY / tileSize);
+        
+        // Check bounds and wall collision
+        if (gridX < 0 || gridX >= mapWidth || gridY < 0 || gridY >= mapHeight || 
+            (map[gridY] && map[gridY][gridX] === 1)) {
+          // Hit wall or out of bounds - remove particle
+          weaponParticles.splice(i, 1);
+          continue;
+        }
+        
+        // Update position
+        particle.x = newX;
+        particle.y = newY;
+        particle.life -= particle.decay;
+        
+        // Remove particle if life is depleted
+        if (particle.life <= 0) {
+          weaponParticles.splice(i, 1);
+        }
+      }
+    }
+
+    function drawWeaponParticles() {
+      weaponParticles.forEach(particle => {
+        ctx.save();
+        ctx.globalAlpha = particle.life;
+        
+        if (particle.type === 'fire') {
+          // Draw fire emoji particle
+          ctx.font = `${particle.size}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+          
+          // Add glow effect
+          ctx.shadowColor = '#FF4500';
+          ctx.shadowBlur = 15;
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+        } else if (particle.type === 'ice') {
+          // Draw ice emoji particle
+          ctx.font = `${particle.size}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+          
+          // Add sparkle effect
+          ctx.shadowColor = '#00BFFF';
+          ctx.shadowBlur = 8;
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+        } else if (particle.type === 'damage') {
+          // Draw damage emoji particle
+          ctx.font = `${particle.size}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+        } else if (particle.type === 'engulf') {
+          // Draw dramatic engulfment emoji particle
+          ctx.font = `${particle.size}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+          
+          // Add intense glow effect
+          ctx.shadowColor = '#FF4500';
+          ctx.shadowBlur = 15;
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+        } else if (particle.type === 'freeze') {
+          // Draw freeze emoji particle
+          ctx.font = `${particle.size}px Arial`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+          
+          // Add ice glow effect
+          ctx.shadowColor = '#87CEEB';
+          ctx.shadowBlur = 6;
+          ctx.fillText(particle.emoji, particle.x, particle.y);
+        }
+        
+        ctx.restore();
+      });
+    }
+
+    function updateWeaponUI() {
+      const fireBtn = document.querySelector('.weapon-btn.fire-blast');
+      const freezeBtn = document.querySelector('.weapon-btn.freeze-wind');
+      
+      if (fireBlastCooldown > 0) {
+        fireBtn.disabled = true;
+        const progress = 1 - (fireBlastCooldown / FIRE_BLAST_COOLDOWN);
+        const degrees = progress * 360;
+        const progressElement = fireBtn.querySelector('.cooldown-progress');
+        progressElement.style.background = `conic-gradient(from 0deg, rgba(255, 69, 0, 0.4) 0deg, rgba(255, 69, 0, 0.4) ${degrees}deg, transparent ${degrees}deg, transparent 360deg)`;
+        
+        const seconds = Math.ceil(fireBlastCooldown / 1000);
+        fireBtn.querySelector('.cooldown-text').textContent = `${seconds}s`;
+      } else {
+        fireBtn.disabled = false;
+        const progressElement = fireBtn.querySelector('.cooldown-progress');
+        progressElement.style.background = 'conic-gradient(from 0deg, transparent 0deg, transparent 360deg)';
+        fireBtn.querySelector('.cooldown-text').textContent = 'Ready';
+      }
+      
+      if (freezeWindCooldown > 0) {
+        freezeBtn.disabled = true;
+        const progress = 1 - (freezeWindCooldown / FREEZE_WIND_COOLDOWN);
+        const degrees = progress * 360;
+        const progressElement = freezeBtn.querySelector('.cooldown-progress');
+        progressElement.style.background = `conic-gradient(from 0deg, rgba(0, 191, 255, 0.4) 0deg, rgba(0, 191, 255, 0.4) ${degrees}deg, transparent ${degrees}deg, transparent 360deg)`;
+        
+        const seconds = Math.ceil(freezeWindCooldown / 1000);
+        freezeBtn.querySelector('.cooldown-text').textContent = `${seconds}s`;
+      } else {
+        freezeBtn.disabled = false;
+        const progressElement = freezeBtn.querySelector('.cooldown-progress');
+        progressElement.style.background = 'conic-gradient(from 0deg, transparent 0deg, transparent 360deg)';
+        freezeBtn.querySelector('.cooldown-text').textContent = 'Ready';
+      }
+    }
+
+    function updateWeaponCooldowns() {
+      const currentTime = Date.now();
+      const elapsedTime = currentTime - lastWeaponUpdateTime;
+      lastWeaponUpdateTime = currentTime;
+      
+      if (fireBlastCooldown > 0) {
+        fireBlastCooldown -= elapsedTime;
+        if (fireBlastCooldown < 0) fireBlastCooldown = 0;
+      }
+      
+      if (freezeWindCooldown > 0) {
+        freezeWindCooldown -= elapsedTime;
+        if (freezeWindCooldown < 0) freezeWindCooldown = 0;
+      }
+      
+      // Update UI more frequently for smoother animation
+      updateWeaponUI();
+    }
+
+    function respawnGhost(ghostData) {
+      // Find a safe, distant respawn location
+      const respawnLocation = findSafeRespawnLocation();
+      
+      if (respawnLocation) {
+        // Create new ghost with same properties
+        const newGhost = {
+          x: respawnLocation.x,
+          y: respawnLocation.y,
+          color: ghostData.color,
+          name: ghostData.name
+        };
+        
+        ghosts.push(newGhost);
+        console.log(`Ghost ${ghostData.name} respawned at (${respawnLocation.x}, ${respawnLocation.y}) - Distance from Pacman: ${respawnLocation.distance}`);
+        console.log(`Total ghosts after respawn: ${ghosts.length}`);
+      } else {
+        console.log(`Failed to find safe respawn location for ${ghostData.name}`);
+      }
+    }
+
+    function findSafeRespawnLocation() {
+      const minDistance = 8; // Minimum distance from Pacman
+      const maxAttempts = 100;
+      let attempts = 0;
+      
+      // Get all valid respawn positions
+      const validPositions = [];
+      
+      for (let y = 1; y < mapHeight - 1; y++) {
+        for (let x = 1; x < mapWidth - 1; x++) {
+          // Check if position is valid (empty and not occupied)
+          if (map[y][x] === 0 && 
+              !ghosts.some(g => g.x === x && g.y === y) &&
+              (x !== pacman.x || y !== pacman.y) &&
+              !(x === 0 && y === 0)) {
+            
+            // Calculate distance from Pacman
+            const distance = Math.abs(x - pacman.x) + Math.abs(y - pacman.y);
+            
+            if (distance >= minDistance) {
+              validPositions.push({x, y, distance});
+            }
+          }
+        }
+      }
+      
+      // Sort by distance (farthest first) and add some randomness
+      validPositions.sort((a, b) => {
+        // Prefer farther positions but add some randomness
+        const distanceWeight = 0.7;
+        const randomWeight = 0.3;
+        
+        const distanceScore = (b.distance - a.distance) * distanceWeight;
+        const randomScore = (Math.random() - 0.5) * randomWeight;
+        
+        return distanceScore + randomScore;
+      });
+      
+      // Return the best position (farthest with some randomness)
+      return validPositions.length > 0 ? validPositions[0] : null;
+    }
+
+    function draw() {
+      const tileSize = window.tileSize || 20;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw background (walkable areas)
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw thin dividers
+      ctx.strokeStyle = '#6a6a8a';
+      ctx.lineWidth = 3;
+      
+      // Draw horizontal dividers
+      for (const wall of horizontalWalls) {
+        const x1 = wall.x * tileSize;
+        const y1 = (wall.y + 1) * tileSize;
+        const x2 = (wall.x + 1) * tileSize;
+        const y2 = (wall.y + 1) * tileSize;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      
+      // Draw vertical dividers
+      for (const wall of verticalWalls) {
+        const x1 = (wall.x + 1) * tileSize;
+        const y1 = wall.y * tileSize;
+        const x2 = (wall.x + 1) * tileSize;
+        const y2 = (wall.y + 1) * tileSize;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      
+      // Draw exit door
+      for (let y = 0; y < map.length; y++) {
+        for (let x = 0; x < map[y].length; x++) {
+          if (map[y][x] === 2) {
+            // Draw apple emoji as the exit
+            const centerX = x * tileSize + tileSize / 2;
+            const centerY = y * tileSize + tileSize / 2;
+            
+            ctx.font = `${tileSize - 4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🍎', centerX, centerY);
+          }
+          
+          // Draw pellets on walkable areas
+          if (pelletMap[y][x] === 1) {
+            ctx.beginPath();
+            ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 3, 0, 2 * Math.PI);
+            ctx.fillStyle = '#FFD700';
+            ctx.fill();
+          }
+        }
+      }
+      
+      // Draw ghosts
+      for (const ghost of ghosts) {
+        const isFrozen = frozenGhosts.includes(ghost);
+        const isBurning = burningGhosts.includes(ghost);
+        
+        ctx.save();
+        
+        // Apply freeze effect
+        if (isFrozen) {
+          ctx.globalAlpha = 0.7;
+          ctx.fillStyle = '#87CEEB';
+          ctx.beginPath();
+          ctx.arc(
+            ghost.x * tileSize + tileSize / 2,
+            ghost.y * tileSize + tileSize / 2,
+            tileSize / 2 + 2,
+            0, 2 * Math.PI
+          );
+          ctx.fill();
+        }
+        
+        // Apply dramatic burn effect
+        if (isBurning) {
+          ctx.globalAlpha = 0.6;
+          ctx.shadowColor = '#FF4500';
+          ctx.shadowBlur = 20;
+          
+          // Draw intense fire aura around ghost
+          ctx.fillStyle = '#FF4500';
+          ctx.beginPath();
+          ctx.arc(
+            ghost.x * tileSize + tileSize / 2,
+            ghost.y * tileSize + tileSize / 2,
+            tileSize / 2 + 4,
+            0, 2 * Math.PI
+          );
+          ctx.fill();
+        }
+        
+        ctx.beginPath();
+        ctx.arc(
+          ghost.x * tileSize + tileSize / 2,
+          ghost.y * tileSize + tileSize / 2,
+          tileSize / 2 - 3,
+          Math.PI, 0, false
+        );
+        ctx.lineTo(ghost.x * tileSize + tileSize - 3, ghost.y * tileSize + tileSize - 3);
+        ctx.lineTo(ghost.x * tileSize + 3, ghost.y * tileSize + tileSize - 3);
+        ctx.closePath();
+        ctx.fillStyle = ghost.color;
+        ctx.fill();
+        
+        // Eyes
+        ctx.beginPath();
+        ctx.arc(ghost.x * tileSize + tileSize/2 - 4, ghost.y * tileSize + tileSize/2 - 1, 2, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 + 4, ghost.y * tileSize + tileSize/2 - 1, 2, 0, 2 * Math.PI);
+        ctx.fillStyle = '#fff';
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(ghost.x * tileSize + tileSize/2 - 4, ghost.y * tileSize + tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
+        ctx.arc(ghost.x * tileSize + tileSize/2 + 4, ghost.y * tileSize + tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
+        ctx.fillStyle = '#222';
+        ctx.fill();
+        
+        // Draw ghost name above (smaller for portrait mode)
+        ctx.font = 'bold 10px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = ghost.color;
+        ctx.fillText(ghost.name, ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 2);
+        
+        // Add status effects to name
+        if (isFrozen) {
+          ctx.fillStyle = '#87CEEB';
+          ctx.fillText('❄️', ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 12);
+        }
+        if (isBurning) {
+          ctx.fillStyle = '#FF4500';
+          ctx.fillText('🔥', ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 12);
+        }
+        
+        ctx.restore();
+      }
+      
+      // Draw Pacboy with directional mouth
+      ctx.beginPath();
+      const centerX = pacman.x * tileSize + tileSize / 2;
+      const centerY = pacman.y * tileSize + tileSize / 2;
+      const radius = tileSize / 2 - 1;
+      
+      let startAngle, endAngle;
+      switch (pacman.direction) {
+        case 'right':
+          startAngle = 0.25 * Math.PI;
+          endAngle = 1.75 * Math.PI;
+          break;
+        case 'left':
+          startAngle = 1.25 * Math.PI;
+          endAngle = 0.75 * Math.PI;
+          break;
+        case 'up':
+          startAngle = 1.75 * Math.PI;
+          endAngle = 1.25 * Math.PI;
+          break;
+        case 'down':
+          startAngle = 0.75 * Math.PI;
+          endAngle = 0.25 * Math.PI;
+          break;
+        default:
+          startAngle = 0.25 * Math.PI;
+          endAngle = 1.75 * Math.PI;
+      }
+      
+      ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
+      ctx.lineTo(centerX, centerY);
+      ctx.closePath();
+      ctx.fillStyle = 'yellow';
+      ctx.fill();
+      
+      // Draw celebration particles if celebrating
+      if (isCelebrating) {
+        drawCelebrationParticles();
+      }
+      
+      // Draw weapon particles
+      drawWeaponParticles();
+      
+      // Draw game over particles if animating
+      if (isGameOverAnimating) {
+        drawGameOverParticles();
+      }
+    }
+
+    function moveGhosts() {
+      for (const ghost of ghosts) {
+        // Skip frozen ghosts
+        if (frozenGhosts.includes(ghost)) {
+          console.log('Skipping frozen ghost:', ghost.name);
+          continue;
+        }
+        
+        // Skip burning ghosts - they should not move
+        if (ghost.isBurning) {
+          continue;
+        }
+        
+        // Try random directions until a valid move is found
+        const dirs = [ [0, -1], [0, 1], [-1, 0], [1, 0] ];
+        for (let i = dirs.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
+        }
+        for (const [dx, dy] of dirs) {
+          const nx = ghost.x + dx;
+          const ny = ghost.y + dy;
+          if (map[ny] && map[ny][nx] === 0 && !ghosts.some(g => g !== ghost && g.x === nx && g.y === ny) && !isMoveBlockedByDivider(ghost.x, ghost.y, nx, ny)) {
+            ghost.x = nx;
+            ghost.y = ny;
+            break;
+          }
+        }
+      }
+      // Check collision with Pac-Man
+      for (const ghost of ghosts) {
+        if (ghost.x === pacman.x && ghost.y === pacman.y) {
+          playerLives--;
+          if (playerLives <= 0) {
+            // Play game over sound
+            if (gameOverSound) {
+              try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const source = audioContext.createBufferSource();
+                source.buffer = gameOverSound;
+                source.connect(audioContext.destination);
+                source.start();
+              } catch (e) {
+                console.log('Game over sound play failed:', e);
+              }
+            }
+            
+            // Start game over animation
+            isGameOverAnimating = true;
+            gameOverParticles = [];
+            createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
+            
+            // Start game over animation loop
+            const gameOverInterval = setInterval(() => {
+              updateGameOverParticles();
+              draw();
+              
+              // Stop animation after particles are gone
+              if (gameOverParticles.length === 0) {
+                clearInterval(gameOverInterval);
+                isGameOverAnimating = false;
+              }
+            }, 50);
+            
+            showMessage('Game Over!', 2000);
+            clearInterval(ghostMoveInterval);
+            if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
+                          setTimeout(() => {
+                console.log(`Game Over (tryMove): Resetting to level 1`);
+                console.log(`Before reset - currentLevel: ${currentLevel}, ghosts.length: ${ghosts.length}`);
+                currentLevel = 1;
+                console.log(`After setting currentLevel = 1: ${currentLevel}`);
+                resetGame();
+              }, 2000);
+            return;
+          } else {
+            // Start mini game over animation for losing a life
+            isGameOverAnimating = true;
+            gameOverParticles = [];
+            createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
+            
+            // Start mini animation loop
+            const miniGameOverInterval = setInterval(() => {
+              updateGameOverParticles();
+              draw();
+              
+              // Stop animation after particles are gone
+              if (gameOverParticles.length === 0) {
+                clearInterval(miniGameOverInterval);
+                isGameOverAnimating = false;
+              }
+                          }, 50);
+              
+              document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+              showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
+                            // Reset Pacboy position and direction
+              pacman.x = 0;
+              pacman.y = 0;
+              pacman.direction = 'right';
+              console.log(`Pacboy respawned at (${pacman.x}, ${pacman.y})`);
+              console.log(`Pellet map at respawn:`, pelletMap[0][0]);
+              // Collect pellet if one exists at respawn position
+              collectPelletAtPosition(pacman.x, pacman.y);
+            draw();
+            return;
+          }
+        }
+      }
+      draw();
+    }
+
+    // Helper function to check if a move is blocked by dividers
+    function isMoveBlockedByDivider(fromX, fromY, toX, toY) {
+      // Check if there's a divider blocking this move
+      if (toX > fromX) { // Moving right
+        // Check for vertical wall at current x position
+        return verticalWalls.some(wall => wall.x === fromX && wall.y === fromY);
+      } else if (toX < fromX) { // Moving left
+        // Check for vertical wall at target x position
+        return verticalWalls.some(wall => wall.x === toX && wall.y === fromY);
+      } else if (toY > fromY) { // Moving down
+        // Check for horizontal wall at current y position
+        return horizontalWalls.some(wall => wall.x === fromX && wall.y === fromY);
+      } else if (toY < fromY) { // Moving up
+        // Check for horizontal wall at target y position
+        return horizontalWalls.some(wall => wall.x === fromX && wall.y === toY);
+      }
+      return false;
+    }
+
+    function tryMove(dx, dy) {
+      const nx = pacman.x + dx;
+      const ny = pacman.y + dy;
+      if (map[ny] && (map[ny][nx] === 0 || map[ny][nx] === 2) && !isMoveBlockedByDivider(pacman.x, pacman.y, nx, ny)) {
+        pacman.x = nx;
+        pacman.y = ny;
+        
+        // Update Pacboy's direction based on movement
+        if (dx > 0) pacman.direction = 'right';
+        else if (dx < 0) pacman.direction = 'left';
+        else if (dy > 0) pacman.direction = 'down';
+        else if (dy < 0) pacman.direction = 'up';
+        
+        // Check if Pacboy reached the door (win condition)
+        if (map[ny][nx] === 2) {
+          // Start celebration animation
+          isCelebrating = true;
+          celebrationParticles = [];
+          createCelebrationParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
+
+          // Play apple sound effect
+          if (appleSound) {
+            try {
+              const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+              const source = audioContext.createBufferSource();
+              source.buffer = appleSound;
+              source.connect(audioContext.destination);
+              source.start();
+            } catch (e) {
+              console.log('Apple sound play failed:', e);
+            }
+          }
+          
+          // Start celebration animation loop
+          const celebrationInterval = setInterval(() => {
+            updateCelebrationParticles();
+            draw();
+            
+            // Stop celebration after 3 seconds
+            if (celebrationParticles.length === 0) {
+              clearInterval(celebrationInterval);
+              isCelebrating = false;
+            }
+          }, 50);
+          
+          // Calculate score for this level
+          const timeElapsed = Date.now() - levelStartTime;
+          const { lives: maxLives } = getLevelParameters(currentLevel);
+          currentScore = calculateScore(timeElapsed, pelletsCollected, totalPelletsInLevel, playerLives, maxLives);
+          totalScore += currentScore;
+          completedLevels++;
+          averageScore = Math.round(totalScore / completedLevels);
+          
+          if (currentLevel >= 100) {
+            showMessage(`🎉 Congratulations! You completed all 100 levels! Final Total: ${totalScore}, Average: ${averageScore} 🎉`, 4000);
+            clearInterval(ghostMoveInterval);
+            if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
+            setTimeout(() => {
+              currentLevel = 1;
+              totalScore = 0;
+              completedLevels = 0;
+              averageScore = 0;
+              resetGame();
+            }, 3000);
+            return;
+          } else {
+            currentLevel++;
+            showMessage(`🎉 Level ${currentLevel - 1} Complete! Score: ${currentScore}/100 (Total: ${totalScore}, Avg: ${averageScore}) 🎉`, 3000);
+            clearInterval(ghostMoveInterval);
+            if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
+            setTimeout(resetGame, 2000);
+            return;
+          }
+        }
+        
+        // Collect pellet at new position
+        collectPelletAtPosition(nx, ny);
+                      // Check collision with ghosts after Pac-Man moves
+      for (const ghost of ghosts) {
+        if (ghost.x === pacman.x && ghost.y === pacman.y) {
+            playerLives--;
+            if (playerLives <= 0) {
+              // Play game over sound
+              if (gameOverSound) {
+                try {
+                  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                  const source = audioContext.createBufferSource();
+                  source.buffer = gameOverSound;
+                  source.connect(audioContext.destination);
+                  source.start();
+                } catch (e) {
+                  console.log('Game over sound play failed:', e);
+                }
+              }
+              
+              // Start game over animation
+              isGameOverAnimating = true;
+              gameOverParticles = [];
+              createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
+              
+              // Start game over animation loop
+              const gameOverInterval = setInterval(() => {
+                updateGameOverParticles();
+                draw();
+                
+                // Stop animation after particles are gone
+                if (gameOverParticles.length === 0) {
+                  clearInterval(gameOverInterval);
+                  isGameOverAnimating = false;
+                }
+              }, 50);
+              
+              showMessage('Game Over!', 2000);
+              clearInterval(ghostMoveInterval);
+              if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
+              setTimeout(() => {
+                console.log(`Game Over: Resetting to level 1`);
+                console.log(`Before reset - currentLevel: ${currentLevel}, ghosts.length: ${ghosts.length}`);
+                currentLevel = 1;
+                console.log(`After setting currentLevel = 1: ${currentLevel}`);
+                resetGame();
+              }, 2000);
+              return;
+            } else {
+              // Start mini game over animation for losing a life
+              isGameOverAnimating = true;
+              gameOverParticles = [];
+              createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
+              
+              // Start mini animation loop
+              const miniGameOverInterval = setInterval(() => {
+                updateGameOverParticles();
+                draw();
+                
+                // Stop animation after particles are gone
+                if (gameOverParticles.length === 0) {
+                  clearInterval(miniGameOverInterval);
+                  isGameOverAnimating = false;
+                }
+                              }, 50);
+                
+                document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+                showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
+                                // Reset Pacboy position and direction
+                pacman.x = 0;
+                pacman.y = 0;
+                pacman.direction = 'right';
+                console.log(`Pacboy respawned (tryMove) at (${pacman.x}, ${pacman.y})`);
+                console.log(`Pellet map at respawn:`, pelletMap[0][0]);
+                // Collect pellet if one exists at respawn position
+                collectPelletAtPosition(pacman.x, pacman.y);
+              draw();
+              return;
+            }
+          }
+        }
+      }
+      draw();
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp': tryMove(0, -1); break;
+        case 'ArrowDown': tryMove(0, 1); break;
+        case 'ArrowLeft': tryMove(-1, 0); break;
+        case 'ArrowRight': tryMove(1, 0); break;
+        case ' ': useFireBlast(); break; // Spacebar for fire blast
+        case 'f': useFreezeWind(); break; // F key for freeze wind
+      }
+    });
+    
+    // Prevent default touch behaviors that might interfere with game
+    document.addEventListener('touchstart', (e) => {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('.hamburger-menu') && !e.target.closest('.menu-overlay')) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (e.target.tagName !== 'BUTTON' && !e.target.closest('.hamburger-menu') && !e.target.closest('.menu-overlay')) {
+        e.preventDefault();
+      }
+    }, { passive: false });
+
+    // Mobile touch controls with iOS support
+    document.querySelectorAll('.control-btn').forEach(btn => {
+      let touchStartTime = 0;
+      let touchEndTime = 0;
+      
+      // Handle touch events for iOS
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchStartTime = Date.now();
+        btn.style.transform = 'scale(0.95)';
+        btn.style.background = 'rgba(255, 215, 0, 0.5)';
+      });
+      
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        touchEndTime = Date.now();
+        
+        // Only trigger if it's a quick tap (not a long press)
+        if (touchEndTime - touchStartTime < 300) {
+          const direction = btn.dataset.direction;
+          switch (direction) {
+            case 'up': tryMove(0, -1); break;
+            case 'down': tryMove(0, 1); break;
+            case 'left': tryMove(-1, 0); break;
+            case 'right': tryMove(1, 0); break;
+          }
+        }
+        
+        // Reset button appearance
+        btn.style.transform = 'scale(1)';
+        btn.style.background = 'rgba(255, 215, 0, 0.2)';
+      });
+      
+      // Handle mouse clicks for desktop
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const direction = btn.dataset.direction;
+        switch (direction) {
+          case 'up': tryMove(0, -1); break;
+          case 'down': tryMove(0, 1); break;
+          case 'left': tryMove(-1, 0); break;
+          case 'right': tryMove(1, 0); break;
+        }
+      });
+      
+      // Prevent context menu on long press
+      btn.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+      });
+    });
+
+    // Weapon button controls
+    document.querySelectorAll('.weapon-btn').forEach(btn => {
+      let touchStartTime = 0;
+      let touchEndTime = 0;
+      
+      // Handle touch events for iOS
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (btn.disabled) return;
+        
+        touchStartTime = Date.now();
+        btn.style.transform = 'scale(0.95)';
+      });
+      
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (btn.disabled) return;
+        
+        touchEndTime = Date.now();
+        
+        // Only trigger if it's a quick tap (not a long press)
+        if (touchEndTime - touchStartTime < 300) {
+          const weapon = btn.dataset.weapon;
+          switch (weapon) {
+            case 'fire': useFireBlast(); break;
+            case 'freeze': useFreezeWind(); break;
+          }
+        }
+        
+        // Reset button appearance
+        btn.style.transform = 'scale(1)';
+      });
+      
+      // Handle mouse clicks for desktop
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (btn.disabled) return;
+        
+        const weapon = btn.dataset.weapon;
+        switch (weapon) {
+          case 'fire': useFireBlast(); break;
+          case 'freeze': useFreezeWind(); break;
+        }
+      });
+      
+      // Prevent context menu on long press
+      btn.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+      });
+    });
+
+    // Initialize sound effects
+    function initSounds() {
+      try {
+        // Create Web Audio Context
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Fire blast sound - dramatic whoosh with explosion
+        fireSound = createFireBlastSound(audioContext);
+        
+        // Fire hit sound - explosion effect
+        fireHitSound = createFireHitSound(audioContext);
+        
+        // Freeze wind sound - icy whoosh
+        freezeSound = createFreezeWindSound(audioContext);
+        
+        // Game over sound - dramatic failure
+        gameOverSound = createGameOverSound(audioContext);
+        
+        // Apple eating sound - fun and exciting
+        appleSound = createAppleSound(audioContext);
+        
+      } catch (error) {
+        console.log('Audio not supported, continuing without sound effects');
+      }
+    }
+    
+    // Create fire blast sound using Web Audio API
+    function createFireBlastSound(audioContext) {
+      const duration = 0.8;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const frequency = 200 + 800 * Math.exp(-t * 3); // Descending frequency
+        const amplitude = Math.exp(-t * 2) * 0.3; // Decay envelope
+        const noise = (Math.random() - 0.5) * 0.5; // Add some noise
+        const wave = Math.sin(2 * Math.PI * frequency * t) + noise;
+        data[i] = wave * amplitude;
+      }
+      
+      return buffer;
+    }
+    
+    // Create fire hit sound using Web Audio API
+    function createFireHitSound(audioContext) {
+      const duration = 0.6;
+      const sampleRate = audioContext.sampleRate;
+      const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+      const data = buffer.getChannelData(0);
+      
+      for (let i = 0; i < buffer.length; i++) {
+        const t = i / sampleRate;
+        const frequency = 150 + 600 * Math.exp(-t * 4); // Lower, faster decay
+        const amplitude = Math.exp(-t * 3) * 0.4; // Sharp decay
+        const noise = (Math.random() - 0.5) * 0.8; // More noise for explosion
+        const wave = Math.sin(2 * Math.PI * frequency * t) + noise;
+        data[i] = wave * amplitude;
+      }
+      
+      return buffer;
+    }
+    
+         // Create freeze wind sound using Web Audio API
+     function createFreezeWindSound(audioContext) {
+       const duration = 1.0;
+       const sampleRate = audioContext.sampleRate;
+       const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+       const data = buffer.getChannelData(0);
+       
+       for (let i = 0; i < buffer.length; i++) {
+         const t = i / sampleRate;
+         const frequency = 300 + 200 * Math.sin(t * 10); // Oscillating frequency
+         const amplitude = Math.exp(-t * 1.5) * 0.25; // Gentle decay
+         const noise = (Math.random() - 0.5) * 0.3; // Subtle noise
+         const wave = Math.sin(2 * Math.PI * frequency * t) + noise;
+         data[i] = wave * amplitude;
+       }
+       
+       return buffer;
+     }
+     
+     // Create game over sound using Web Audio API
+     function createGameOverSound(audioContext) {
+       const duration = 2.0;
+       const sampleRate = audioContext.sampleRate;
+       const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+       const data = buffer.getChannelData(0);
+       
+       for (let i = 0; i < buffer.length; i++) {
+         const t = i / sampleRate;
+         
+         // Create a dramatic descending tone with multiple harmonics
+         const baseFreq = 400 * Math.exp(-t * 1.5); // Descending base frequency
+         const harmonic1 = 200 * Math.exp(-t * 2); // Lower harmonic
+         const harmonic2 = 600 * Math.exp(-t * 1.2); // Higher harmonic
+         
+         // Combine harmonics with different phases
+         const wave1 = Math.sin(2 * Math.PI * baseFreq * t);
+         const wave2 = Math.sin(2 * Math.PI * harmonic1 * t + Math.PI / 4);
+         const wave3 = Math.sin(2 * Math.PI * harmonic2 * t + Math.PI / 2);
+         
+         // Add dramatic noise for impact
+         const noise = (Math.random() - 0.5) * 0.4;
+         
+         // Create dramatic envelope with multiple stages
+         let amplitude;
+         if (t < 0.3) {
+           amplitude = 0.5; // Strong start
+         } else if (t < 0.8) {
+           amplitude = 0.3 * Math.exp(-(t - 0.3) * 2); // Quick decay
+         } else {
+           amplitude = 0.1 * Math.exp(-(t - 0.8) * 3); // Final fade
+         }
+         
+         // Combine all elements
+         const combined = (wave1 + wave2 * 0.6 + wave3 * 0.4 + noise) * amplitude;
+         data[i] = Math.max(-1, Math.min(1, combined)); // Clamp to valid range
+       }
+       
+       return buffer;
+     }
+
+     // Create apple eating sound using Web Audio API
+     function createAppleSound(audioContext) {
+       const duration = 1.2;
+       const sampleRate = audioContext.sampleRate;
+       const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+       const data = buffer.getChannelData(0);
+       
+       for (let i = 0; i < buffer.length; i++) {
+         const t = i / sampleRate;
+         
+         // Create a cheerful ascending melody with multiple harmonics
+         const baseFreq = 400 + 300 * Math.sin(t * 8); // Ascending base frequency
+         const harmonic1 = 600 + 400 * Math.sin(t * 6); // Higher harmonic
+         const harmonic2 = 800 + 500 * Math.sin(t * 4); // Even higher harmonic
+         
+         // Create a bell-like sound with harmonics
+         const wave1 = Math.sin(2 * Math.PI * baseFreq * t);
+         const wave2 = Math.sin(2 * Math.PI * harmonic1 * t + Math.PI / 3);
+         const wave3 = Math.sin(2 * Math.PI * harmonic2 * t + Math.PI / 6);
+         
+         // Add some sparkle with high-frequency components
+         const sparkle = Math.sin(2 * Math.PI * 1200 * t) * 0.3;
+         
+         // Create a cheerful envelope with multiple stages
+         let amplitude;
+         if (t < 0.1) {
+           amplitude = 0.8; // Strong start
+         } else if (t < 0.4) {
+           amplitude = 0.6 * Math.exp(-(t - 0.1) * 2); // Quick decay
+         } else if (t < 0.8) {
+           amplitude = 0.4 * Math.exp(-(t - 0.4) * 1.5); // Medium decay
+         } else {
+           amplitude = 0.2 * Math.exp(-(t - 0.8) * 3); // Final fade
+         }
+         
+         // Add a slight vibrato effect for excitement
+         const vibrato = 1 + 0.1 * Math.sin(t * 20);
+         
+         // Combine all elements with vibrato
+         const combined = (wave1 + wave2 * 0.7 + wave3 * 0.5 + sparkle) * amplitude * vibrato;
+         data[i] = Math.max(-1, Math.min(1, combined)); // Clamp to valid range
+       }
+       
+       return buffer;
+     }
+
+    // Maze Background Color System
+    let currentColorScheme = 0;
+    const colorSchemes = [
+      { name: 'Deep Space', background: '#0a0a1a', accent: '#4a90e2' },
+      { name: 'Sunset', background: '#2c1810', accent: '#ff6b35' },
+      { name: 'Ocean', background: '#0f1419', accent: '#00bfff' },
+      { name: 'Forest', background: '#0a1a0a', accent: '#228b22' },
+      { name: 'Purple', background: '#1a0a1a', accent: '#9370db' },
+      { name: 'Golden', background: '#1a1a0a', accent: '#ffd700' },
+      { name: 'Crimson', background: '#1a0a0a', accent: '#dc143c' },
+      { name: 'Arctic', background: '#0a1a1a', accent: '#87ceeb' }
+    ];
+
+    function changeMazeBackground() {
+      // Pick a random color scheme
+      currentColorScheme = Math.floor(Math.random() * colorSchemes.length);
+      const scheme = colorSchemes[currentColorScheme];
+      
+      console.log('Changing maze background to:', scheme.name);
+      
+      // Change maze container background
+      const mazeContainer = document.querySelector('.maze-container');
+      if (mazeContainer) {
+        mazeContainer.style.setProperty('background', scheme.background, 'important');
+        mazeContainer.style.transition = 'background 2s ease-in-out';
+        console.log('Maze container background changed to:', scheme.background);
+      }
+      
+      // Change canvas background (this is what you see behind the maze)
+      if (canvas) {
+        canvas.style.setProperty('background', scheme.background, 'important');
+        canvas.style.transition = 'background 2s ease-in-out';
+        console.log('Canvas background changed to:', scheme.background);
+      }
+      
+      // Also try changing the game container background
+      const gameContainer = document.querySelector('.game-container');
+      if (gameContainer) {
+        gameContainer.style.setProperty('background', scheme.background, 'important');
+        gameContainer.style.transition = 'background 2s ease-in-out';
+        console.log('Game container background changed to:', scheme.background);
+      }
+      
+      // Force a redraw
+      if (canvas) {
+        canvas.style.display = 'none';
+        canvas.offsetHeight; // Force reflow
+        canvas.style.display = 'block';
+      }
+    }
+
+    // Initialize sounds and game
+    console.log('Initializing game...');
+    try {
+      initSounds();
+      console.log('Sounds initialized');
+      resetGame();
+      console.log('Game reset complete');
+    } catch (error) {
+      console.error('Error initializing game:', error);
+    }
+
+
+    
+    // PWA Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+    
+    // PWA Installation Prompt
+    let deferredPrompt;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+      // Prevent Chrome 67 and earlier from automatically showing the prompt
+      e.preventDefault();
+      // Stash the event so it can be triggered later
+      deferredPrompt = e;
+      
+      // Show install button or notification
+      showInstallPrompt();
+    });
+    
+    function showInstallPrompt() {
+      // You can add a subtle install button or notification here
+      console.log('PWA install prompt available');
+      
+      // Optional: Show a small install notification
+      if (message.textContent === '') {
+        showMessage('💡 Tap to install as app', 5000);
+        message.style.cursor = 'pointer';
+        message.addEventListener('click', installPWA);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          message.style.cursor = 'default';
+        }, 5000);
+      }
+    }
+    
+    function installPWA() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+          } else {
+            console.log('User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+    
+    // Handle successful installation
+    window.addEventListener('appinstalled', (evt) => {
+      console.log('PWA was installed');
+      showMessage('🎉 App installed!', 3000);
+    });
+    
+    // Hamburger Menu Functionality
+    const hamburgerMenu = document.getElementById('hamburgerMenu');
+    const menuOverlay = document.getElementById('menuOverlay');
+    const closeMenu = document.getElementById('closeMenu');
+    
+
+    
+    // Hamburger menu click and touch handling
+    hamburgerMenu.addEventListener('click', openMenu);
+    hamburgerMenu.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openMenu();
+    });
+    
+    function openMenu() {
+      console.log('Opening menu...');
+      console.log('ghostMoveInterval before clear:', ghostMoveInterval);
+      console.log('weaponUpdateInterval before clear:', weaponUpdateInterval);
+      
+      // Get burger button position to start the expansion from there
+      const burgerRect = hamburgerMenu.getBoundingClientRect();
+      const startX = burgerRect.left + burgerRect.width / 2;
+      const startY = burgerRect.top + burgerRect.height / 2;
+      
+      // Set transform origin to burger button position
+      menuOverlay.style.transformOrigin = `${startX}px ${startY}px`;
+      
+      hamburgerMenu.classList.add('active');
+      menuOverlay.classList.add('active');
+      
+      // Pause game when menu is open
+      if (ghostMoveInterval) {
+        clearInterval(ghostMoveInterval);
+        ghostMoveInterval = null;
+        console.log('Cleared ghostMoveInterval');
+      }
+      if (weaponUpdateInterval) {
+        clearInterval(weaponUpdateInterval);
+        weaponUpdateInterval = null;
+        console.log('Cleared weaponUpdateInterval');
+      }
+    }
+    
+    // Close menu handling
+    closeMenu.addEventListener('click', closeMenuFunction);
+    closeMenu.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeMenuFunction();
+    });
+    
+    function closeMenuFunction() {
+      console.log('Closing menu...');
+      console.log('ghostMoveInterval before restart:', ghostMoveInterval);
+      console.log('weaponUpdateInterval before restart:', weaponUpdateInterval);
+      
+      hamburgerMenu.classList.remove('active');
+      menuOverlay.classList.remove('active');
+      
+      // Always restart intervals if they're null
+      if (!ghostMoveInterval) {
+        ghostMoveInterval = setInterval(moveGhosts, 350);
+        console.log('Restarted ghostMoveInterval:', ghostMoveInterval);
+      }
+      if (!weaponUpdateInterval) {
+        weaponUpdateInterval = setInterval(() => {
+          updateWeaponParticles();
+          updateWeaponCooldowns();
+          draw();
+        }, 16);
+        console.log('Restarted weaponUpdateInterval:', weaponUpdateInterval);
+      }
+      
+      // Force a redraw to make sure everything is visible
+      draw();
+    }
+    
+    // Close menu when clicking outside
+    menuOverlay.addEventListener('click', (e) => {
+      if (e.target === menuOverlay) {
+        closeMenuFunction();
+      }
+    });
+    
+    menuOverlay.addEventListener('touchstart', (e) => {
+      if (e.target === menuOverlay) {
+        e.preventDefault();
+        closeMenuFunction();
+      }
+    });
+    
+    // Close menu with Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && menuOverlay.classList.contains('active')) {
+        closeMenuFunction();
+      }
+    });
+  </script>
+</body>
+</html> 

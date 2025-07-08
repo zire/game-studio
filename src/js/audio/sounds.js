@@ -17,9 +17,8 @@ export class AudioManager {
       // Create audio context
       this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
       
-      // Load waka sound
-      this.wakaSound = new Audio('waka.wav');
-      this.wakaSound.volume = 0.5;
+      // Create waka sound using Web Audio API instead of HTML5 Audio
+      this.wakaSound = this.createWakaSound(this.audioContext);
       
       // Create weapon sounds
       this.fireSound = this.createFireBlastSound(this.audioContext);
@@ -34,13 +33,18 @@ export class AudioManager {
     }
   }
 
-  playWakaSound() {
+  async playWakaSound() {
     if (this.wakaSound && this.isInitialized) {
       try {
-        this.wakaSound.currentTime = 0;
-        this.wakaSound.play().catch(e => {
-          console.log('Waka sound play failed:', e);
-        });
+        // Resume audio context if suspended
+        if (this.audioContext.state === 'suspended') {
+          await this.audioContext.resume();
+        }
+        
+        const source = this.audioContext.createBufferSource();
+        source.buffer = this.wakaSound;
+        source.connect(this.audioContext.destination);
+        source.start();
       } catch (e) {
         console.log('Waka sound play failed:', e);
       }
@@ -219,6 +223,33 @@ export class AudioManager {
       // Combine all elements with vibrato
       const combined = (wave1 + wave2 * 0.7 + wave3 * 0.5 + sparkle) * amplitude * vibrato;
       data[i] = Math.max(-1, Math.min(1, combined)); // Clamp to valid range
+    }
+    
+    return buffer;
+  }
+
+  // Create waka sound using Web Audio API
+  createWakaSound(audioContext) {
+    const duration = 0.3;
+    const sampleRate = audioContext.sampleRate;
+    const buffer = audioContext.createBuffer(1, sampleRate * duration, sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    for (let i = 0; i < buffer.length; i++) {
+      const t = i / sampleRate;
+      
+      // Create a classic "waka" sound with a quick ascending tone
+      const frequency = 400 + 200 * Math.sin(t * 20); // Oscillating frequency
+      const amplitude = Math.exp(-t * 8) * 0.4; // Quick decay
+      
+      // Add some harmonics for richness
+      const fundamental = Math.sin(2 * Math.PI * frequency * t);
+      const harmonic1 = Math.sin(2 * Math.PI * frequency * 2 * t) * 0.5;
+      const harmonic2 = Math.sin(2 * Math.PI * frequency * 3 * t) * 0.3;
+      
+      // Combine harmonics
+      const wave = (fundamental + harmonic1 + harmonic2) * amplitude;
+      data[i] = Math.max(-1, Math.min(1, wave)); // Clamp to valid range
     }
     
     return buffer;
