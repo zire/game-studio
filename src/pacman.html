@@ -1020,154 +1020,778 @@
     wakaSound.volume = 0.5;
 
     function generateRandomMap(level = 1) {
-      // Maze generation using randomized DFS with level-based complexity
+      // Create maze with thin dividers on gridlines from level 1
       const newMap = [];
       for (let y = 0; y < mapHeight; y++) {
         const row = [];
         for (let x = 0; x < mapWidth; x++) {
-          row.push(1); // Start with all walls
+          row.push(0); // Start with all walkable space
         }
         newMap.push(row);
       }
       
       // Calculate complexity based on level
-      const complexity = Math.min(1.0, level / 50); // 0.0 to 1.0 based on level
-      const extraOpenRate = 0.05 + (complexity * 0.15); // 5% to 20% extra openings
-      const deadEndDensity = complexity * 0.3; // 0% to 30% chance of creating dead ends
-
-      // Helper to shuffle directions
-      function shuffle(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-      }
-
-      // DFS maze generation (full maze including exit door position)
-      function carve(x, y) {
-        newMap[y][x] = 0;
-        const dirs = [ [0, -2], [0, 2], [-2, 0], [2, 0] ];
-        shuffle(dirs);
-        for (const [dx, dy] of dirs) {
-          const nx = x + dx, ny = y + dy;
-          if (ny > 0 && ny < mapHeight-1 && nx > 0 && nx < mapWidth-1 && newMap[ny][nx] === 1) {
-            newMap[y + dy/2][x + dx/2] = 0; // Remove wall between
-            carve(nx, ny);
-          }
-        }
-      }
-
-      carve(1, 1); // Start maze at (1,1)
-
-      // Ensure (1,1) is open
-      newMap[1][1] = 0;
+      const complexity = Math.min(1.0, (level - 1) / 19); // 0.0 to 1.0 based on level (level 1 = 0, level 20 = 1)
+      const wallDensity = 0.15 + (complexity * 0.45); // 15% to 60% wall density (minimum 15% from level 1)
+      
+      // Add thin dividers for all levels (including level 1)
+      addThinDividers(newMap, wallDensity, level);
+      
+      // Ensure start position is open (top-left corner)
+      newMap[0][0] = 0;
       
       // Place exit door at bottom-right corner
-      newMap[mapHeight - 2][mapWidth - 2] = 2; // Door
+      newMap[mapHeight - 1][mapWidth - 1] = 2; // Door
       
-      // Ensure the door is connected to the maze
-      // Create a guaranteed path from the maze to the door
-      let doorConnected = false;
-      
-      // Try to connect from the left of the door
-      if (newMap[mapHeight - 2][mapWidth - 3] === 0) {
-        doorConnected = true;
-      }
-      // Try to connect from above the door
-      else if (newMap[mapHeight - 3][mapWidth - 2] === 0) {
-        doorConnected = true;
-      }
-      // If not connected, force a connection from the left
-      if (!doorConnected) {
-        newMap[mapHeight - 2][mapWidth - 3] = 0; // Open the cell to the left of the door
-      }
-
-      // Now add extra openings while maintaining connectivity
-      let extraOpens = Math.floor((mapWidth * mapHeight) * extraOpenRate);
-      let attempts = 0;
-      const maxAttempts = extraOpens * 10; // Limit attempts to prevent infinite loop
-      
-      while (extraOpens > 0 && attempts < maxAttempts) {
-        const rx = 1 + Math.floor(Math.random() * (mapWidth - 2));
-        const ry = 1 + Math.floor(Math.random() * (mapHeight - 2));
-        
-        // Only open walls that are adjacent to existing paths
-        if (newMap[ry][rx] === 1 && isAdjacentToPath(newMap, rx, ry, deadEndDensity)) {
-          // Temporarily open the wall
-          newMap[ry][rx] = 0;
-          
-          // Check if this creates any isolated areas
-          if (!createsIsolatedAreas(newMap, rx, ry)) {
-            extraOpens--;
-          } else {
-            // Revert if it creates isolated areas
-            newMap[ry][rx] = 1;
-          }
-        }
-        attempts++;
-      }
+      // Ensure the door is accessible
+      ensureDoorAccess(newMap);
       
       return newMap;
     }
-
-    // Check if a wall is adjacent to an existing path
-    function isAdjacentToPath(map, x, y, deadEndDensity = 0) {
-      const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-      let pathCount = 0;
-      
-      for (const [dx, dy] of directions) {
-        const nx = x + dx;
-        const ny = y + dy;
-        
-        if (ny >= 0 && ny < mapHeight && nx >= 0 && nx < mapWidth && 
-            (map[ny][nx] === 0 || map[ny][nx] === 2)) {
-          pathCount++;
-        }
+    
+    function addThinDividers(map, wallDensity, level) {
+      // Smart maze generation using different strategies based on level
+      if (level <= 3) {
+        // Simple corridor-based maze for early levels
+        createSimpleCorridorMaze(level);
+      } else if (level <= 10) {
+        // Room-based maze with corridors
+        createRoomBasedMaze(level);
+      } else if (level <= 20) {
+        // Complex maze with multiple paths
+        createComplexMaze(level);
+      } else {
+        // Advanced maze with strategic challenges
+        createAdvancedMaze(level);
       }
       
-      // For higher levels, allow more dead ends and complex paths
-      if (deadEndDensity > 0 && Math.random() < deadEndDensity) {
-        // Allow dead ends (adjacent to only 1 path) more frequently
-        return pathCount >= 1 && pathCount <= 3;
-      } else {
-        // Standard logic: avoid dead ends and isolated areas
-        return pathCount >= 1 && pathCount <= 2;
+      // Optimize the maze layout by merging adjacent walls
+      optimizeMazeLayout();
+      
+      // Ensure the maze is still solvable after optimization
+      if (!hasPathToExitWithDividers(map, horizontalWalls, verticalWalls)) {
+        console.warn('Maze became unsolvable after optimization, regenerating...');
+        horizontalWalls.length = 0;
+        verticalWalls.length = 0;
+        addThinDividers(map, wallDensity, level);
       }
     }
-
-    // Check if opening a wall creates isolated areas
-    function createsIsolatedAreas(map, x, y) {
-      // Temporarily open the wall
-      const originalValue = map[y][x];
-      map[y][x] = 0;
+    
+    // Smart maze generation strategies
+    function createSimpleCorridorMaze(level) {
+      // Create simple horizontal and vertical corridors with smart placement
+      const corridorCount = 8 + level * 2; // More corridors for higher levels
       
-      // Count connected accessible areas
-      const visited = new Set();
-      const accessibleAreas = [];
+      // Create a main path first to ensure connectivity
+      createMainPath();
       
-      // Find all accessible areas
-      for (let y = 0; y < mapHeight; y++) {
-        for (let x = 0; x < mapWidth; x++) {
-          if ((map[y][x] === 0 || map[y][x] === 2) && !visited.has(`${x},${y}`)) {
-            const areaSize = floodFill(map, x, y, visited);
-            if (areaSize > 0) {
-              accessibleAreas.push(areaSize);
+      // Add strategic horizontal corridors that don't block the main path
+      for (let i = 0; i < corridorCount / 2; i++) {
+        const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+        const startX = 1 + Math.floor(Math.random() * (mapWidth - 3));
+        const length = 2 + Math.floor(Math.random() * 3);
+        
+        // Check if this corridor would create interesting gameplay
+        if (wouldCreateInterestingCorridor(startX, y, length, 'horizontal')) {
+          for (let j = 0; j < length && startX + j < mapWidth - 1; j++) {
+            if (!isNearStartOrEnd(startX + j, y)) {
+              horizontalWalls.push({x: startX + j, y: y});
             }
           }
         }
       }
       
-      // Restore the wall
-      map[y][x] = originalValue;
-      
-      // If there's more than one accessible area, we've created isolation
-      return accessibleAreas.length > 1;
+      // Add strategic vertical corridors
+      for (let i = 0; i < corridorCount / 2; i++) {
+        const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+        const startY = 1 + Math.floor(Math.random() * (mapHeight - 3));
+        const length = 2 + Math.floor(Math.random() * 3);
+        
+        // Check if this corridor would create interesting gameplay
+        if (wouldCreateInterestingCorridor(x, startY, length, 'vertical')) {
+          for (let j = 0; j < length && startY + j < mapHeight - 1; j++) {
+            if (!isNearStartOrEnd(x, startY + j)) {
+              verticalWalls.push({x: x, y: startY + j});
+            }
+          }
+        }
+      }
     }
-
-    // Flood fill to count connected accessible cells
-    function floodFill(map, startX, startY, visited) {
-      const queue = [{x: startX, y: startY}];
-      let count = 0;
+    
+    function createRoomBasedMaze(level) {
+      // Create rooms with connecting corridors
+      const roomCount = 3 + Math.floor(level / 2);
+      const rooms = [];
+      
+      // Generate room positions
+      for (let i = 0; i < roomCount; i++) {
+        const roomWidth = 2 + Math.floor(Math.random() * 2);
+        const roomHeight = 2 + Math.floor(Math.random() * 2);
+        const x = 1 + Math.floor(Math.random() * (mapWidth - roomWidth - 2));
+        const y = 1 + Math.floor(Math.random() * (mapHeight - roomHeight - 2));
+        
+        rooms.push({x, y, width: roomWidth, height: roomHeight});
+      }
+      
+      // Create room walls
+      for (const room of rooms) {
+        // Horizontal walls for room
+        for (let x = room.x; x < room.x + room.width; x++) {
+          if (!isNearStartOrEnd(x, room.y)) {
+            horizontalWalls.push({x: x, y: room.y});
+          }
+          if (!isNearStartOrEnd(x, room.y + room.height)) {
+            horizontalWalls.push({x: x, y: room.y + room.height});
+          }
+        }
+        
+        // Vertical walls for room
+        for (let y = room.y; y < room.y + room.height; y++) {
+          if (!isNearStartOrEnd(room.x, y)) {
+            verticalWalls.push({x: room.x, y: y});
+          }
+          if (!isNearStartOrEnd(room.x + room.width, y)) {
+            verticalWalls.push({x: room.x + room.width, y: y});
+          }
+        }
+      }
+      
+      // Add connecting corridors between rooms
+      for (let i = 0; i < rooms.length - 1; i++) {
+        const room1 = rooms[i];
+        const room2 = rooms[i + 1];
+        
+        // Create corridor between room centers
+        const center1 = {x: room1.x + room1.width / 2, y: room1.y + room1.height / 2};
+        const center2 = {x: room2.x + room2.width / 2, y: room2.y + room2.height / 2};
+        
+        createCorridorBetween(center1, center2);
+      }
+    }
+    
+    function createComplexMaze(level) {
+      // Create a more complex maze with multiple paths and dead ends
+      const complexity = Math.min(1.0, (level - 10) / 10);
+      
+      // Create main path from start to end
+      createMainPath();
+      
+      // Add branching paths
+      const branchCount = 5 + Math.floor(complexity * 10);
+      for (let i = 0; i < branchCount; i++) {
+        createBranchingPath();
+      }
+      
+      // Add some dead ends for challenge
+      const deadEndCount = 3 + Math.floor(complexity * 5);
+      for (let i = 0; i < deadEndCount; i++) {
+        createDeadEnd();
+      }
+    }
+    
+    function createAdvancedMaze(level) {
+      // Create advanced maze with strategic elements
+      const difficulty = Math.min(1.0, (level - 20) / 30);
+      
+      // Create multiple main paths
+      createMultipleMainPaths();
+      
+      // Add strategic bottlenecks
+      const bottleneckCount = 2 + Math.floor(difficulty * 3);
+      for (let i = 0; i < bottleneckCount; i++) {
+        createStrategicBottleneck();
+      }
+      
+      // Add maze-like patterns
+      createMazePatterns(difficulty);
+    }
+    
+    // Helper functions for smart maze generation
+    function isNearStartOrEnd(x, y) {
+      const startDistance = Math.abs(x - 0) + Math.abs(y - 0);
+      const endDistance = Math.abs(x - (mapWidth - 1)) + Math.abs(y - (mapHeight - 1));
+      return startDistance <= 1 || endDistance <= 1;
+    }
+    
+    function wouldCreateInterestingCorridor(x, y, length, direction) {
+      // Check if this corridor would create interesting gameplay
+      // Avoid creating corridors that are too close to each other
+      const minDistance = 2;
+      
+      if (direction === 'horizontal') {
+        // Check distance from existing horizontal walls
+        for (const wall of horizontalWalls) {
+          if (Math.abs(wall.y - y) < minDistance) {
+            // Check if there's overlap
+            for (let i = 0; i < length; i++) {
+              if (Math.abs(wall.x - (x + i)) < minDistance) {
+                return false; // Too close to existing wall
+              }
+            }
+          }
+        }
+      } else if (direction === 'vertical') {
+        // Check distance from existing vertical walls
+        for (const wall of verticalWalls) {
+          if (Math.abs(wall.x - x) < minDistance) {
+            // Check if there's overlap
+            for (let i = 0; i < length; i++) {
+              if (Math.abs(wall.y - (y + i)) < minDistance) {
+                return false; // Too close to existing wall
+              }
+            }
+          }
+        }
+      }
+      
+      // Check if this would create a good gameplay area (not too cramped)
+      const areaSize = calculateAreaSize(x, y, length, direction);
+      return areaSize >= 4; // Minimum area size for interesting gameplay
+    }
+    
+    function calculateAreaSize(x, y, length, direction) {
+      // Calculate the size of the area this corridor would create
+      let areaSize = 0;
+      
+      if (direction === 'horizontal') {
+        // Count walkable tiles in the area above and below the corridor
+        for (let i = 0; i < length; i++) {
+          if (y > 0) areaSize++; // Above
+          if (y < mapHeight - 1) areaSize++; // Below
+        }
+      } else if (direction === 'vertical') {
+        // Count walkable tiles in the area left and right of the corridor
+        for (let i = 0; i < length; i++) {
+          if (x > 0) areaSize++; // Left
+          if (x < mapWidth - 1) areaSize++; // Right
+        }
+      }
+      
+      return areaSize;
+    }
+    
+    function findStrategicGhostPosition(ghostIndex, totalGhosts) {
+      // Find strategic positions for ghosts based on maze layout
+      const validPositions = [];
+      
+      // Find all valid positions
+      for (let y = 1; y < mapHeight - 1; y++) {
+        for (let x = 1; x < mapWidth - 1; x++) {
+          if (map[y][x] === 0 && 
+              !ghosts.some(g => g.x === x && g.y === y) && 
+              (x !== 0 || y !== 0)) {
+            validPositions.push({x, y});
+          }
+        }
+      }
+      
+      if (validPositions.length === 0) {
+        // Fallback to random position
+        return {
+          x: 1 + Math.floor(Math.random() * (mapWidth - 2)),
+          y: 1 + Math.floor(Math.random() * (mapHeight - 2))
+        };
+      }
+      
+      // Score positions based on strategic value
+      const scoredPositions = validPositions.map(pos => {
+        let score = 0;
+        
+        // Prefer positions near bottlenecks or chokepoints
+        const bottleneckScore = calculateBottleneckScore(pos);
+        score += bottleneckScore * 10;
+        
+        // Prefer positions that can patrol different areas
+        const patrolScore = calculatePatrolScore(pos);
+        score += patrolScore * 5;
+        
+        // Avoid positions too close to start
+        const startDistance = Math.abs(pos.x - 0) + Math.abs(pos.y - 0);
+        if (startDistance < 3) score -= 20;
+        
+        // Avoid positions too close to other ghosts
+        for (const ghost of ghosts) {
+          const ghostDistance = Math.abs(pos.x - ghost.x) + Math.abs(pos.y - ghost.y);
+          if (ghostDistance < 2) score -= 15;
+        }
+        
+        // Prefer positions near the middle of the maze for better coverage
+        const centerX = mapWidth / 2;
+        const centerY = mapHeight / 2;
+        const centerDistance = Math.abs(pos.x - centerX) + Math.abs(pos.y - centerY);
+        score += (10 - centerDistance) * 2;
+        
+        return {pos, score};
+      });
+      
+      // Sort by score and pick the best position
+      scoredPositions.sort((a, b) => b.score - a.score);
+      
+      // Add some randomness to avoid predictable placement
+      const randomFactor = Math.random();
+      if (randomFactor < 0.7) {
+        return scoredPositions[0].pos; // Best position
+      } else if (randomFactor < 0.9) {
+        return scoredPositions[Math.floor(scoredPositions.length * 0.3)].pos; // Top 30%
+      } else {
+        return scoredPositions[Math.floor(scoredPositions.length * 0.6)].pos; // Top 60%
+      }
+    }
+    
+    function calculateBottleneckScore(position) {
+      // Calculate how close this position is to potential bottlenecks
+      let score = 0;
+      
+      // Check for narrow passages (bottlenecks)
+      for (let dx = -2; dx <= 2; dx++) {
+        for (let dy = -2; dy <= 2; dy++) {
+          const checkX = position.x + dx;
+          const checkY = position.y + dy;
+          
+          if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+            // Count walls around this position
+            const wallCount = countNearbyWalls(checkX, checkY);
+            if (wallCount >= 3) { // Potential bottleneck
+              const distance = Math.abs(dx) + Math.abs(dy);
+              score += (3 - distance) * 2; // Closer bottlenecks get higher score
+            }
+          }
+        }
+      }
+      
+      return score;
+    }
+    
+    function calculatePatrolScore(position) {
+      // Calculate how good this position is for patrolling
+      let score = 0;
+      
+      // Count accessible directions
+      const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+      let accessibleDirections = 0;
+      
+      for (const [dx, dy] of directions) {
+        const checkX = position.x + dx;
+        const checkY = position.y + dy;
+        
+        if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight &&
+            map[checkY][checkX] === 0 && !isMoveBlockedByDivider(position.x, position.y, checkX, checkY)) {
+          accessibleDirections++;
+        }
+      }
+      
+      // Prefer positions with 2-3 accessible directions (good for patrolling)
+      if (accessibleDirections >= 2 && accessibleDirections <= 3) {
+        score += 10;
+      } else if (accessibleDirections === 1) {
+        score += 5; // Dead end, less ideal
+      } else if (accessibleDirections >= 4) {
+        score += 3; // Too open, less strategic
+      }
+      
+      return score;
+    }
+    
+    function countNearbyWalls(x, y) {
+      // Count walls within 1 tile distance
+      let wallCount = 0;
+      
+      for (let dx = -1; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          const checkX = x + dx;
+          const checkY = y + dy;
+          
+          if (checkX >= 0 && checkX < mapWidth && checkY >= 0 && checkY < mapHeight) {
+            // Check for horizontal walls
+            if (horizontalWalls.some(wall => wall.x === checkX && wall.y === checkY)) {
+              wallCount++;
+            }
+            // Check for vertical walls
+            if (verticalWalls.some(wall => wall.x === checkX && wall.y === checkY)) {
+              wallCount++;
+            }
+          }
+        }
+      }
+      
+      return wallCount;
+    }
+    
+    function optimizeMazeLayout() {
+      // Remove redundant walls and optimize the maze layout
+      const optimizedHorizontalWalls = [];
+      const optimizedVerticalWalls = [];
+      
+      // Group horizontal walls by row and merge adjacent ones
+      const horizontalGroups = {};
+      for (const wall of horizontalWalls) {
+        if (!horizontalGroups[wall.y]) horizontalGroups[wall.y] = [];
+        horizontalGroups[wall.y].push(wall.x);
+      }
+      
+      for (const [y, xs] of Object.entries(horizontalGroups)) {
+        xs.sort((a, b) => a - b);
+        let start = xs[0];
+        let end = xs[0];
+        
+        for (let i = 1; i < xs.length; i++) {
+          if (xs[i] === end + 1) {
+            end = xs[i];
+          } else {
+            // Add the merged wall
+            for (let x = start; x <= end; x++) {
+              optimizedHorizontalWalls.push({x, y: parseInt(y)});
+            }
+            start = end = xs[i];
+          }
+        }
+        // Add the last merged wall
+        for (let x = start; x <= end; x++) {
+          optimizedHorizontalWalls.push({x, y: parseInt(y)});
+        }
+      }
+      
+      // Group vertical walls by column and merge adjacent ones
+      const verticalGroups = {};
+      for (const wall of verticalWalls) {
+        if (!verticalGroups[wall.x]) verticalGroups[wall.x] = [];
+        verticalGroups[wall.x].push(wall.y);
+      }
+      
+      for (const [x, ys] of Object.entries(verticalGroups)) {
+        ys.sort((a, b) => a - b);
+        let start = ys[0];
+        let end = ys[0];
+        
+        for (let i = 1; i < ys.length; i++) {
+          if (ys[i] === end + 1) {
+            end = ys[i];
+          } else {
+            // Add the merged wall
+            for (let y = start; y <= end; y++) {
+              optimizedVerticalWalls.push({x: parseInt(x), y});
+            }
+            start = end = ys[i];
+          }
+        }
+        // Add the last merged wall
+        for (let y = start; y <= end; y++) {
+          optimizedVerticalWalls.push({x: parseInt(x), y});
+        }
+      }
+      
+      horizontalWalls.length = 0;
+      verticalWalls.length = 0;
+      horizontalWalls.push(...optimizedHorizontalWalls);
+      verticalWalls.push(...optimizedVerticalWalls);
+    }
+    
+    function createCorridorBetween(point1, point2) {
+      // Create L-shaped corridor between two points
+      const midX = Math.floor((point1.x + point2.x) / 2);
+      const midY = Math.floor((point1.y + point2.y) / 2);
+      
+      // Horizontal part
+      const startX = Math.min(point1.x, midX);
+      const endX = Math.max(point1.x, midX);
+      for (let x = startX; x < endX; x++) {
+        if (!isNearStartOrEnd(x, point1.y)) {
+          horizontalWalls.push({x: x, y: point1.y});
+        }
+      }
+      
+      // Vertical part
+      const startY = Math.min(point1.y, point2.y);
+      const endY = Math.max(point1.y, point2.y);
+      for (let y = startY; y < endY; y++) {
+        if (!isNearStartOrEnd(midX, y)) {
+          verticalWalls.push({x: midX, y: y});
+        }
+      }
+    }
+    
+    function createMainPath() {
+      // Create a winding path from start to end
+      const path = generatePathFromStartToEnd();
+      
+      // Add walls around the path to create corridors
+      for (let i = 0; i < path.length - 1; i++) {
+        const current = path[i];
+        const next = path[i + 1];
+        
+        // Add walls perpendicular to the path direction
+        if (next.x > current.x) { // Moving right
+          if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+          if (current.y < mapHeight - 1) horizontalWalls.push({x: current.x, y: current.y + 1});
+        } else if (next.x < current.x) { // Moving left
+          if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+          if (current.y < mapHeight - 1) horizontalWalls.push({x: current.x, y: current.y + 1});
+        } else if (next.y > current.y) { // Moving down
+          if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+          if (current.x < mapWidth - 1) verticalWalls.push({x: current.x + 1, y: current.y});
+        } else if (next.y < current.y) { // Moving up
+          if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+          if (current.x < mapWidth - 1) verticalWalls.push({x: current.x + 1, y: current.y});
+        }
+      }
+    }
+    
+    function generatePathFromStartToEnd() {
+      // Generate a path from start to end using A* or similar algorithm
+      const path = [{x: 0, y: 0}];
+      let current = {x: 0, y: 0};
+      const target = {x: mapWidth - 1, y: mapHeight - 1};
+      
+      while (current.x !== target.x || current.y !== target.y) {
+        // Simple pathfinding: move towards target with some randomness
+        const dx = target.x - current.x;
+        const dy = target.y - current.y;
+        
+        let nextX = current.x;
+        let nextY = current.y;
+        
+        if (Math.abs(dx) > Math.abs(dy)) {
+          nextX += dx > 0 ? 1 : -1;
+        } else {
+          nextY += dy > 0 ? 1 : -1;
+        }
+        
+        // Add some randomness to make path more interesting
+        if (Math.random() < 0.3) {
+          if (Math.random() < 0.5 && nextX !== current.x) {
+            nextX = current.x;
+            nextY += Math.random() < 0.5 ? 1 : -1;
+          } else if (nextY !== current.y) {
+            nextY = current.y;
+            nextX += Math.random() < 0.5 ? 1 : -1;
+          }
+        }
+        
+        // Ensure we stay within bounds
+        nextX = Math.max(0, Math.min(mapWidth - 1, nextX));
+        nextY = Math.max(0, Math.min(mapHeight - 1, nextY));
+        
+        current = {x: nextX, y: nextY};
+        path.push(current);
+        
+        // Prevent infinite loops
+        if (path.length > mapWidth * mapHeight) break;
+      }
+      
+      return path;
+    }
+    
+    function createBranchingPath() {
+      // Create a branching path from a random point
+      const startX = 2 + Math.floor(Math.random() * (mapWidth - 4));
+      const startY = 2 + Math.floor(Math.random() * (mapHeight - 4));
+      
+      const path = [{x: startX, y: startY}];
+      let current = {x: startX, y: startY};
+      const length = 3 + Math.floor(Math.random() * 4);
+      
+      for (let i = 0; i < length; i++) {
+        const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        const direction = directions[Math.floor(Math.random() * directions.length)];
+        
+        const nextX = current.x + direction[0];
+        const nextY = current.y + direction[1];
+        
+        if (nextX >= 1 && nextX < mapWidth - 1 && nextY >= 1 && nextY < mapHeight - 1) {
+          current = {x: nextX, y: nextY};
+          path.push(current);
+        }
+      }
+      
+      // Add walls around the branching path
+      for (let i = 0; i < path.length - 1; i++) {
+        const current = path[i];
+        const next = path[i + 1];
+        
+        if (next.x > current.x) { // Moving right
+          if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+          if (current.y < mapHeight - 1) horizontalWalls.push({x: current.x, y: current.y + 1});
+        } else if (next.y > current.y) { // Moving down
+          if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+          if (current.x < mapWidth - 1) verticalWalls.push({x: current.x + 1, y: current.y});
+        }
+      }
+    }
+    
+    function createDeadEnd() {
+      // Create a dead end path
+      const startX = 2 + Math.floor(Math.random() * (mapWidth - 4));
+      const startY = 2 + Math.floor(Math.random() * (mapHeight - 4));
+      
+      const path = [{x: startX, y: startY}];
+      let current = {x: startX, y: startY};
+      const length = 2 + Math.floor(Math.random() * 3);
+      
+      for (let i = 0; i < length; i++) {
+        const directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+        const direction = directions[Math.floor(Math.random() * directions.length)];
+        
+        const nextX = current.x + direction[0];
+        const nextY = current.y + direction[1];
+        
+        if (nextX >= 1 && nextX < mapWidth - 1 && nextY >= 1 && nextY < mapHeight - 1) {
+          current = {x: nextX, y: nextY};
+          path.push(current);
+        }
+      }
+      
+      // Block the end of the path
+      const end = path[path.length - 1];
+      if (end.x > 0) verticalWalls.push({x: end.x - 1, y: end.y});
+      if (end.x < mapWidth - 1) verticalWalls.push({x: end.x + 1, y: end.y});
+      if (end.y > 0) horizontalWalls.push({x: end.x, y: end.y - 1});
+      if (end.y < mapHeight - 1) horizontalWalls.push({x: end.x, y: end.y + 1});
+    }
+    
+    function createMultipleMainPaths() {
+      // Create multiple paths from start to end
+      const pathCount = 2 + Math.floor(Math.random() * 2);
+      
+      for (let i = 0; i < pathCount; i++) {
+        const path = generatePathFromStartToEnd();
+        
+        // Add walls to create separate corridors
+        for (let j = 0; j < path.length - 1; j++) {
+          const current = path[j];
+          const next = path[j + 1];
+          
+          // Add walls with some spacing to create corridors
+          if (j % 2 === 0) {
+            if (next.x > current.x) { // Moving right
+              if (current.y > 0) horizontalWalls.push({x: current.x, y: current.y - 1});
+            } else if (next.y > current.y) { // Moving down
+              if (current.x > 0) verticalWalls.push({x: current.x - 1, y: current.y});
+            }
+          }
+        }
+      }
+    }
+    
+    function createStrategicBottleneck() {
+      // Create a strategic bottleneck that forces players to make choices
+      const x = 3 + Math.floor(Math.random() * (mapWidth - 6));
+      const y = 3 + Math.floor(Math.random() * (mapHeight - 6));
+      
+      // Create a narrow passage
+      for (let i = 0; i < 3; i++) {
+        if (x + i < mapWidth - 1) {
+          horizontalWalls.push({x: x + i, y: y - 1});
+          horizontalWalls.push({x: x + i, y: y + 1});
+        }
+      }
+    }
+    
+    function createMazePatterns(difficulty) {
+      // Create classic maze patterns
+      const patternCount = 3 + Math.floor(difficulty * 5);
+      
+      for (let i = 0; i < patternCount; i++) {
+        const x = 2 + Math.floor(Math.random() * (mapWidth - 4));
+        const y = 2 + Math.floor(Math.random() * (mapHeight - 4));
+        
+        // Create spiral or maze-like patterns
+        if (Math.random() < 0.5) {
+          // Spiral pattern
+          for (let j = 0; j < 4; j++) {
+            if (x + j < mapWidth - 1) horizontalWalls.push({x: x + j, y: y});
+            if (y + j < mapHeight - 1) verticalWalls.push({x: x, y: y + j});
+          }
+        } else {
+          // Grid pattern
+          for (let j = 0; j < 3; j++) {
+            if (x + j < mapWidth - 1) horizontalWalls.push({x: x + j, y: y});
+            if (x + j < mapWidth - 1) horizontalWalls.push({x: x + j, y: y + 2});
+            if (y + j < mapHeight - 1) verticalWalls.push({x: x, y: y + j});
+            if (y + j < mapHeight - 1) verticalWalls.push({x: x + 2, y: y + j});
+          }
+        }
+      }
+    }
+    
+    function canPlaceThinDivider(map, dividerType, x, y) {
+      // Don't block start or end positions
+      if ((x === 0 && y === 0) || (x === mapWidth - 1 && y === mapHeight - 1)) {
+        return false;
+      }
+      
+      // Check if the divider would block all paths to the exit
+      const testMap = map.map(row => [...row]);
+      const testHorizontalWalls = [...horizontalWalls];
+      const testVerticalWalls = [...verticalWalls];
+      placeThinDivider(testMap, dividerType, x, y);
+      
+      // Simple connectivity check - ensure there's still a path from start to end
+      return hasPathToExitWithDividers(testMap, testHorizontalWalls, testVerticalWalls);
+    }
+    
+    function placeThinDivider(map, dividerType, x, y) {
+      switch (dividerType) {
+        case 'horizontal':
+          // Horizontal divider (3-5 gridlines)
+          const hLength = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < hLength && x + i < mapWidth - 1; i++) {
+            if (x + i !== 0 || y !== 0) { // Don't block start
+              // Add horizontal wall at gridline between y and y+1
+              horizontalWalls.push({x: x + i, y: y});
+            }
+          }
+          break;
+          
+        case 'vertical':
+          // Vertical divider (3-5 gridlines)
+          const vLength = 3 + Math.floor(Math.random() * 3);
+          for (let i = 0; i < vLength && y + i < mapHeight - 1; i++) {
+            if (y + i !== 0 || x !== 0) { // Don't block start
+              // Add vertical wall at gridline between x and x+1
+              verticalWalls.push({x: x, y: y + i});
+            }
+          }
+          break;
+          
+        case 'lshape':
+          // L-shaped divider
+          if (x + 1 < mapWidth - 1 && y + 1 < mapHeight - 1) {
+            horizontalWalls.push({x: x, y: y});
+            horizontalWalls.push({x: x + 1, y: y});
+            verticalWalls.push({x: x, y: y});
+            verticalWalls.push({x: x, y: y + 1});
+          }
+          break;
+          
+        case 'tshape':
+          // T-shaped divider
+          if (x + 1 < mapWidth - 1 && y + 1 < mapHeight - 1 && y > 0) {
+            horizontalWalls.push({x: x, y: y});
+            horizontalWalls.push({x: x + 1, y: y});
+            verticalWalls.push({x: x, y: y - 1});
+            verticalWalls.push({x: x, y: y});
+            verticalWalls.push({x: x, y: y + 1});
+          }
+          break;
+          
+        case 'cross':
+          // Cross-shaped divider
+          if (x + 1 < mapWidth - 1 && y + 1 < mapHeight - 1 && x > 0 && y > 0) {
+            horizontalWalls.push({x: x - 1, y: y});
+            horizontalWalls.push({x: x, y: y});
+            horizontalWalls.push({x: x + 1, y: y});
+            verticalWalls.push({x: x, y: y - 1});
+            verticalWalls.push({x: x, y: y});
+            verticalWalls.push({x: x, y: y + 1});
+          }
+          break;
+      }
+    }
+    
+    function hasPathToExitWithDividers(map, hWalls, vWalls) {
+      // Simple BFS to check if there's a path from start to end considering dividers
+      const visited = new Set();
+      const queue = [{x: 0, y: 0}];
       
       while (queue.length > 0) {
         const {x, y} = queue.shift();
@@ -1176,24 +1800,90 @@
         if (visited.has(key)) continue;
         visited.add(key);
         
-        if (map[y][x] === 0 || map[y][x] === 2) {
-          count++;
+        // Check if we reached the exit
+        if (x === mapWidth - 1 && y === mapHeight - 1) {
+          return true;
+        }
+        
+        // Check all 4 directions
+        const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+        for (const [dx, dy] of directions) {
+          const nx = x + dx;
+          const ny = y + dy;
           
-          // Check all 4 directions
-          const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-          for (const [dx, dy] of directions) {
-            const nx = x + dx;
-            const ny = y + dy;
+          if (nx >= 0 && nx < mapWidth && ny >= 0 && ny < mapHeight && 
+              (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
             
-            if (ny >= 0 && ny < mapHeight && nx >= 0 && nx < mapWidth && 
-                (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+            // Check if there's a divider blocking this move
+            let blocked = false;
+            
+            if (dx === 1) { // Moving right
+              // Check for vertical wall at current x position
+              blocked = vWalls.some(wall => wall.x === x && wall.y === y);
+            } else if (dx === -1) { // Moving left
+              // Check for vertical wall at target x position
+              blocked = vWalls.some(wall => wall.x === nx && wall.y === y);
+            } else if (dy === 1) { // Moving down
+              // Check for horizontal wall at current y position
+              blocked = hWalls.some(wall => wall.x === x && wall.y === y);
+            } else if (dy === -1) { // Moving up
+              // Check for horizontal wall at target y position
+              blocked = hWalls.some(wall => wall.x === x && wall.y === ny);
+            }
+            
+            if (!blocked) {
               queue.push({x: nx, y: ny});
             }
           }
         }
       }
       
-      return count;
+      return false;
+    }
+    
+    function ensureDoorAccess(map) {
+      // Ensure there's a path to the door
+      const doorX = mapWidth - 1;
+      const doorY = mapHeight - 1;
+      
+      // Check if door is accessible from left or above
+      if (map[doorY][doorX - 1] === 1 && map[doorY - 1][doorX] === 1) {
+        // Door is blocked, create a path
+        if (Math.random() > 0.5) {
+          map[doorY][doorX - 1] = 0; // Open left
+        } else {
+          map[doorY - 1][doorX] = 0; // Open above
+        }
+      }
+    }
+    
+
+
+    // Generate pellets for the new maze system
+    function generatePellets(map) {
+      const pelletMap = [];
+      for (let y = 0; y < mapHeight; y++) {
+        const row = [];
+        for (let x = 0; x < mapWidth; x++) {
+          row.push(0);
+        }
+        pelletMap.push(row);
+      }
+      
+      let pelletCount = 0;
+      
+      // Place pellets on ALL walkable areas (not walls or door)
+      for (let y = 0; y < mapHeight; y++) {
+        for (let x = 0; x < mapWidth; x++) {
+          // Place pellets on all walkable areas (not walls or door)
+          if (map[y][x] === 0) {
+            pelletMap[y][x] = 1;
+            pelletCount++;
+          }
+        }
+      }
+      
+      return pelletMap;
     }
 
     // Calculate shortest path length using BFS
@@ -1286,6 +1976,8 @@
     }
 
     let map, pelletMap, pelletsLeft, pacman;
+    let horizontalWalls = []; // Array to store horizontal wall positions
+    let verticalWalls = [];   // Array to store vertical wall positions
     let ghosts = [];
     let ghostMoveInterval = null;
     let currentLevel = 1;
@@ -1376,6 +2068,10 @@
       burningGhosts = [];
       weaponEffects = [];
       
+      // Reset wall arrays
+      horizontalWalls = [];
+      verticalWalls = [];
+      
       // Get level parameters
       const { lives, ghostCount, targetPathLength } = getLevelParameters(currentLevel);
       playerLives = lives;
@@ -1397,19 +2093,16 @@
       map = generatedMap;
       shortestPathLength = pathLength;
       
-      pelletMap = map.map((row, y) => row.map((cell, x) => {
-        // Don't place pellets on the door
-        if (cell === 2) return 0;
-        return cell === 0 ? 1 : 0;
-      }));
+      // Generate pellets using the new system
+      pelletMap = generatePellets(map);
       pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
       totalPelletsInLevel = pelletsLeft;
       pelletsCollected = 0;
-      console.log(`Pellet map created. Pellet at (1,1): ${pelletMap[1][1]}`);
+      console.log(`Pellet map created. Pellet at (0,0): ${pelletMap[0][0]}`);
       console.log(`Total pellets in level: ${totalPelletsInLevel}`);
-      pacman = { x: 1, y: 1, direction: 'right' };
+      pacman = { x: 0, y: 0, direction: 'right' };
       
-      // Generate ghosts based on level
+      // Generate ghosts based on level with smart placement
       ghosts = []; // Clear existing ghosts
       const ghostNames = ['Clement', 'Chase', 'Ray', 'Jayden', 'Andrew'];
       const ghostColors = ['#147880', '#60EEE3', '#25BF94', '#E9E12E', '#FF6B41'];
@@ -1418,15 +2111,11 @@
       console.log(`Current level: ${currentLevel}, Ghost count should be: ${ghostCount}`);
       
       for (let i = 0; i < ghostCount; i++) {
-        let x, y;
-        do {
-          x = 1 + Math.floor(Math.random() * (mapWidth - 3));
-          y = 1 + Math.floor(Math.random() * (mapHeight - 3));
-        } while (map[y][x] !== 0 || ghosts.some(g => g.x === x && g.y === y));
+        const ghostPosition = findStrategicGhostPosition(i, ghostCount);
         
         ghosts.push({
-          x: x,
-          y: y,
+          x: ghostPosition.x,
+          y: ghostPosition.y,
           color: ghostColors[i],
           name: ghostNames[i]
         });
@@ -2375,7 +3064,8 @@
           // Check if position is valid (empty and not occupied)
           if (map[y][x] === 0 && 
               !ghosts.some(g => g.x === x && g.y === y) &&
-              (x !== pacman.x || y !== pacman.y)) {
+              (x !== pacman.x || y !== pacman.y) &&
+              !(x === 0 && y === 0)) {
             
             // Calculate distance from Pacman
             const distance = Math.abs(x - pacman.x) + Math.abs(y - pacman.y);
@@ -2407,12 +3097,41 @@
       const tileSize = window.tileSize || 20;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
+      // Draw background (walkable areas)
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw thin dividers
+      ctx.strokeStyle = '#6a6a8a';
+      ctx.lineWidth = 3;
+      
+      // Draw horizontal dividers
+      for (const wall of horizontalWalls) {
+        const x1 = wall.x * tileSize;
+        const y1 = (wall.y + 1) * tileSize;
+        const x2 = (wall.x + 1) * tileSize;
+        const y2 = (wall.y + 1) * tileSize;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      
+      // Draw vertical dividers
+      for (const wall of verticalWalls) {
+        const x1 = (wall.x + 1) * tileSize;
+        const y1 = wall.y * tileSize;
+        const x2 = (wall.x + 1) * tileSize;
+        const y2 = (wall.y + 1) * tileSize;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+      }
+      
+      // Draw exit door
       for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
-          if (map[y][x] === 1) {
-            ctx.fillStyle = '#0033cc';
-            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-          }
           if (map[y][x] === 2) {
             // Draw apple emoji as the exit
             const centerX = x * tileSize + tileSize / 2;
@@ -2424,7 +3143,7 @@
             ctx.fillText('🍎', centerX, centerY);
           }
           
-
+          // Draw pellets on walkable areas
           if (pelletMap[y][x] === 1) {
             ctx.beginPath();
             ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 3, 0, 2 * Math.PI);
@@ -2588,7 +3307,7 @@
         for (const [dx, dy] of dirs) {
           const nx = ghost.x + dx;
           const ny = ghost.y + dy;
-          if (map[ny] && map[ny][nx] === 0 && !ghosts.some(g => g !== ghost && g.x === nx && g.y === ny)) {
+          if (map[ny] && map[ny][nx] === 0 && !ghosts.some(g => g !== ghost && g.x === nx && g.y === ny) && !isMoveBlockedByDivider(ghost.x, ghost.y, nx, ny)) {
             ghost.x = nx;
             ghost.y = ny;
             break;
@@ -2661,14 +3380,14 @@
               
               document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
               showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
-              // Reset Pacboy position and direction
-              pacman.x = 1;
-              pacman.y = 1;
+                            // Reset Pacboy position and direction
+              pacman.x = 0;
+              pacman.y = 0;
               pacman.direction = 'right';
               console.log(`Pacboy respawned at (${pacman.x}, ${pacman.y})`);
-            console.log(`Pellet map at respawn:`, pelletMap[1][1]);
-            // Collect pellet if one exists at respawn position
-            collectPelletAtPosition(pacman.x, pacman.y);
+              console.log(`Pellet map at respawn:`, pelletMap[0][0]);
+              // Collect pellet if one exists at respawn position
+              collectPelletAtPosition(pacman.x, pacman.y);
             draw();
             return;
           }
@@ -2677,10 +3396,29 @@
       draw();
     }
 
+    // Helper function to check if a move is blocked by dividers
+    function isMoveBlockedByDivider(fromX, fromY, toX, toY) {
+      // Check if there's a divider blocking this move
+      if (toX > fromX) { // Moving right
+        // Check for vertical wall at current x position
+        return verticalWalls.some(wall => wall.x === fromX && wall.y === fromY);
+      } else if (toX < fromX) { // Moving left
+        // Check for vertical wall at target x position
+        return verticalWalls.some(wall => wall.x === toX && wall.y === fromY);
+      } else if (toY > fromY) { // Moving down
+        // Check for horizontal wall at current y position
+        return horizontalWalls.some(wall => wall.x === fromX && wall.y === fromY);
+      } else if (toY < fromY) { // Moving up
+        // Check for horizontal wall at target y position
+        return horizontalWalls.some(wall => wall.x === fromX && wall.y === toY);
+      }
+      return false;
+    }
+
     function tryMove(dx, dy) {
       const nx = pacman.x + dx;
       const ny = pacman.y + dy;
-      if (map[ny] && (map[ny][nx] === 0 || map[ny][nx] === 2)) {
+      if (map[ny] && (map[ny][nx] === 0 || map[ny][nx] === 2) && !isMoveBlockedByDivider(pacman.x, pacman.y, nx, ny)) {
         pacman.x = nx;
         pacman.y = ny;
         
@@ -2820,14 +3558,14 @@
                 
                 document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
                 showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
-                // Reset Pacboy position and direction
-                pacman.x = 1;
-                pacman.y = 1;
+                                // Reset Pacboy position and direction
+                pacman.x = 0;
+                pacman.y = 0;
                 pacman.direction = 'right';
                 console.log(`Pacboy respawned (tryMove) at (${pacman.x}, ${pacman.y})`);
-              console.log(`Pellet map at respawn:`, pelletMap[1][1]);
-              // Collect pellet if one exists at respawn position
-              collectPelletAtPosition(pacman.x, pacman.y);
+                console.log(`Pellet map at respawn:`, pelletMap[0][0]);
+                // Collect pellet if one exists at respawn position
+                collectPelletAtPosition(pacman.x, pacman.y);
               draw();
               return;
             }
