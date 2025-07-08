@@ -4,8 +4,7 @@ const urlsToCache = [
   '/pacman.html',
   '/waka.wav',
   '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/assets/images/y3labs.png',
   '/offline.html'
 ];
 

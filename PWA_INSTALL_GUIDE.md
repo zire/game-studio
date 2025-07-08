@@ -1,68 +1,56 @@
-# 📱 PWA Installation Guide
+# PWA Installation Guide for Y3 Labs
 
-## What is a PWA?
-A Progressive Web App (PWA) allows you to install this Pacboy game on your mobile device like a native app. You'll get:
-- Quick access from your home screen
-- Offline play capability
-- App-like experience
-- Automatic updates
+## How to Install Y3 Labs as a PWA (Progressive Web App)
 
-## How to Install
+### For iPhone (Safari & Chrome)
 
-### On iPhone/iPad (Safari)
-1. Open Safari and go to the game URL
-2. Tap the **Share** button (📤) at the bottom
-3. Scroll down and tap **"Add to Home Screen"**
-4. Tap **"Add"** to confirm
-5. The game will now appear on your home screen!
+1. **Open the website** in Safari or Chrome on your iPhone
+2. **Tap the Share button** (square with arrow pointing up) at the bottom of the screen
+3. **Scroll down** and tap **"Add to Home Screen"**
+4. **Tap "Add"** to confirm
+5. **Open the app** from your home screen for the full-screen experience
 
-### On Android (Chrome)
-1. Open Chrome and go to the game URL
-2. Tap the **three dots menu** (⋮) in the top right
-3. Tap **"Add to Home screen"**
-4. Tap **"Add"** to confirm
-5. The game will now appear on your home screen!
+### For Android (Chrome)
 
-### On Desktop (Chrome/Edge)
-1. Open Chrome or Edge and go to the game URL
-2. Look for the **install icon** (📱) in the address bar
-3. Click it and select **"Install"**
-4. The game will open in its own window like a desktop app!
+1. **Open the website** in Chrome on your Android device
+2. **Tap the menu button** (three dots) in the top-right corner
+3. **Tap "Add to Home screen"** or **"Install app"**
+4. **Tap "Add"** or **"Install"** to confirm
+5. **Open the app** from your home screen for the full-screen experience
 
-## Features After Installation
+## Benefits of Installing as PWA
 
-### 🎮 Offline Play
-- Once installed, the game works without internet
-- Perfect for playing on the go!
-
-### 📱 App-like Experience
-- No browser address bar
-- Full-screen gameplay
-- Quick launch from home screen
-
-### 🔄 Auto-Updates
-- Game updates automatically when you're online
-- No manual updates needed
-
-### 🎯 Touch Optimized
-- Controls designed for touch screens
-- Responsive design for all screen sizes
+✅ **Full-screen experience** - No browser address bar or navigation  
+✅ **Works offline** - Play games even without internet connection  
+✅ **Faster loading** - App loads instantly from home screen  
+✅ **Better performance** - Optimized for mobile devices  
+✅ **Native app feel** - Looks and feels like a real app  
 
 ## Troubleshooting
 
-### Installation not showing?
-- Make sure you're using a supported browser (Safari on iOS, Chrome on Android)
+### If you don't see "Add to Home Screen":
+- Make sure you're using Safari (iPhone) or Chrome (Android)
 - Try refreshing the page
-- Check if you have a stable internet connection
+- Clear your browser cache and try again
 
-### Game not working offline?
-- Make sure you visited the game at least once while online
-- Try refreshing the page when online to update the cache
+### If the app doesn't work offline:
+- Make sure you installed it from the home screen
+- Check that your device has enough storage space
+- Try reinstalling the app
 
-### Controls not working?
-- Tap the screen first to enable audio (required for touch controls)
-- Make sure you're not in a restricted browser mode
+### For the best experience:
+- Always open the app from your home screen, not from the browser
+- Keep your device updated to the latest iOS/Android version
+- Ensure you have a stable internet connection for the initial installation
 
-## Enjoy Your Game! 🎉
+## Technical Details
 
-Once installed, you can play Pacboy anytime, anywhere - even without internet! 
+This PWA uses:
+- **Display mode**: Fullscreen (removes all browser UI)
+- **Orientation**: Portrait (optimized for mobile)
+- **Offline support**: Service worker for caching
+- **Safe area handling**: Proper support for iPhone notches and home indicators
+
+---
+
+**Enjoy your full-screen gaming experience! 🎮** 

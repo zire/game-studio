@@ -13,15 +13,15 @@
   <meta name="author" content="Brandon Yang">
   <meta name="robots" content="noindex, nofollow">
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="assets/images/bags_avatar.jpg">
-  <link rel="icon" type="image/jpeg" sizes="192x192" href="assets/images/bags_avatar.jpg">
-  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/brandonator.png">
+      <link rel="apple-touch-icon" href="assets/images/y3labs.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/images/y3labs.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/images/y3labs.png">
   <title>Brandon's Pacboy Game Studio</title>
   
   <!-- CSS Files -->
-  <link rel="stylesheet" href="css/main.css">
-  <link rel="stylesheet" href="css/controls.css">
-  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/main.css?v=1.1">
+  <link rel="stylesheet" href="css/controls.css?v=1.1">
+  <link rel="stylesheet" href="css/responsive.css?v=1.1">
 </head>
 <body>
   <!-- Menu Overlay -->
@@ -163,5 +163,64 @@
 
   <!-- JavaScript Files -->
   <script type="module" src="js/main.js"></script>
+  
+  <script>
+    // PWA Installation Logic for Pacman page
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('SW registered: ', registration);
+          })
+          .catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+      });
+    }
+
+    // Handle iOS PWA specific behaviors
+    if (window.navigator.standalone) {
+      // App is running in standalone mode (installed)
+      document.body.classList.add('standalone');
+    }
+
+    // iOS Safari bottom bar hiding technique
+    function hideBottomBar() {
+      // Force scroll to trigger UI hiding
+      window.scrollTo(0, 1);
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+    }
+
+    // Hide bottom bar on page load
+    window.addEventListener('load', hideBottomBar);
+    
+    // Hide bottom bar on orientation change
+    window.addEventListener('orientationchange', () => {
+      setTimeout(hideBottomBar, 500);
+    });
+
+    // Hide bottom bar on focus (when returning to app)
+    window.addEventListener('focus', hideBottomBar);
+
+    // Prevent zoom on double tap (iOS)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+  </script>
 </body>
 </html> 

@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="description" content="Y3 Labs - Pacboy 2025 and more exciting games created by 9-year-old game designer Brandon Yang. Experience the ultimate maze adventure!">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Y3 Labs">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#FFD700">
+    <meta name="msapplication-TileColor" content="#FFD700">
+    <meta name="msapplication-config" content="none">
+    <link rel="manifest" href="manifest.json">
     <meta property="og:title" content="Y3 Labs - Pacboy 2025">
     <meta property="og:description" content="Pacboy 2025 and more exciting games created by 9-year-old game designer Brandon Yang. Experience the ultimate maze adventure!">
     <meta property="og:image" content="assets/images/brandonator.png">
@@ -13,8 +21,8 @@
     <meta name="twitter:description" content="Pacboy 2025 and more exciting games created by 9-year-old game designer Brandon Yang. Experience the ultimate maze adventure!">
     <meta name="twitter:image" content="assets/images/brandonator.png">
     <meta name="twitter:image:alt" content="Y3 Labs - Pacboy 2025">
-    <link rel="icon" type="image/jpeg" href="assets/images/bags_avatar.jpg">
-    <link rel="apple-touch-icon" href="assets/images/bags_avatar.jpg">
+    <link rel="icon" type="image/png" href="assets/images/y3labs.png">
+    <link rel="apple-touch-icon" href="assets/images/y3labs.png">
     <title>Y3 Labs</title>
     <style>
         * {
@@ -27,13 +35,19 @@
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
+            min-height: 100dvh;
             color: white;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+            margin: 0;
+            overflow-x: hidden;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            padding-left: max(20px, env(safe-area-inset-left));
+            padding-right: max(20px, env(safe-area-inset-right));
         }
 
         header {
@@ -243,6 +257,54 @@
         .ghost-yellow {
             color: #FFD700;
         }
+
+        /* PWA Installation Styles */
+        .pwa-install-prompt {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            z-index: 1000;
+            display: none;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .pwa-install-prompt.show {
+            display: block;
+        }
+
+        .pwa-install-prompt button {
+            background: #FFD700;
+            color: #333;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 15px;
+            margin-left: 10px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .pwa-install-prompt .close {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 50%;
+            margin-left: 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        @supports (padding: max(0px)) {
+            .pwa-install-prompt {
+                bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
     </style>
 </head>
 <body>
@@ -345,5 +407,96 @@
             </div>
         </footer>
     </div>
+
+    <!-- PWA Installation Prompt -->
+    <div class="pwa-install-prompt" id="pwaInstallPrompt">
+        <span>Install Y3 Labs for the best experience!</span>
+        <button id="installButton">Install</button>
+        <button class="close" id="closeInstallPrompt">×</button>
+    </div>
+
+    <script>
+        // PWA Installation Logic
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install prompt after a delay
+            setTimeout(() => {
+                const prompt = document.getElementById('pwaInstallPrompt');
+                if (prompt && !localStorage.getItem('pwaInstallDismissed')) {
+                    prompt.classList.add('show');
+                }
+            }, 3000);
+        });
+
+        document.getElementById('installButton')?.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('PWA installed successfully');
+                }
+                deferredPrompt = null;
+                document.getElementById('pwaInstallPrompt').classList.remove('show');
+            }
+        });
+
+        document.getElementById('closeInstallPrompt')?.addEventListener('click', () => {
+            document.getElementById('pwaInstallPrompt').classList.remove('show');
+            localStorage.setItem('pwaInstallDismissed', 'true');
+        });
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
+        // Handle iOS PWA specific behaviors
+        if (window.navigator.standalone) {
+            // App is running in standalone mode (installed)
+            document.body.classList.add('standalone');
+        }
+
+        // iOS Safari bottom bar hiding technique
+        function hideBottomBar() {
+            // Force scroll to trigger UI hiding
+            window.scrollTo(0, 1);
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        }
+
+        // Hide bottom bar on page load
+        window.addEventListener('load', hideBottomBar);
+        
+        // Hide bottom bar on orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(hideBottomBar, 500);
+        });
+
+        // Hide bottom bar on focus (when returning to app)
+        window.addEventListener('focus', hideBottomBar);
+
+        // Prevent zoom on double tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function (event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
 </body>
 </html> 
