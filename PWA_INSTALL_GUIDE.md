@@ -1,7 +1,7 @@
 # 📱 PWA Installation Guide
 
 ## What is a PWA?
-A Progressive Web App (PWA) allows you to install this Pacman game on your mobile device like a native app. You'll get:
+A Progressive Web App (PWA) allows you to install this Pacboy game on your mobile device like a native app. You'll get:
 - Quick access from your home screen
 - Offline play capability
 - App-like experience
@@ -65,4 +65,4 @@ A Progressive Web App (PWA) allows you to install this Pacman game on your mobil
 
 ## Enjoy Your Game! 🎉
 
-Once installed, you can play Pacman anytime, anywhere - even without internet! 
+Once installed, you can play Pacboy anytime, anywhere - even without internet! 

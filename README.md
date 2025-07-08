@@ -4,7 +4,7 @@ Welcome to Brandon's Epic Game Studio! This is a collection of fun games created
 
 ## 🎯 Current Games
 
-### Pacman Adventure
+### Pacboy Adventure
 - **Description**: Navigate through randomly generated mazes, collect golden pellets, and avoid the colorful ghosts!
 - **Features**: 
   - Random maze generation for unique gameplay every time
@@ -13,7 +13,7 @@ Welcome to Brandon's Epic Game Studio! This is a collection of fun games created
   - Sound effects for pellet collection and weapons
   - Responsive controls using arrow keys and touch
   - **PWA Ready**: Install as mobile app for offline play
-- **How to Play**: Use arrow keys or touch controls to move Pacman. Collect all pellets while avoiding ghosts. Use weapons to defend yourself!
+- **How to Play**: Use arrow keys or touch controls to move Pacboy. Collect all pellets while avoiding ghosts. Use weapons to defend yourself!
 
 ## 🚀 Local Development & Testing
 
@@ -102,8 +102,8 @@ This project is configured to deploy to the Internet Computer blockchain using D
 game-studio/
 ├── src/
 │   ├── index.html          # Main landing page
-│   ├── pacman.html         # Pacman game
-│   └── waka.wav           # Sound effect for Pacman
+│   ├── pacman.html         # Pacboy game
+│   └── waka.wav           # Sound effect for Pacboy
 ├── pacman/                 # Original game files
 ├── dfx.json               # DFX configuration
 └── README.md              # This file

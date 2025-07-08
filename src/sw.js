@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pacman-v2';
+const CACHE_NAME = 'pacboy-v2';
 const urlsToCache = [
   '/',
   '/pacman.html',

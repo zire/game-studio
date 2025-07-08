@@ -5,18 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Brandon's Pacman">
+  <meta name="apple-mobile-web-app-title" content="Brandon's Pacboy">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFD700">
-  <meta name="description" content="Brandon's Pacman Game Studio - Fun maze adventure game with weapons and ghosts">
-  <meta name="keywords" content="pacman, game, maze, arcade, mobile, pwa">
+  <meta name="description" content="Brandon's Pacboy Game Studio - Fun maze adventure game with weapons and ghosts">
+  <meta name="keywords" content="pacboy, game, maze, arcade, mobile, pwa">
   <meta name="author" content="Brandon Yang">
   <meta name="robots" content="noindex, nofollow">
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-  <title>Brandon's Pacman Game Studio</title>
+  <title>Brandon's Pacboy Game Studio</title>
   <style>
     * {
       margin: 0;
@@ -819,7 +819,7 @@
     <div class="menu-overlay" id="menuOverlay">
       <div class="menu-content">
         <button class="close-menu" id="closeMenu">×</button>
-        <h2>🎮 Pacman Game Guide</h2>
+        <h2>🎮 Pacboy Game Guide</h2>
         
         <h3>🎯 How to Play</h3>
         <p>Navigate through the maze, collect all golden pellets, and reach the exit door while avoiding ghosts!</p>
@@ -843,7 +843,7 @@
         <h3>👻 Ghosts</h3>
         <ul>
           <li>Ghosts respawn after being defeated</li>
-          <li>They spawn at safe distances from Pacman</li>
+                      <li>They spawn at safe distances from Pacboy</li>
           <li>More ghosts appear in higher levels</li>
         </ul>
         
@@ -2517,7 +2517,7 @@
         ctx.restore();
       }
       
-      // Draw Pacman with directional mouth
+      // Draw Pacboy with directional mouth
       ctx.beginPath();
       const centerX = pacman.x * tileSize + tileSize / 2;
       const centerY = pacman.y * tileSize + tileSize / 2;
@@ -2657,15 +2657,15 @@
                 clearInterval(miniGameOverInterval);
                 isGameOverAnimating = false;
               }
-            }, 50);
-            
-            document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
-            showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
-            // Reset Pacman position and direction
-            pacman.x = 1;
-            pacman.y = 1;
-            pacman.direction = 'right';
-            console.log(`Pacman respawned at (${pacman.x}, ${pacman.y})`);
+                          }, 50);
+              
+              document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+              showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
+              // Reset Pacboy position and direction
+              pacman.x = 1;
+              pacman.y = 1;
+              pacman.direction = 'right';
+              console.log(`Pacboy respawned at (${pacman.x}, ${pacman.y})`);
             console.log(`Pellet map at respawn:`, pelletMap[1][1]);
             // Collect pellet if one exists at respawn position
             collectPelletAtPosition(pacman.x, pacman.y);
@@ -2684,13 +2684,13 @@
         pacman.x = nx;
         pacman.y = ny;
         
-        // Update Pacman's direction based on movement
+        // Update Pacboy's direction based on movement
         if (dx > 0) pacman.direction = 'right';
         else if (dx < 0) pacman.direction = 'left';
         else if (dy > 0) pacman.direction = 'down';
         else if (dy < 0) pacman.direction = 'up';
         
-        // Check if Pacman reached the door (win condition)
+        // Check if Pacboy reached the door (win condition)
         if (map[ny][nx] === 2) {
           // Start celebration animation
           isCelebrating = true;
@@ -2816,15 +2816,15 @@
                   clearInterval(miniGameOverInterval);
                   isGameOverAnimating = false;
                 }
-              }, 50);
-              
-              document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
-              showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
-              // Reset Pacman position and direction
-              pacman.x = 1;
-              pacman.y = 1;
-              pacman.direction = 'right';
-              console.log(`Pacman respawned (tryMove) at (${pacman.x}, ${pacman.y})`);
+                              }, 50);
+                
+                document.getElementById('livesDisplay').querySelector('.value').innerText = playerLives;
+                showMessage(`Lost a life! Lives remaining: ${playerLives}`, 2000);
+                // Reset Pacboy position and direction
+                pacman.x = 1;
+                pacman.y = 1;
+                pacman.direction = 'right';
+                console.log(`Pacboy respawned (tryMove) at (${pacman.x}, ${pacman.y})`);
               console.log(`Pellet map at respawn:`, pelletMap[1][1]);
               // Collect pellet if one exists at respawn position
               collectPelletAtPosition(pacman.x, pacman.y);
