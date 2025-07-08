@@ -95,6 +95,10 @@
       touch-action: manipulation;
     }
     
+    .hamburger-menu.active {
+      display: none;
+    }
+    
     .hamburger-menu:hover {
       background: rgba(255, 215, 0, 0.2);
     }
@@ -140,13 +144,16 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.9);
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       z-index: 999;
       display: none;
       align-items: center;
       justify-content: center;
       padding: 20px;
       box-sizing: border-box;
+      transition: all 0.3s ease;
     }
     
     .menu-overlay.active {
@@ -154,7 +161,7 @@
     }
     
     .menu-content {
-      background: #111;
+      background: rgba(17, 17, 17, 0.65);
       border: 2px solid #FFD700;
       border-radius: 12px;
       padding: 20px;
@@ -163,6 +170,9 @@
       overflow-y: auto;
       color: #FFD700;
       font-family: Arial, sans-serif;
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
     
     .menu-content h2 {
@@ -1185,11 +1195,12 @@
       pacman = { x: 1, y: 1, direction: 'right' };
       
       // Generate ghosts based on level
-      ghosts = [];
+      ghosts = []; // Clear existing ghosts
       const ghostNames = ['Clement', 'Chase', 'Ray', 'Jayden', 'Andrew'];
       const ghostColors = ['#147880', '#60EEE3', '#25BF94', '#E9E12E', '#FF6B41'];
       
       console.log(`Level ${currentLevel}: Spawning ${ghostCount} ghosts`);
+      console.log(`Current level: ${currentLevel}, Ghost count should be: ${ghostCount}`);
       
       for (let i = 0; i < ghostCount; i++) {
         let x, y;
@@ -1207,6 +1218,7 @@
       }
       
       console.log(`Initial ghost count: ${ghosts.length}`);
+      console.log(`Ghosts spawned:`, ghosts.map(g => `${g.name} at (${g.x}, ${g.y})`));
       
       if (ghostMoveInterval) clearInterval(ghostMoveInterval);
       ghostMoveInterval = setInterval(moveGhosts, 350);
@@ -2406,10 +2418,13 @@
             message.innerText = 'Game Over!';
             clearInterval(ghostMoveInterval);
             if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
-            setTimeout(() => {
-              currentLevel = 1;
-              resetGame();
-            }, 2000);
+                          setTimeout(() => {
+                console.log(`Game Over (tryMove): Resetting to level 1`);
+                console.log(`Before reset - currentLevel: ${currentLevel}, ghosts.length: ${ghosts.length}`);
+                currentLevel = 1;
+                console.log(`After setting currentLevel = 1: ${currentLevel}`);
+                resetGame();
+              }, 2000);
             return;
           } else {
             // Start mini game over animation for losing a life
@@ -2554,7 +2569,10 @@
               clearInterval(ghostMoveInterval);
               if (weaponUpdateInterval) clearInterval(weaponUpdateInterval);
               setTimeout(() => {
+                console.log(`Game Over: Resetting to level 1`);
+                console.log(`Before reset - currentLevel: ${currentLevel}, ghosts.length: ${ghosts.length}`);
                 currentLevel = 1;
+                console.log(`After setting currentLevel = 1: ${currentLevel}`);
                 resetGame();
               }, 2000);
               return;
