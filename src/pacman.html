@@ -5,1487 +5,163 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Brandon's Pacman">
+  <meta name="apple-mobile-web-app-title" content="Brandon's Pacboy">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#FFD700">
-  <meta name="description" content="Brandon's Pacman Game Studio - Fun maze adventure game">
-  <title>Brandon's Pacman Game Studio</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    
-    :root {
-      --sat: env(safe-area-inset-top);
-      --sab: env(safe-area-inset-bottom);
-      --sal: env(safe-area-inset-left);
-      --sar: env(safe-area-inset-right);
-    }
-    
-    body { 
-      background: #000; 
-      margin: 0; 
-      padding: 0;
-      padding-top: var(--sat);
-      padding-bottom: var(--sab);
-      padding-left: var(--sal);
-      padding-right: var(--sar);
-      display: flex; 
-      align-items: center; 
-      justify-content: center; 
-      min-height: 100vh;
-      height: 100vh;
-      font-family: Arial, sans-serif;
-      overflow: hidden;
-    }
-    
-    .game-container {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      gap: 10px;
-      padding: 10px;
-      padding-top: max(10px, env(safe-area-inset-top) + 10px);
-      width: 100%;
-      max-width: 400px;
-      height: 100vh;
-      box-sizing: border-box;
-      overflow-y: auto;
-      overflow-x: hidden;
-    }
-    
-    canvas { 
-      border: 2px solid #fff; 
-      background: #111; 
-      display: block; 
-      margin: 0 auto;
-      max-width: 100%;
-      max-height: 70vh;
-    }
-    
-    #newGameBtn {
-      font-size: 1.1em;
-      padding: 10px 20px;
-      background: #FF69B4;
-      color: #222;
-      border: 2px solid #FF69B4;
-      border-radius: 8px;
-      cursor: pointer;
-      font-family: monospace;
-      transition: all 0.3s ease;
-    }
-    
-    #newGameBtn:hover {
-      background: #FF1493;
-      color: #222;
-    }
-    
-    .level-info {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      width: 100%;
-      max-width: 400px;
-      margin-bottom: 8px;
-      font-family: monospace;
-      font-size: 0.85em;
-      color: #FFD700;
-      gap: 15px;
-      flex-wrap: nowrap;
-    }
-    
-    #levelDisplay, #livesDisplay, #scoreDisplay {
-      background: none;
-      padding: 0;
-      border: none;
-      font-size: inherit;
-      white-space: nowrap;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    }
-    
-    #message {
-      color: yellow;
-      font-family: monospace;
-      font-size: 1.5em;
-      text-shadow: 2px 2px 8px #000;
-      text-align: center;
-      min-height: 40px;
-    }
-    
-    /* Mobile Controls */
-    .mobile-controls {
-      display: none;
-      flex-direction: row;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 15px;
-      padding: 0 10px;
-    }
-    
-    .control-row {
-      display: none;
-    }
-    
-    .control-btn {
-      width: 55px;
-      height: 55px;
-      background: rgba(255, 215, 0, 0.2);
-      border: 2px solid #FFD700;
-      border-radius: 50%;
-      color: #FFD700;
-      font-size: 22px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.1s ease;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none;
-      -webkit-user-select: none;
-      -khtml-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      touch-action: manipulation;
-      margin: 0;
-    }
-    
-    .control-btn:active {
-      background: rgba(255, 215, 0, 0.5);
-      transform: scale(0.95);
-    }
-    
-    .control-btn.up { font-size: 20px; }
-    .control-btn.down { font-size: 20px; }
-    .control-btn.left { font-size: 20px; }
-    .control-btn.right { font-size: 20px; }
-    
-    /* Instructions */
-    .instructions {
-      color: #ccc;
-      text-align: center;
-      font-size: 12px;
-      margin-top: 8px;
-      opacity: 0.8;
-    }
-    
-    /* Studio Credit */
-    .studio-credit {
-      color: #FFD700;
-      text-align: center;
-      font-size: 11px;
-      font-family: monospace;
-      margin-top: 15px;
-      margin-bottom: 10px;
-      opacity: 0.9;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-      letter-spacing: 0.5px;
-    }
-    
-    /* Responsive Design */
-    @media (max-width: 768px) {
-      .mobile-controls {
-        display: flex;
-      }
-      
-      .instructions {
-        font-size: 11px;
-      }
-      
-      #message {
-        font-size: 1.3em;
-        min-height: 35px;
-      }
-      
-      #newGameBtn {
-        font-size: 1em;
-        padding: 8px 16px;
-      }
-      
-      .level-info {
-        font-size: 0.8em;
-        gap: 12px;
-        margin-bottom: 6px;
-      }
-      
-      #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: inherit;
-        padding: 0;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .game-container {
-        padding: 8px;
-        gap: 12px;
-        justify-content: flex-start;
-        padding-top: max(8px, env(safe-area-inset-top) + 8px);
-      }
-      
-      .control-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 20px;
-      }
-      
-      .mobile-controls {
-        gap: 10px;
-        margin-top: 12px;
-      }
-      
-      .level-info {
-        font-size: 0.75em;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        gap: 8px;
-        margin-bottom: 4px;
-      }
-      
-      #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: inherit;
-        padding: 0;
-      }
-    }
-    
-    /* iPhone 16 Pro Max and similar large phones */
-    @media (max-width: 430px) and (min-height: 800px) {
-      .game-container {
-        padding-top: max(15px, env(safe-area-inset-top) + 15px);
-        gap: 8px;
-      }
-      
-      .level-info {
-        font-size: 0.8em;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-        max-width: 350px;
-        gap: 10px;
-      }
-      
-      #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: inherit;
-        padding: 0;
-      }
-      
-      canvas {
-        max-height: 60vh;
-      }
-      
-      .mobile-controls {
-        margin-top: 15px;
-      }
-    }
-    
-    /* Ultra-wide phones */
-    @media (max-width: 360px) {
-      .game-container {
-        padding-top: max(6px, env(safe-area-inset-top) + 6px);
-      }
-      
-      .level-info {
-        font-size: 0.7em;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        gap: 6px;
-      }
-      
-      #levelDisplay, #livesDisplay, #scoreDisplay {
-        font-size: inherit;
-        padding: 0;
-      }
-      
-      .control-btn {
-        width: 45px;
-        height: 45px;
-        font-size: 18px;
-      }
-      
-      .mobile-controls {
-        gap: 8px;
-        margin-top: 10px;
-      }
-      
-      .studio-credit {
-        font-size: 10px;
-        margin-top: 12px;
-        margin-bottom: 8px;
-      }
-    }
-    
-    /* Portrait mode optimizations */
-    @media (orientation: portrait) {
-      .game-container {
-        max-width: 350px;
-        height: 100vh;
-      }
-      
-      canvas {
-        max-height: 60vh;
-      }
-      
-      #message {
-        font-size: 1.1em;
-      }
-    }
-    
-    /* Portrait mode optimizations */
-    @media (orientation: portrait) {
-      .game-container {
-        max-width: 350px;
-        height: 100vh;
-      }
-      
-      canvas {
-        max-height: 60vh;
-      }
-    }
-    
-    /* Firefox mobile specific fixes */
-    @-moz-document url-prefix() {
-      body {
-        height: 100vh;
-        min-height: 100vh;
-      }
-      
-      .game-container {
-        height: 100vh;
-        min-height: 100vh;
-      }
-    }
-    
-    /* Dynamic Island and notch devices */
-    @supports (padding-top: env(safe-area-inset-top)) {
-      .game-container {
-        padding-top: max(10px, env(safe-area-inset-top) + 10px);
-      }
-      
-      @media (max-width: 430px) and (min-height: 800px) {
-        .game-container {
-          padding-top: max(20px, env(safe-area-inset-top) + 20px);
-        }
-      }
-    }
-  </style>
+  <meta name="description" content="Brandon's Pacboy Game Studio - Fun maze adventure game with weapons and ghosts">
+  <meta name="keywords" content="pacboy, game, maze, arcade, mobile, pwa">
+  <meta name="author" content="Brandon Yang">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="assets/images/bags_avatar.jpg">
+  <link rel="icon" type="image/jpeg" sizes="192x192" href="assets/images/bags_avatar.jpg">
+  <link rel="icon" type="image/png" sizes="512x512" href="assets/images/brandonator.png">
+  <title>Brandon's Pacboy Game Studio</title>
+  
+  <!-- CSS Files -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/controls.css">
+  <link rel="stylesheet" href="css/responsive.css">
 </head>
 <body>
-      <div class="game-container">
-      <div class="level-info">
-        <span id="levelDisplay">Level 1</span>
-        <span id="livesDisplay">Lives: 5</span>
-        <span id="scoreDisplay">Total: 0 | Avg: 0</span>
+  <!-- Menu Overlay -->
+  <div class="menu-overlay" id="menuOverlay">
+    <div class="menu-content">
+      <button class="close-menu" id="closeMenu">×</button>
+      <h2>🎮 Pacboy Game Guide</h2>
+      
+      <h3>🎯 How to Play</h3>
+      <p>Navigate through the maze, collect all golden pellets, and eat the apple while avoiding ghosts!</p>
+      
+      <h3>🎮 Controls</h3>
+      <ul>
+        <li><strong>Desktop:</strong> Arrow keys or WASD to move</li>
+        <li><strong>Mobile:</strong> Use the touch controls below the game</li>
+        <li><strong>Spacebar:</strong> Fire blast weapon 🔥</li>
+        <li><strong>F key:</strong> Freeze wind weapon ❄️</li>
+      </ul>
+      
+      <h3>⚔️ Weapons</h3>
+      <ul>
+        <li><strong>Fire Blast 🔥:</strong> Long-range, high damage, long cooldown</li>
+        <li><strong>Freeze Wind ❄️:</strong> Short-range, crowd control, medium cooldown</li>
+        <li>Weapons can defeat ghosts temporarily</li>
+        <li>Watch the cooldown circles on weapon buttons</li>
+      </ul>
+      
+      <h3>👻 Ghosts</h3>
+      <ul>
+        <li>Ghosts respawn after being defeated</li>
+        <li>They spawn at safe distances from Pacboy</li>
+        <li>More ghosts appear in higher levels</li>
+      </ul>
+      
+      <h3>📊 Scoring</h3>
+      <ul>
+        <li>Complete levels quickly for higher scores</li>
+        <li>Survive with more lives for bonus points</li>
+        <li>Track your progress across 100 levels!</li>
+      </ul>
+      
+      <h3>💡 Tips</h3>
+      <ul>
+        <li>Plan your route before moving</li>
+        <li>Use weapons strategically</li>
+        <li>Don't get cornered by ghosts</li>
+        <li>Practice makes perfect!</li>
+      </ul>
+      
+      <h3>📱 PWA Features</h3>
+      <p>This game works offline! Add it to your home screen for the best experience.</p>
+      
+      <h3>🎮 Player Tips</h3>
+      <ul>
+        <li><strong>Plan your route:</strong> Look ahead and plan your path before moving</li>
+        <li><strong>Use weapons wisely:</strong> Fire blast for long-range, freeze wind for crowd control</li>
+        <li><strong>Watch cooldowns:</strong> Don't waste weapons when they're recharging</li>
+        <li><strong>Stay mobile:</strong> Don't get cornered by ghosts</li>
+        <li><strong>Practice makes perfect:</strong> Higher levels get more challenging!</li>
+      </ul>
+      
+      <h3>📊 Game Statistics</h3>
+      <ul>
+        <li><strong>100 Levels:</strong> Progressive difficulty with more ghosts</li>
+        <li><strong>Scoring System:</strong> Time, pellets, and lives affect your score</li>
+        <li><strong>Weapon System:</strong> Two unique weapons with different strategies</li>
+        <li><strong>Ghost AI:</strong> Smart respawning at safe distances</li>
+      </ul>
+      
+      <h3>🎯 Advanced Strategies</h3>
+      <ul>
+        <li><strong>Weapon Timing:</strong> Use fire blast when ghosts are in a line</li>
+        <li><strong>Freeze Tactics:</strong> Freeze wind is perfect for escaping tight spots</li>
+        <li><strong>Route Optimization:</strong> Collect pellets efficiently to minimize time</li>
+        <li><strong>Ghost Psychology:</strong> Learn ghost movement patterns</li>
+      </ul>
+      
+      <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #FFD700; text-align: center; font-size: 0.9em; opacity: 0.8;">
+        <p><strong>Produced by Brandon Yang</strong></p>
+        <p>Y3 Labs</p>
+        <p>© 2025 - All rights reserved</p>
       </div>
-      <button id="newGameBtn">New Game</button>
+    </div>
+  </div>
+  
+  <div class="game-container">
+    <!-- Header Section -->
+    <div class="game-header">
+      <div class="header-left">
+        <div class="hamburger-menu" id="hamburgerMenu">
+          <div class="hamburger-icon">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="game-title">Pacboy 2025</div>
+        <div class="header-stats">
+          <span class="header-stat" id="levelDisplay"><span class="label">Level </span><span class="value">1</span></span>
+          <span class="header-stat" id="livesDisplay"><span class="label">Lives: </span><span class="value">5</span></span>
+          <span class="header-stat" id="scoreDisplay"><span class="label">Total: </span><span class="value">0</span></span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Maze Container -->
+    <div class="maze-container">
       <canvas id="game" width="300" height="480"></canvas>
-      <div id="message"></div>
-    
-    <!-- Mobile Controls -->
-    <div class="mobile-controls">
-      <button class="control-btn left" data-direction="left">←</button>
-      <button class="control-btn up" data-direction="up">↑</button>
-      <button class="control-btn down" data-direction="down">↓</button>
-      <button class="control-btn right" data-direction="right">→</button>
+      <div class="game-message-overlay" id="message"></div>
     </div>
     
-    <div class="instructions">
-      <div id="desktop-instructions">Use arrow keys to move <svg width="16" height="16" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle;">
-        <g transform="rotate(45 8 8)">
-          <path d="M8 1 A7 7 0 1 1 8 15 A7 7 0 0 1 8 1 M8 1 L8 8 L15 8 A7 7 0 0 0 8 1 Z" fill="#FFD700" stroke="#000" stroke-width="0.5"/>
-        </g>
-      </svg> to 🍎</div>
-      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move <svg width="16" height="16" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle;">
-        <g transform="rotate(45 8 8)">
-          <path d="M8 1 A7 7 0 1 1 8 15 A7 7 0 0 1 8 1 M8 1 L8 8 L15 8 A7 7 0 0 0 8 1 Z" fill="#FFD700" stroke="#000" stroke-width="0.5"/>
-        </g>
-      </svg> to 🍎</div>
-    </div>
-    
-    <div class="studio-credit">
-      Produced by Brandonator Awesome Game Studio<br>
-      B·A·G·S
+    <!-- Controls Container -->
+    <div class="controls-container">
+      <!-- Mobile Controls -->
+      <div class="mobile-controls">
+        <button class="control-btn left" data-direction="left">←</button>
+        <button class="control-btn up" data-direction="up">↑</button>
+        <button class="control-btn down" data-direction="down">↓</button>
+        <button class="control-btn right" data-direction="right">→</button>
+      </div>
+      
+      <!-- Weapon Controls -->
+      <div class="weapon-controls">
+        <button class="weapon-btn fire-blast" data-weapon="fire" disabled>
+          <div class="cooldown-progress"></div>
+          <span class="weapon-icon">🔥</span>
+          <span class="cooldown-text">Ready</span>
+        </button>
+        <button class="weapon-btn freeze-wind" data-weapon="freeze" disabled>
+          <div class="cooldown-progress"></div>
+          <span class="weapon-icon">❄️</span>
+          <span class="cooldown-text">Ready</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <script>
-    // Portrait-optimized maze dimensions
-    const mapWidth = 10;  // Back to original size
-    const mapHeight = 16; // Taller for portrait
-    
-    // Responsive canvas sizing for portrait mode
-    function resizeCanvas() {
-      const canvas = document.getElementById('game');
-      
-      // Account for safe areas on mobile devices
-      const safeAreaTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sat') || '0');
-      const safeAreaBottom = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sab') || '0');
-      
-      const availableWidth = window.innerWidth - 20;
-      const availableHeight = window.innerHeight - safeAreaTop - safeAreaBottom - 200; // Account for UI elements
-      
-      const maxWidth = Math.min(availableWidth, 350);
-      const maxHeight = Math.min(availableHeight, 480);
-      
-      // For portrait mode, prioritize height
-      let size;
-      if (window.innerHeight > window.innerWidth) {
-        // Portrait mode - use height as primary constraint
-        size = Math.min(maxHeight / mapHeight, maxWidth / mapWidth);
-      } else {
-        // Landscape mode - use width as primary constraint
-        size = Math.min(maxWidth / mapWidth, maxHeight / mapHeight);
-      }
-      
-      // Ensure minimum size for playability
-      size = Math.max(size, 15);
-      
-      const canvasWidth = mapWidth * size;
-      const canvasHeight = mapHeight * size;
-      
-      canvas.style.width = canvasWidth + 'px';
-      canvas.style.height = canvasHeight + 'px';
-      
-      // Update tile size based on canvas size
-      window.tileSize = size;
-    }
-    
-    // Initialize responsive design
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-    
-    // Show/hide instructions based on device
-    function updateInstructions() {
-      const isMobile = window.innerWidth <= 768;
-      document.getElementById('desktop-instructions').style.display = isMobile ? 'none' : 'block';
-      document.getElementById('mobile-instructions').style.display = isMobile ? 'block' : 'none';
-    }
-    updateInstructions();
-    window.addEventListener('resize', updateInstructions);
-
-    // Load waka-waka sound effect
-    const wakaSound = new Audio('waka.wav');
-    wakaSound.volume = 0.5;
-
-    function generateRandomMap() {
-      // Maze generation using randomized DFS
-      const newMap = [];
-      for (let y = 0; y < mapHeight; y++) {
-        const row = [];
-        for (let x = 0; x < mapWidth; x++) {
-          row.push(1); // Start with all walls
-        }
-        newMap.push(row);
-      }
-
-      // Helper to shuffle directions
-      function shuffle(arr) {
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-      }
-
-      // DFS maze generation (full maze including exit door position)
-      function carve(x, y) {
-        newMap[y][x] = 0;
-        const dirs = [ [0, -2], [0, 2], [-2, 0], [2, 0] ];
-        shuffle(dirs);
-        for (const [dx, dy] of dirs) {
-          const nx = x + dx, ny = y + dy;
-          if (ny > 0 && ny < mapHeight-1 && nx > 0 && nx < mapWidth-1 && newMap[ny][nx] === 1) {
-            newMap[y + dy/2][x + dx/2] = 0; // Remove wall between
-            carve(nx, ny);
-          }
-        }
-      }
-
-      carve(1, 1); // Start maze at (1,1)
-
-      // Optionally open a few more random cells for pellet variety
-      let extraOpens = Math.floor((mapWidth * mapHeight) * 0.1);
-      while (extraOpens > 0) {
-        const rx = 1 + Math.floor(Math.random() * (mapWidth - 2));
-        const ry = 1 + Math.floor(Math.random() * (mapHeight - 2));
-        if (newMap[ry][rx] === 1) {
-          newMap[ry][rx] = 0;
-          extraOpens--;
-        }
-      }
-
-      // Ensure (1,1) is open
-      newMap[1][1] = 0;
-      
-      // Place exit door at bottom-right corner
-      newMap[mapHeight - 2][mapWidth - 2] = 2; // Door
-      
-      // Ensure the door is connected to the maze
-      // Create a guaranteed path from the maze to the door
-      let doorConnected = false;
-      
-      // Try to connect from the left of the door
-      if (newMap[mapHeight - 2][mapWidth - 3] === 0) {
-        doorConnected = true;
-      }
-      // Try to connect from above the door
-      else if (newMap[mapHeight - 3][mapWidth - 2] === 0) {
-        doorConnected = true;
-      }
-      // If not connected, force a connection from the left
-      if (!doorConnected) {
-        newMap[mapHeight - 2][mapWidth - 3] = 0; // Open the cell to the left of the door
-      }
-      
-      return newMap;
-    }
-
-    // Calculate shortest path length using BFS
-    function calculateShortestPath(map) {
-      const queue = [{x: 1, y: 1, distance: 0}];
-      const visited = new Set();
-      const targetX = mapWidth - 2;
-      const targetY = mapHeight - 2;
-      
-      while (queue.length > 0) {
-        const {x, y, distance} = queue.shift();
-        const key = `${x},${y}`;
-        
-        if (visited.has(key)) continue;
-        visited.add(key);
-        
-        if (x === targetX && y === targetY) {
-          return distance;
-        }
-        
-        // Check all 4 directions
-        const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
-        for (const [dx, dy] of directions) {
-          const nx = x + dx;
-          const ny = y + dy;
-          
-          if (ny >= 0 && ny < mapHeight && nx >= 0 && nx < mapWidth && 
-              (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
-            queue.push({x: nx, y: ny, distance: distance + 1});
-          }
-        }
-      }
-      
-      return Infinity; // No path found
-    }
-
-    // Get level parameters based on current level
-    function getLevelParameters(level) {
-      // Lives: 1 at level 1, 5 at level 100 (more lives to battle more ghosts)
-      const lives = Math.min(5, 1 + Math.floor((level - 1) / 25));
-      
-      // Ghost count: 0 (1-3), 1 (4-15), 2 (16-30), 3 (31-50), 4 (51-75), 5 (76-100)
-      let ghostCount;
-      if (level <= 3) ghostCount = 0;
-      else if (level <= 15) ghostCount = 1;
-      else if (level <= 30) ghostCount = 2;
-      else if (level <= 50) ghostCount = 3;
-      else if (level <= 75) ghostCount = 4;
-      else ghostCount = 5;
-      
-      // Target path length: shorter paths for higher levels (more difficult)
-      const targetPathLength = Math.max(15, 50 - Math.floor((level - 1) / 2));
-      
-      return { lives, ghostCount, targetPathLength };
-    }
-
-    // Calculate score based on time, pellets collected, and lives remaining
-    function calculateScore(timeElapsed, pelletsCollected, totalPellets, livesRemaining, maxLives) {
-      // Time score: 0-40 points (faster = higher score)
-      const maxTime = 300; // 5 minutes max
-      const timeScore = Math.max(0, 40 - Math.floor((timeElapsed / 1000) * 40 / maxTime));
-      
-      // Pellet score: 0-40 points (more pellets = higher score)
-      const pelletScore = Math.floor((pelletsCollected / totalPellets) * 40);
-      
-      // Life score: 0-20 points (more lives = higher score)
-      const lifeScore = Math.floor((livesRemaining / maxLives) * 20);
-      
-      const totalScore = timeScore + pelletScore + lifeScore;
-      return Math.min(100, totalScore); // Cap at 100
-    }
-
-    let map, pelletMap, pelletsLeft, pacman;
-    let ghosts = [];
-    let ghostMoveInterval = null;
-    let currentLevel = 1;
-    let playerLives = 5;
-    let shortestPathLength = 0;
-    let levelStartTime = 0;
-    let currentScore = 0;
-    let totalScore = 0;
-    let completedLevels = 0;
-    let averageScore = 0;
-    let pelletsCollected = 0;
-    let totalPelletsInLevel = 0;
-    let celebrationParticles = [];
-    let isCelebrating = false;
-    let gameOverParticles = [];
-    let isGameOverAnimating = false;
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
-    const message = document.getElementById('message');
-    const newGameBtn = document.getElementById('newGameBtn');
-
-    function resetGame() {
-      // Reset celebration state
-      isCelebrating = false;
-      celebrationParticles = [];
-      
-      // Reset game over animation state
-      isGameOverAnimating = false;
-      gameOverParticles = [];
-      
-      // Get level parameters
-      const { lives, ghostCount, targetPathLength } = getLevelParameters(currentLevel);
-      playerLives = lives;
-      
-      // Start timing for this level
-      levelStartTime = Date.now();
-      
-      // Generate maze with appropriate difficulty
-      let attempts = 0;
-      let generatedMap;
-      let pathLength;
-      
-      do {
-        generatedMap = generateRandomMap();
-        pathLength = calculateShortestPath(generatedMap);
-        attempts++;
-      } while (pathLength > targetPathLength + 10 && attempts < 20); // Try to get close to target path length
-      
-      map = generatedMap;
-      shortestPathLength = pathLength;
-      
-      pelletMap = map.map((row, y) => row.map((cell, x) => {
-        // Don't place pellets on the door
-        if (cell === 2) return 0;
-        return cell === 0 ? 1 : 0;
-      }));
-      pelletsLeft = pelletMap.flat().reduce((a, b) => a + b, 0);
-      totalPelletsInLevel = pelletsLeft;
-      pelletsCollected = 0;
-      pacman = { x: 1, y: 1, direction: 'right' };
-      
-      // Generate ghosts based on level
-      ghosts = [];
-      const ghostNames = ['Clement', 'Chase', 'Ray', 'Jayden', 'Andrew'];
-      const ghostColors = ['#147880', '#60EEE3', '#25BF94', '#E9E12E', '#FF6B41'];
-      
-      for (let i = 0; i < ghostCount; i++) {
-        let x, y;
-        do {
-          x = 1 + Math.floor(Math.random() * (mapWidth - 3));
-          y = 1 + Math.floor(Math.random() * (mapHeight - 3));
-        } while (map[y][x] !== 0 || ghosts.some(g => g.x === x && g.y === y));
-        
-        ghosts.push({
-          x: x,
-          y: y,
-          color: ghostColors[i],
-          name: ghostNames[i]
-        });
-      }
-      
-      if (ghostMoveInterval) clearInterval(ghostMoveInterval);
-      ghostMoveInterval = setInterval(moveGhosts, 350);
-      
-      // Update display elements
-      document.getElementById('levelDisplay').innerText = `Level ${currentLevel}`;
-      document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-      document.getElementById('scoreDisplay').innerText = `Total: ${totalScore} | Avg: ${averageScore}`;
-      message.innerText = '';
-      draw();
-    }
-
-    function createCelebrationParticles(x, y) {
-      const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F', '#FF9F43', '#00D2D3', '#54A0FF', '#5F27CD'];
-      const emojis = ['🎉', '⭐', '🎊', '🏆', '💎', '🌟', '✨', '🎯', '🎨', '🚀', '🌈', '🎪', '🎭', '🎪', '🎡', '🎢'];
-      const particleTypes = ['emoji', 'circle', 'star', 'sparkle'];
-      
-      // Random number of particles (20-30)
-      const particleCount = 20 + Math.floor(Math.random() * 11);
-      
-      for (let i = 0; i < particleCount; i++) {
-        const particleType = particleTypes[Math.floor(Math.random() * particleTypes.length)];
-        const isSpecial = Math.random() < 0.15; // 15% chance for special particles
-        
-        celebrationParticles.push({
-          x: x + (window.tileSize || 20) / 2,
-          y: y + (window.tileSize || 20) / 2,
-          vx: (Math.random() - 0.5) * (8 + Math.random() * 6), // More varied velocity
-          vy: (Math.random() - 0.5) * (8 + Math.random() * 6) - 3,
-          life: 0.8 + Math.random() * 0.4, // Varied starting life
-          decay: 0.01 + Math.random() * 0.025, // Varied decay rates
-          color: colors[Math.floor(Math.random() * colors.length)],
-          emoji: emojis[Math.floor(Math.random() * emojis.length)],
-          size: 15 + Math.random() * 20, // More size variation
-          rotation: Math.random() * Math.PI * 2,
-          rotationSpeed: (Math.random() - 0.5) * (0.2 + Math.random() * 0.4), // Varied rotation
-          bounce: 0.6 + Math.random() * 0.4, // Varied bounce
-          gravity: 0.3 + Math.random() * 0.3, // Varied gravity
-          type: particleType,
-          isSpecial: isSpecial,
-          pulse: Math.random() < 0.3, // 30% chance to pulse
-          pulseSpeed: 0.05 + Math.random() * 0.1,
-          pulsePhase: Math.random() * Math.PI * 2,
-          trail: Math.random() < 0.2, // 20% chance for trail effect
-          trailLength: 3 + Math.floor(Math.random() * 5),
-          trailPositions: []
-        });
-      }
-    }
-
-    function updateCelebrationParticles() {
-      for (let i = celebrationParticles.length - 1; i >= 0; i--) {
-        const particle = celebrationParticles[i];
-        
-        // Update trail positions
-        if (particle.trail) {
-          particle.trailPositions.unshift({x: particle.x, y: particle.y, life: particle.life});
-          if (particle.trailPositions.length > particle.trailLength) {
-            particle.trailPositions.pop();
-          }
-        }
-        
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-        particle.vy += particle.gravity;
-        particle.life -= particle.decay;
-        particle.rotation += particle.rotationSpeed;
-        
-        // Update pulse phase
-        if (particle.pulse) {
-          particle.pulsePhase += particle.pulseSpeed;
-        }
-        
-        // Special particles have different behaviors
-        if (particle.isSpecial) {
-          // Special particles might change direction randomly
-          if (Math.random() < 0.02) {
-            particle.vx += (Math.random() - 0.5) * 2;
-            particle.vy += (Math.random() - 0.5) * 2;
-          }
-        }
-        
-        // Bounce off canvas edges
-        const tileSize = window.tileSize || 20;
-        const canvasWidth = mapWidth * tileSize;
-        const canvasHeight = mapHeight * tileSize;
-        
-        if (particle.x <= 0 || particle.x >= canvasWidth) {
-          particle.vx *= -particle.bounce;
-          particle.x = Math.max(0, Math.min(canvasWidth, particle.x));
-        }
-        if (particle.y >= canvasHeight) {
-          particle.vy *= -particle.bounce;
-          particle.y = canvasHeight;
-        }
-        
-        if (particle.life <= 0) {
-          celebrationParticles.splice(i, 1);
-        }
-      }
-    }
-
-    function drawCelebrationParticles() {
-      celebrationParticles.forEach(particle => {
-        ctx.save();
-        
-        // Calculate size with pulse effect
-        let currentSize = particle.size;
-        if (particle.pulse) {
-          currentSize *= 0.8 + 0.4 * Math.sin(particle.pulsePhase);
-        }
-        
-        // Draw trail if enabled
-        if (particle.trail && particle.trailPositions.length > 0) {
-          particle.trailPositions.forEach((pos, index) => {
-            const trailAlpha = (particle.trailPositions.length - index) / particle.trailPositions.length * particle.life * 0.3;
-            ctx.globalAlpha = trailAlpha;
-            ctx.translate(pos.x, pos.y);
-            ctx.rotate(particle.rotation);
-            
-            if (particle.type === 'emoji') {
-              ctx.font = `${currentSize * 0.6}px Arial`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              ctx.fillText(particle.emoji, 0, 0);
-            } else if (particle.type === 'circle') {
-              ctx.beginPath();
-              ctx.arc(0, 0, currentSize * 0.3, 0, 2 * Math.PI);
-              ctx.fillStyle = particle.color;
-              ctx.fill();
-            } else if (particle.type === 'star') {
-              drawStar(ctx, 0, 0, currentSize * 0.3, currentSize * 0.15, 5);
-              ctx.fillStyle = particle.color;
-              ctx.fill();
-            } else if (particle.type === 'sparkle') {
-              drawSparkle(ctx, 0, 0, currentSize * 0.4);
-            }
-            
-            ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
-          });
-        }
-        
-        // Draw main particle
-        ctx.globalAlpha = particle.life;
-        ctx.translate(particle.x, particle.y);
-        ctx.rotate(particle.rotation);
-        
-        if (particle.type === 'emoji') {
-          ctx.font = `${currentSize}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(particle.emoji, 0, 0);
-        } else if (particle.type === 'circle') {
-          ctx.beginPath();
-          ctx.arc(0, 0, currentSize * 0.5, 0, 2 * Math.PI);
-          ctx.fillStyle = particle.color;
-          ctx.fill();
-        } else if (particle.type === 'star') {
-          drawStar(ctx, 0, 0, currentSize * 0.5, currentSize * 0.25, 5);
-          ctx.fillStyle = particle.color;
-          ctx.fill();
-        } else if (particle.type === 'sparkle') {
-          drawSparkle(ctx, 0, 0, currentSize * 0.6);
-        }
-        
-        ctx.restore();
-      });
-    }
-
-    function drawStar(ctx, cx, cy, outerRadius, innerRadius, points) {
-      ctx.beginPath();
-      for (let i = 0; i < points * 2; i++) {
-        const angle = (i * Math.PI) / points;
-        const radius = i % 2 === 0 ? outerRadius : innerRadius;
-        const x = cx + Math.cos(angle) * radius;
-        const y = cy + Math.sin(angle) * radius;
-        if (i === 0) {
-          ctx.moveTo(x, y);
-        } else {
-          ctx.lineTo(x, y);
-        }
-      }
-      ctx.closePath();
-    }
-
-    function drawSparkle(ctx, x, y, size) {
-      ctx.strokeStyle = '#FFD700';
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = 0.8;
-      
-      // Draw cross pattern
-      ctx.beginPath();
-      ctx.moveTo(x - size, y);
-      ctx.lineTo(x + size, y);
-      ctx.moveTo(x, y - size);
-      ctx.lineTo(x, y + size);
-      ctx.stroke();
-      
-      // Draw diagonal lines
-      ctx.beginPath();
-      ctx.moveTo(x - size * 0.7, y - size * 0.7);
-      ctx.lineTo(x + size * 0.7, y + size * 0.7);
-      ctx.moveTo(x - size * 0.7, y + size * 0.7);
-      ctx.lineTo(x + size * 0.7, y - size * 0.7);
-      ctx.stroke();
-    }
-
-    function createGameOverParticles(x, y) {
-      const colors = ['#FF0000', '#8B0000', '#DC143C', '#B22222', '#CD5C5C', '#F08080'];
-      const emojis = ['💀', '👻', '💥', '💢', '😵', '💀', '⚰️', '🪦'];
-      const particleTypes = ['emoji', 'skull', 'explosion', 'smoke'];
-      
-      // Create more dramatic effect for game over
-      const particleCount = 30 + Math.floor(Math.random() * 15);
-      
-      for (let i = 0; i < particleCount; i++) {
-        const particleType = particleTypes[Math.floor(Math.random() * particleTypes.length)];
-        const isDramatic = Math.random() < 0.25; // 25% chance for dramatic particles
-        
-        gameOverParticles.push({
-          x: x + (window.tileSize || 20) / 2,
-          y: y + (window.tileSize || 20) / 2,
-          vx: (Math.random() - 0.5) * (12 + Math.random() * 8), // Faster, more explosive
-          vy: (Math.random() - 0.5) * (12 + Math.random() * 8) - 5, // More upward movement
-          life: 1.0 + Math.random() * 0.5, // Longer life for dramatic effect
-          decay: 0.008 + Math.random() * 0.015, // Slower decay
-          color: colors[Math.floor(Math.random() * colors.length)],
-          emoji: emojis[Math.floor(Math.random() * emojis.length)],
-          size: 20 + Math.random() * 25, // Larger particles
-          rotation: Math.random() * Math.PI * 2,
-          rotationSpeed: (Math.random() - 0.5) * (0.3 + Math.random() * 0.5), // Faster rotation
-          bounce: 0.4 + Math.random() * 0.3, // Less bounce for dramatic effect
-          gravity: 0.2 + Math.random() * 0.4, // Varied gravity
-          type: particleType,
-          isDramatic: isDramatic,
-          shake: Math.random() < 0.4, // 40% chance to shake
-          shakeIntensity: 0.5 + Math.random() * 1.5,
-          shakeSpeed: 0.1 + Math.random() * 0.2,
-          shakePhase: Math.random() * Math.PI * 2,
-          smoke: Math.random() < 0.3, // 30% chance for smoke effect
-          smokeOpacity: 0.3 + Math.random() * 0.4,
-          originalX: x + (window.tileSize || 20) / 2,
-          originalY: y + (window.tileSize || 20) / 2
-        });
-      }
-    }
-
-    function updateGameOverParticles() {
-      for (let i = gameOverParticles.length - 1; i >= 0; i--) {
-        const particle = gameOverParticles[i];
-        
-        // Update shake effect
-        if (particle.shake) {
-          particle.shakePhase += particle.shakeSpeed;
-          particle.x = particle.originalX + Math.sin(particle.shakePhase) * particle.shakeIntensity;
-          particle.y = particle.originalY + Math.cos(particle.shakePhase) * particle.shakeIntensity;
-        } else {
-          particle.x += particle.vx;
-          particle.y += particle.vy;
-        }
-        
-        particle.vy += particle.gravity;
-        particle.life -= particle.decay;
-        particle.rotation += particle.rotationSpeed;
-        
-        // Dramatic particles have special behaviors
-        if (particle.isDramatic) {
-          // Dramatic particles might explode outward more
-          if (Math.random() < 0.03) {
-            particle.vx *= 1.2;
-            particle.vy *= 1.2;
-          }
-        }
-        
-        // Bounce off canvas edges
-        const tileSize = window.tileSize || 20;
-        const canvasWidth = mapWidth * tileSize;
-        const canvasHeight = mapHeight * tileSize;
-        
-        if (particle.x <= 0 || particle.x >= canvasWidth) {
-          particle.vx *= -particle.bounce;
-          particle.x = Math.max(0, Math.min(canvasWidth, particle.x));
-        }
-        if (particle.y >= canvasHeight) {
-          particle.vy *= -particle.bounce;
-          particle.y = canvasHeight;
-        }
-        
-        if (particle.life <= 0) {
-          gameOverParticles.splice(i, 1);
-        }
-      }
-    }
-
-    function drawGameOverParticles() {
-      gameOverParticles.forEach(particle => {
-        ctx.save();
-        
-        // Calculate opacity with smoke effect
-        let opacity = particle.life;
-        if (particle.smoke) {
-          opacity *= particle.smokeOpacity;
-        }
-        
-        ctx.globalAlpha = opacity;
-        ctx.translate(particle.x, particle.y);
-        ctx.rotate(particle.rotation);
-        
-        if (particle.type === 'emoji') {
-          ctx.font = `${particle.size}px Arial`;
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(particle.emoji, 0, 0);
-        } else if (particle.type === 'skull') {
-          drawSkull(ctx, 0, 0, particle.size * 0.4);
-        } else if (particle.type === 'explosion') {
-          drawExplosion(ctx, 0, 0, particle.size * 0.5);
-        } else if (particle.type === 'smoke') {
-          drawSmoke(ctx, 0, 0, particle.size * 0.6);
-        }
-        
-        ctx.restore();
-      });
-    }
-
-    function drawSkull(ctx, x, y, size) {
-      ctx.fillStyle = '#FFFFFF';
-      ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 2;
-      
-      // Skull shape
-      ctx.beginPath();
-      ctx.arc(x, y, size, 0, 2 * Math.PI);
-      ctx.fill();
-      ctx.stroke();
-      
-      // Eye sockets
-      ctx.fillStyle = '#000000';
-      ctx.beginPath();
-      ctx.arc(x - size * 0.3, y - size * 0.2, size * 0.15, 0, 2 * Math.PI);
-      ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.15, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      // Nose
-      ctx.beginPath();
-      ctx.arc(x, y + size * 0.1, size * 0.1, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
-    function drawExplosion(ctx, x, y, size) {
-      ctx.strokeStyle = '#FF4500';
-      ctx.fillStyle = '#FF6347';
-      ctx.lineWidth = 3;
-      
-      // Draw explosion rays
-      for (let i = 0; i < 8; i++) {
-        const angle = (i * Math.PI) / 4;
-        const endX = x + Math.cos(angle) * size;
-        const endY = y + Math.sin(angle) * size;
-        
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-      }
-      
-      // Center explosion
-      ctx.beginPath();
-      ctx.arc(x, y, size * 0.3, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
-    function drawSmoke(ctx, x, y, size) {
-      ctx.fillStyle = '#696969';
-      ctx.globalAlpha = 0.6;
-      
-      // Draw smoke cloud
-      ctx.beginPath();
-      ctx.arc(x, y, size * 0.8, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      ctx.beginPath();
-      ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.6, 0, 2 * Math.PI);
-      ctx.fill();
-      
-      ctx.beginPath();
-      ctx.arc(x - size * 0.2, y + size * 0.3, size * 0.5, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-
-    function draw() {
-      const tileSize = window.tileSize || 20;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      for (let y = 0; y < map.length; y++) {
-        for (let x = 0; x < map[y].length; x++) {
-          if (map[y][x] === 1) {
-            ctx.fillStyle = '#0033cc';
-            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
-          }
-          if (map[y][x] === 2) {
-            // Draw apple emoji as the exit
-            const centerX = x * tileSize + tileSize / 2;
-            const centerY = y * tileSize + tileSize / 2;
-            
-            ctx.font = `${tileSize - 4}px Arial`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText('🍎', centerX, centerY);
-          }
-          
-
-          if (pelletMap[y][x] === 1) {
-            ctx.beginPath();
-            ctx.arc(x * tileSize + tileSize/2, y * tileSize + tileSize/2, 3, 0, 2 * Math.PI);
-            ctx.fillStyle = '#FFD700';
-            ctx.fill();
-          }
-        }
-      }
-      
-      // Draw ghosts
-      for (const ghost of ghosts) {
-        ctx.beginPath();
-        ctx.arc(
-          ghost.x * tileSize + tileSize / 2,
-          ghost.y * tileSize + tileSize / 2,
-          tileSize / 2 - 3,
-          Math.PI, 0, false
-        );
-        ctx.lineTo(ghost.x * tileSize + tileSize - 3, ghost.y * tileSize + tileSize - 3);
-        ctx.lineTo(ghost.x * tileSize + 3, ghost.y * tileSize + tileSize - 3);
-        ctx.closePath();
-        ctx.fillStyle = ghost.color;
-        ctx.fill();
-        
-        // Eyes
-        ctx.beginPath();
-        ctx.arc(ghost.x * tileSize + tileSize/2 - 4, ghost.y * tileSize + tileSize/2 - 1, 2, 0, 2 * Math.PI);
-        ctx.arc(ghost.x * tileSize + tileSize/2 + 4, ghost.y * tileSize + tileSize/2 - 1, 2, 0, 2 * Math.PI);
-        ctx.fillStyle = '#fff';
-        ctx.fill();
-        ctx.beginPath();
-        ctx.arc(ghost.x * tileSize + tileSize/2 - 4, ghost.y * tileSize + tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
-        ctx.arc(ghost.x * tileSize + tileSize/2 + 4, ghost.y * tileSize + tileSize/2 - 1, 0.8, 0, 2 * Math.PI);
-        ctx.fillStyle = '#222';
-        ctx.fill();
-        
-        // Draw ghost name above (smaller for portrait mode)
-        ctx.font = 'bold 10px monospace';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = ghost.color;
-        ctx.fillText(ghost.name, ghost.x * tileSize + tileSize / 2, ghost.y * tileSize - 2);
-      }
-      
-      // Draw Pacman with directional mouth
-      ctx.beginPath();
-      const centerX = pacman.x * tileSize + tileSize / 2;
-      const centerY = pacman.y * tileSize + tileSize / 2;
-      const radius = tileSize / 2 - 1;
-      
-      let startAngle, endAngle;
-      switch (pacman.direction) {
-        case 'right':
-          startAngle = 0.25 * Math.PI;
-          endAngle = 1.75 * Math.PI;
-          break;
-        case 'left':
-          startAngle = 1.25 * Math.PI;
-          endAngle = 0.75 * Math.PI;
-          break;
-        case 'up':
-          startAngle = 1.25 * Math.PI;
-          endAngle = 1.75 * Math.PI;
-          break;
-        case 'down':
-          startAngle = 0.75 * Math.PI;
-          endAngle = 0.25 * Math.PI;
-          break;
-        default:
-          startAngle = 0.25 * Math.PI;
-          endAngle = 1.75 * Math.PI;
-      }
-      
-      ctx.arc(centerX, centerY, radius, startAngle, endAngle, false);
-      ctx.lineTo(centerX, centerY);
-      ctx.closePath();
-      ctx.fillStyle = 'yellow';
-      ctx.fill();
-      
-      // Draw celebration particles if celebrating
-      if (isCelebrating) {
-        drawCelebrationParticles();
-      }
-      
-      // Draw game over particles if animating
-      if (isGameOverAnimating) {
-        drawGameOverParticles();
-      }
-    }
-
-    function moveGhosts() {
-      for (const ghost of ghosts) {
-        // Try random directions until a valid move is found
-        const dirs = [ [0, -1], [0, 1], [-1, 0], [1, 0] ];
-        for (let i = dirs.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [dirs[i], dirs[j]] = [dirs[j], dirs[i]];
-        }
-        for (const [dx, dy] of dirs) {
-          const nx = ghost.x + dx;
-          const ny = ghost.y + dy;
-          if (map[ny] && map[ny][nx] === 0 && !ghosts.some(g => g !== ghost && g.x === nx && g.y === ny)) {
-            ghost.x = nx;
-            ghost.y = ny;
-            break;
-          }
-        }
-      }
-      // Check collision with Pac-Man
-      for (const ghost of ghosts) {
-        if (ghost.x === pacman.x && ghost.y === pacman.y) {
-          playerLives--;
-          if (playerLives <= 0) {
-            // Start game over animation
-            isGameOverAnimating = true;
-            gameOverParticles = [];
-            createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
-            
-            // Start game over animation loop
-            const gameOverInterval = setInterval(() => {
-              updateGameOverParticles();
-              draw();
-              
-              // Stop animation after particles are gone
-              if (gameOverParticles.length === 0) {
-                clearInterval(gameOverInterval);
-                isGameOverAnimating = false;
-              }
-            }, 50);
-            
-            message.innerText = 'Game Over!';
-            clearInterval(ghostMoveInterval);
-            setTimeout(() => {
-              currentLevel = 1;
-              resetGame();
-            }, 2000);
-            return;
-          } else {
-            // Start mini game over animation for losing a life
-            isGameOverAnimating = true;
-            gameOverParticles = [];
-            createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
-            
-            // Start mini animation loop
-            const miniGameOverInterval = setInterval(() => {
-              updateGameOverParticles();
-              draw();
-              
-              // Stop animation after particles are gone
-              if (gameOverParticles.length === 0) {
-                clearInterval(miniGameOverInterval);
-                isGameOverAnimating = false;
-              }
-            }, 50);
-            
-            document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-            message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
-            // Reset Pacman position and direction
-            pacman.x = 1;
-            pacman.y = 1;
-            pacman.direction = 'right';
-            draw();
-            return;
-          }
-        }
-      }
-      draw();
-    }
-
-    function tryMove(dx, dy) {
-      const nx = pacman.x + dx;
-      const ny = pacman.y + dy;
-      if (map[ny] && (map[ny][nx] === 0 || map[ny][nx] === 2)) {
-        pacman.x = nx;
-        pacman.y = ny;
-        
-        // Update Pacman's direction based on movement
-        if (dx > 0) pacman.direction = 'right';
-        else if (dx < 0) pacman.direction = 'left';
-        else if (dy > 0) pacman.direction = 'down';
-        else if (dy < 0) pacman.direction = 'up';
-        
-        // Check if Pacman reached the door (win condition)
-        if (map[ny][nx] === 2) {
-          // Start celebration animation
-          isCelebrating = true;
-          celebrationParticles = [];
-          createCelebrationParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
-          
-          // Start celebration animation loop
-          const celebrationInterval = setInterval(() => {
-            updateCelebrationParticles();
-            draw();
-            
-            // Stop celebration after 3 seconds
-            if (celebrationParticles.length === 0) {
-              clearInterval(celebrationInterval);
-              isCelebrating = false;
-            }
-          }, 50);
-          
-          // Calculate score for this level
-          const timeElapsed = Date.now() - levelStartTime;
-          const { lives: maxLives } = getLevelParameters(currentLevel);
-          currentScore = calculateScore(timeElapsed, pelletsCollected, totalPelletsInLevel, playerLives, maxLives);
-          totalScore += currentScore;
-          completedLevels++;
-          averageScore = Math.round(totalScore / completedLevels);
-          
-          if (currentLevel >= 100) {
-            message.innerText = `🎉 Congratulations! You completed all 100 levels! Final Total: ${totalScore}, Average: ${averageScore} 🎉`;
-            clearInterval(ghostMoveInterval);
-            setTimeout(() => {
-              currentLevel = 1;
-              totalScore = 0;
-              completedLevels = 0;
-              averageScore = 0;
-              resetGame();
-            }, 3000);
-            return;
-          } else {
-            currentLevel++;
-            message.innerText = `🎉 Level ${currentLevel - 1} Complete! Score: ${currentScore}/100 (Total: ${totalScore}, Avg: ${averageScore}) 🎉`;
-            clearInterval(ghostMoveInterval);
-            setTimeout(resetGame, 2000);
-            return;
-          }
-        }
-        
-        if (pelletMap[ny][nx] === 1) {
-          pelletMap[ny][nx] = 0;
-          pelletsLeft--;
-          pelletsCollected++;
-          // Play waka-waka sound when eating a pellet
-          try {
-            wakaSound.currentTime = 0;
-            wakaSound.play();
-          } catch (e) {}
-        }
-        // Check collision with ghosts after Pac-Man moves
-        for (const ghost of ghosts) {
-          if (ghost.x === pacman.x && ghost.y === pacman.y) {
-            playerLives--;
-            if (playerLives <= 0) {
-              // Start game over animation
-              isGameOverAnimating = true;
-              gameOverParticles = [];
-              createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
-              
-              // Start game over animation loop
-              const gameOverInterval = setInterval(() => {
-                updateGameOverParticles();
-                draw();
-                
-                // Stop animation after particles are gone
-                if (gameOverParticles.length === 0) {
-                  clearInterval(gameOverInterval);
-                  isGameOverAnimating = false;
-                }
-              }, 50);
-              
-              message.innerText = 'Game Over!';
-              clearInterval(ghostMoveInterval);
-              setTimeout(() => {
-                currentLevel = 1;
-                resetGame();
-              }, 2000);
-              return;
-            } else {
-              // Start mini game over animation for losing a life
-              isGameOverAnimating = true;
-              gameOverParticles = [];
-              createGameOverParticles(pacman.x * (window.tileSize || 20), pacman.y * (window.tileSize || 20));
-              
-              // Start mini animation loop
-              const miniGameOverInterval = setInterval(() => {
-                updateGameOverParticles();
-                draw();
-                
-                // Stop animation after particles are gone
-                if (gameOverParticles.length === 0) {
-                  clearInterval(miniGameOverInterval);
-                  isGameOverAnimating = false;
-                }
-              }, 50);
-              
-              document.getElementById('livesDisplay').innerText = `Lives: ${playerLives}`;
-              message.innerText = `Lost a life! Lives remaining: ${playerLives}`;
-              // Reset Pacman position and direction
-              pacman.x = 1;
-              pacman.y = 1;
-              pacman.direction = 'right';
-              draw();
-              return;
-            }
-          }
-        }
-      }
-      draw();
-    }
-
-    // Keyboard controls
-    document.addEventListener('keydown', e => {
-      switch (e.key) {
-        case 'ArrowUp': tryMove(0, -1); break;
-        case 'ArrowDown': tryMove(0, 1); break;
-        case 'ArrowLeft': tryMove(-1, 0); break;
-        case 'ArrowRight': tryMove(1, 0); break;
-      }
-    });
-
-    // Mobile touch controls with iOS support
-    document.querySelectorAll('.control-btn').forEach(btn => {
-      let touchStartTime = 0;
-      let touchEndTime = 0;
-      
-      // Handle touch events for iOS
-      btn.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        touchStartTime = Date.now();
-        btn.style.transform = 'scale(0.95)';
-        btn.style.background = 'rgba(255, 215, 0, 0.5)';
-      });
-      
-      btn.addEventListener('touchend', (e) => {
-        e.preventDefault();
-        touchEndTime = Date.now();
-        
-        // Only trigger if it's a quick tap (not a long press)
-        if (touchEndTime - touchStartTime < 300) {
-          const direction = btn.dataset.direction;
-          switch (direction) {
-            case 'up': tryMove(0, -1); break;
-            case 'down': tryMove(0, 1); break;
-            case 'left': tryMove(-1, 0); break;
-            case 'right': tryMove(1, 0); break;
-          }
-        }
-        
-        // Reset button appearance
-        btn.style.transform = 'scale(1)';
-        btn.style.background = 'rgba(255, 215, 0, 0.2)';
-      });
-      
-      // Handle mouse clicks for desktop
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        const direction = btn.dataset.direction;
-        switch (direction) {
-          case 'up': tryMove(0, -1); break;
-          case 'down': tryMove(0, 1); break;
-          case 'left': tryMove(-1, 0); break;
-          case 'right': tryMove(1, 0); break;
-        }
-      });
-      
-      // Prevent context menu on long press
-      btn.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-      });
-    });
-
-    newGameBtn.addEventListener('click', resetGame);
-
-    // Initialize game
-    resetGame();
-    
-    // PWA Service Worker Registration
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js')
-          .then((registration) => {
-            console.log('SW registered: ', registration);
-          })
-          .catch((registrationError) => {
-            console.log('SW registration failed: ', registrationError);
-          });
-      });
-    }
-  </script>
+  <!-- JavaScript Files -->
+  <script type="module" src="js/main.js"></script>
 </body>
 </html> 

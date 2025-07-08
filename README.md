@@ -1,90 +1,231 @@
-# Brandon's Epic Game Studio 🎮
+# Y3 Labs - Pacboy 2025
 
-Welcome to Brandon's Epic Game Studio! This is a collection of fun games created by Brandon Yang, a 9-year-old game designer.
+A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate through randomly generated mazes, collect golden pellets, and avoid ghosts while using powerful weapons! Created by 9-year-old game designer Brandon Yang.
 
-## 🎯 Current Games
+🌐 **Live Website**: [https://viiha-gqaaa-aaaae-qfe4q-cai.ic0.app](https://viiha-gqaaa-aaaae-qfe4q-cai.ic0.app)
 
-### Pacman Adventure
-- **Description**: Navigate through randomly generated mazes, collect golden pellets, and avoid the colorful ghosts!
-- **Features**: 
-  - Random maze generation for unique gameplay every time
-  - 4 colorful ghosts with different personalities
-  - Sound effects for pellet collection
-  - Responsive controls using arrow keys
-- **How to Play**: Use arrow keys to move Pacman around the maze. Collect all pellets while avoiding the ghosts!
+## 🎮 Features
 
-## 🚀 Deployment to Internet Computer
+- **100 Progressive Levels**: Increasing difficulty with more ghosts
+- **Smart Maze Generation**: Simple, reliable maze generation system
+- **Weapon System**: Fire blast and freeze wind weapons with cooldowns
+- **Responsive Design**: Optimized for mobile and desktop
+- **PWA Support**: Install as a native app
+- **Touch Controls**: Full mobile support with touch controls
+- **Particle Effects**: Celebration and game over animations
+- **Audio System**: Web Audio API with synthesized sounds
+- **Landing Page**: Professional Y3 Labs studio introduction
+- **Modern UI**: Clean, minimalist design with consistent branding
 
-This project is configured to deploy to the Internet Computer blockchain using DFX.
+## 📁 Project Structure
+
+```
+src/
+├── index.html                 # Landing page (Y3 Labs)
+├── pacman.html               # Main game page (Pacboy 2025)
+├── css/
+│   ├── main.css              # Main styles and layout
+│   ├── controls.css          # Mobile controls and menu styles
+│   └── responsive.css        # Responsive design rules
+├── js/
+│   ├── main.js               # Main game initialization
+│   ├── utils/
+│   │   └── constants.js      # Game configuration constants
+│   ├── maze/
+│   │   ├── generator.js      # Maze generation logic
+│   │   └── renderer.js       # Maze and game element rendering
+│   ├── game/
+│   │   └── engine.js         # Main game engine and logic
+│   ├── audio/
+│   │   └── sounds.js         # Audio system (Web Audio API)
+│   └── ui/                   # UI components
+├── assets/
+│   ├── images/               # Game images and icons
+│   │   ├── brandonator.png   # Y3 Labs logo
+│   │   ├── bags_avatar.jpg   # Avatar image
+│   │   └── internet-computer-logo.png # Powered by logo
+│   └── sounds/               # Audio files
+├── manifest.json             # PWA manifest
+├── sw.js                     # Service worker
+├── offline.html              # Offline page
+└── waka.wav                  # Original sound file
+```
+
+## 🚀 Getting Started
 
 ### Prerequisites
-1. Install DFX (DFINITY Canister SDK)
+
+- Modern web browser with ES6 module support
+- Local web server (for development)
+
+### Installation
+
+1. **Clone or download the project**
+2. **Start a local web server**:
    ```bash
-   sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+   # Using Python 3
+   python3 -m http.server 8000
+   
+   # Using Node.js
+   npx http-server
+   
+   # Using PHP
+   php -S localhost:8000
    ```
+3. **Open your browser** and navigate to `http://localhost:8000/src/`
 
-2. Start the local Internet Computer replica
-   ```bash
-   dfx start --background
-   ```
+### Development
 
-### Local Development
-1. Deploy to local network:
-   ```bash
-   dfx deploy
-   ```
+The game is built with ES6 modules, so you need to serve it from a web server (not just open the HTML file directly).
 
-2. Open the application:
-   ```bash
-   dfx canister open game_studio
-   ```
+## 🎯 How to Play
 
-### Production Deployment
-1. Deploy to mainnet:
-   ```bash
-   dfx deploy --network ic
-   ```
+### Controls
+- **Desktop**: Arrow keys or WASD to move
+- **Mobile**: Touch controls below the game
+- **Weapons**: 
+  - Spacebar/F key for weapons
+  - Touch weapon buttons on mobile
 
-2. The canister will be available at: `https://[CANISTER_ID].ic0.app`
+### Objective
+1. Navigate through the maze
+2. Collect all golden pellets
+3. Reach the apple (exit) while avoiding ghosts
+4. Use weapons strategically to defeat ghosts
 
-## 🛠️ Project Structure
+### Weapons
+- **Fire Blast 🔥**: Long-range, high damage, long cooldown
+- **Freeze Wind ❄️**: Short-range, crowd control, medium cooldown
 
+## 🏗️ Architecture
+
+### Modular Design
+
+The game is organized into logical modules:
+
+#### **Constants (`js/utils/constants.js`)**
+- Game configuration values
+- Ghost and weapon settings
+- CSS class names
+- Game states
+
+#### **Maze System (`js/maze/`)**
+- **Generator**: Creates mazes with thin dividers
+- **Renderer**: Draws maze, walls, and game elements
+
+#### **Game Engine (`js/game/engine.js`)**
+- Main game loop and state management
+- Ghost AI and movement
+- Collision detection
+- Level progression
+
+#### **Main Controller (`js/main.js`)**
+- Initializes all systems
+- Handles user input
+- Manages UI interactions
+- PWA setup
+
+#### **Audio System (`js/audio/sounds.js`)**
+- Web Audio API implementation
+- Synthesized waka sound
+- Audio context management
+- Sound effect controls
+
+### Key Benefits
+
+1. **Maintainability**: Each module has a single responsibility
+2. **Testability**: Modules can be tested independently
+3. **Scalability**: Easy to add new features
+4. **Readability**: Clear separation of concerns
+5. **Reusability**: Modules can be reused in other projects
+
+## 🎨 Styling
+
+### CSS Organization
+
+- **`main.css`**: Core layout and game container styles
+- **`controls.css`**: Mobile controls, menu, and weapon buttons
+- **`responsive.css`**: Mobile and tablet optimizations
+
+### Design Principles
+
+- **Mobile-first**: Optimized for touch devices
+- **Responsive**: Adapts to different screen sizes
+- **Accessible**: Proper contrast and touch targets
+- **Modern**: Uses CSS Grid, Flexbox, and modern features
+
+## 🔧 Configuration
+
+Game settings can be modified in `js/utils/constants.js`:
+
+```javascript
+export const GAME_CONFIG = {
+  MAP_WIDTH: 10,              // Maze width
+  MAP_HEIGHT: 16,             // Maze height
+  GHOST_MOVE_INTERVAL: 350,   // Ghost movement speed
+  FIRE_BLAST_COOLDOWN: 5000,  // Weapon cooldown
+  // ... more settings
+};
 ```
-game-studio/
-├── src/
-│   ├── index.html          # Main landing page
-│   ├── pacman.html         # Pacman game
-│   └── waka.wav           # Sound effect for Pacman
-├── pacman/                 # Original game files
-├── dfx.json               # DFX configuration
-└── README.md              # This file
+
+## 📱 PWA Features
+
+- **Offline Support**: Game works without internet
+- **Installable**: Add to home screen
+- **App-like Experience**: Full-screen mode
+- **Service Worker**: Caches game assets
+
+## 🚀 Performance
+
+- **Efficient Rendering**: Canvas-based graphics
+- **Optimized Loops**: 60fps game loop
+- **Memory Management**: Proper cleanup of intervals
+- **Responsive Canvas**: Adapts to screen size
+
+## 🔮 Future Enhancements
+
+### Implemented Modules
+- **Audio System**: Web Audio API with synthesized sounds ✅
+- **Weapon System**: Fire blast and freeze wind mechanics ✅
+- **Particle System**: Celebration and game over effects ✅
+- **Landing Page**: Professional Y3 Labs studio introduction ✅
+
+### Future Enhancements
+- **Save System**: Progress persistence
+- **Level Editor**: Custom maze creation
+- **Multiplayer**: Real-time multiplayer
+- **Achievements**: Unlockable content
+- **Leaderboards**: Global scoring
+- **Themes**: Visual customization
+
+### Potential Features
+- **Multiplayer**: Real-time multiplayer
+- **Level Editor**: Custom maze creation
+- **Achievements**: Unlockable content
+- **Leaderboards**: Global scoring
+- **Themes**: Visual customization
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Blank Screen**: Make sure you're serving from a web server
+2. **Module Errors**: Check browser console for ES6 support
+3. **Touch Not Working**: Ensure touch events aren't blocked
+4. **Performance Issues**: Check for multiple game instances
+
+### Debug Mode
+
+Open browser console to see debug messages:
+```javascript
+// Enable debug logging
+localStorage.setItem('debug', 'true');
 ```
 
-## 🎨 Features
+## 📄 License
 
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Modern UI**: Beautiful gradient backgrounds and smooth animations
-- **Cross-Platform**: Playable on any device with a web browser
-- **Decentralized**: Hosted on the Internet Computer blockchain
+© 2025 Y3 Labs - All rights reserved
 
-## 👨‍💻 About the Developer
+## 🤝 Contributing
 
-Brandon Yang is a 9-year-old game designer who loves creating fun and engaging games. This studio showcases his passion for game development and creativity.
-
-## 🔮 Future Games
-
-Brandon is currently working on:
-- Puzzle adventures
-- Racing games
-- Educational games
-- And much more!
-
-Stay tuned for new releases!
-
-## 📞 Contact
-
-For questions or feedback about the games, feel free to reach out!
-
----
-
-*Built with ❤️ by Brandon Yang* 
+This is a personal project, but suggestions and feedback are welcome!
