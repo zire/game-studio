@@ -60,7 +60,7 @@
       justify-content: flex-start;
       gap: 10px;
       padding: 10px;
-      padding-top: max(10px, env(safe-area-inset-top) + 10px);
+      padding-top: max(54px, env(safe-area-inset-top) + 54px);
       width: 100%;
       max-width: 400px;
       min-height: 100vh;
@@ -402,75 +402,11 @@
       z-index: 2;
     }
     
-    /* Player Tips */
-    .player-tips {
-      background: rgba(255, 215, 0, 0.15);
-      border: 2px solid #FFD700;
-      border-radius: 8px;
-      padding: 15px;
-      margin: 20px 0;
-      max-width: 400px;
-      width: 100%;
-      z-index: 10;
-      display: block !important;
-    }
+
     
-    .tips-header {
-      color: #FFD700;
-      font-weight: bold;
-      font-size: 16px;
-      text-align: center;
-      margin-bottom: 10px;
-      font-family: monospace;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-    }
+
     
-    .tips-content {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    
-    .tip-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 11px;
-      color: #ccc;
-      line-height: 1.3;
-    }
-    
-    .tip-icon {
-      font-size: 14px;
-      min-width: 20px;
-      text-align: center;
-    }
-    
-    .tip-text {
-      flex: 1;
-    }
-    
-    /* Instructions */
-    .instructions {
-      color: #ccc;
-      text-align: center;
-      font-size: 12px;
-      margin-top: 8px;
-      opacity: 0.8;
-    }
-    
-    /* Studio Credit */
-    .studio-credit {
-      color: #FFD700;
-      text-align: center;
-      font-size: 11px;
-      font-family: monospace;
-      margin-top: 15px;
-      margin-bottom: 10px;
-      opacity: 0.9;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-      letter-spacing: 0.5px;
-    }
+
     
     /* Responsive Design */
     @media (max-width: 768px) {
@@ -482,28 +418,9 @@
         display: flex;
       }
       
-      .instructions {
-        font-size: 11px;
-      }
+
       
-      .player-tips {
-        padding: 10px;
-        margin: 8px 0;
-      }
-      
-      .tips-header {
-        font-size: 13px;
-      }
-      
-      .tip-item {
-        font-size: 10px;
-        gap: 6px;
-      }
-      
-      .tip-icon {
-        font-size: 12px;
-        min-width: 18px;
-      }
+
       
       #message {
         font-size: 1.3em;
@@ -788,8 +705,47 @@
           <li>Practice makes perfect!</li>
         </ul>
         
+        <h3>🎮 Controls</h3>
+        <ul>
+          <li><strong>Desktop:</strong> Arrow keys or WASD to move</li>
+          <li><strong>Mobile:</strong> Use the touch controls below the game</li>
+          <li><strong>Spacebar:</strong> Fire blast weapon 🔥</li>
+          <li><strong>F key:</strong> Freeze wind weapon ❄️</li>
+        </ul>
+        
         <h3>📱 PWA Features</h3>
         <p>This game works offline! Add it to your home screen for the best experience.</p>
+        
+        <h3>🎮 Player Tips</h3>
+        <ul>
+          <li><strong>Plan your route:</strong> Look ahead and plan your path before moving</li>
+          <li><strong>Use weapons wisely:</strong> Fire blast for long-range, freeze wind for crowd control</li>
+          <li><strong>Watch cooldowns:</strong> Don't waste weapons when they're recharging</li>
+          <li><strong>Stay mobile:</strong> Don't get cornered by ghosts</li>
+          <li><strong>Practice makes perfect:</strong> Higher levels get more challenging!</li>
+        </ul>
+        
+        <h3>📊 Game Statistics</h3>
+        <ul>
+          <li><strong>100 Levels:</strong> Progressive difficulty with more ghosts</li>
+          <li><strong>Scoring System:</strong> Time, pellets, and lives affect your score</li>
+          <li><strong>Weapon System:</strong> Two unique weapons with different strategies</li>
+          <li><strong>Ghost AI:</strong> Smart respawning at safe distances</li>
+        </ul>
+        
+        <h3>🎯 Advanced Strategies</h3>
+        <ul>
+          <li><strong>Weapon Timing:</strong> Use fire blast when ghosts are in a line</li>
+          <li><strong>Freeze Tactics:</strong> Freeze wind is perfect for escaping tight spots</li>
+          <li><strong>Route Optimization:</strong> Collect pellets efficiently to minimize time</li>
+          <li><strong>Ghost Psychology:</strong> Learn ghost movement patterns</li>
+        </ul>
+        
+        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #FFD700; text-align: center; font-size: 0.9em; opacity: 0.8;">
+          <p><strong>Produced by Brandon Yang</strong></p>
+          <p>Brandon's Epic Game Studio</p>
+          <p>© 2024 - All rights reserved</p>
+        </div>
       </div>
     </div>
     
@@ -825,46 +781,9 @@
       </button>
     </div>
     
-    <div class="instructions">
-      <div id="desktop-instructions">Use arrow keys to move <svg width="16" height="16" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle;">
-        <g transform="rotate(45 8 8)">
-          <path d="M8 1 A7 7 0 1 1 8 15 A7 7 0 0 1 8 1 M8 1 L8 8 L15 8 A7 7 0 0 0 8 1 Z" fill="#FFD700" stroke="#000" stroke-width="0.5"/>
-        </g>
-      </svg> to 🍎 | Spacebar: 🔥 Fire Blast | F: ❄️ Freeze Wind</div>
-      <div id="mobile-instructions" style="display: none;">Tap the arrow buttons to move <svg width="16" height="16" viewBox="0 0 16 16" style="display: inline-block; vertical-align: middle;">
-        <g transform="rotate(45 8 8)">
-          <path d="M8 1 A7 7 0 1 1 8 15 A7 7 0 0 1 8 1 M8 1 L8 8 L15 8 A7 7 0 0 0 8 1 Z" fill="#FFD700" stroke="#000" stroke-width="0.5"/>
-        </g>
-      </svg> to 🍎 | Use weapon buttons below</div>
-    </div>
+
     
-    <!-- Player Tips -->
-    <div class="player-tips">
-      <div class="tips-header">💡 Player Tips</div>
-      <div class="tips-content">
-        <div class="tip-item">
-          <span class="tip-icon">🔥</span>
-          <span class="tip-text">Fire Blast: Long range, high damage, 5s cooldown</span>
-        </div>
-        <div class="tip-item">
-          <span class="tip-icon">❄️</span>
-          <span class="tip-text">Freeze Wind: Short range, crowd control, 3s cooldown</span>
-        </div>
-        <div class="tip-item">
-          <span class="tip-icon">🎯</span>
-          <span class="tip-text">Weapons only hit ghosts in the direction you're facing</span>
-        </div>
-        <div class="tip-item">
-          <span class="tip-icon">⚡</span>
-          <span class="tip-text">Frozen ghosts can't move, burning ghosts get eliminated</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="studio-credit">
-      Produced by Brandonator Awesome Game Studio<br>
-      B·A·G·S
-    </div>
+
   </div>
 
   <script>
@@ -913,32 +832,9 @@
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Show/hide instructions based on device
-    function updateInstructions() {
-      const isMobile = window.innerWidth <= 768;
-      document.getElementById('desktop-instructions').style.display = isMobile ? 'none' : 'block';
-      document.getElementById('mobile-instructions').style.display = isMobile ? 'block' : 'none';
-    }
-    updateInstructions();
-    window.addEventListener('resize', updateInstructions);
+
     
-    // Ensure player tips are visible
-    function ensureTipsVisible() {
-      const tipsElement = document.querySelector('.player-tips');
-      if (tipsElement) {
-        tipsElement.style.display = 'block';
-        tipsElement.style.visibility = 'visible';
-        tipsElement.style.opacity = '1';
-        console.log('Player tips element found and made visible');
-      } else {
-        console.log('Player tips element not found');
-      }
-    }
-    
-    // Run after DOM is loaded
-    document.addEventListener('DOMContentLoaded', ensureTipsVisible);
-    // Also run immediately in case DOM is already loaded
-    ensureTipsVisible();
+
 
     // Load waka-waka sound effect
     const wakaSound = new Audio('waka.wav');
