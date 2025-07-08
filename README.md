@@ -1,139 +1,213 @@
-# Brandon's Epic Game Studio 🎮
+# Brandon's Pacboy Game Studio
 
-Welcome to Brandon's Epic Game Studio! This is a collection of fun games created by Brandon Yang, a 9-year-old game designer.
+A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate through randomly generated mazes, collect golden pellets, and avoid ghosts while using powerful weapons!
 
-## 🎯 Current Games
+## 🎮 Features
 
-### Pacboy Adventure
-- **Description**: Navigate through randomly generated mazes, collect golden pellets, and avoid the colorful ghosts!
-- **Features**: 
-  - Random maze generation for unique gameplay every time
-  - 4 colorful ghosts with different personalities
-  - **Weapon System**: Fire blast 🔥 and freeze wind ❄️ weapons
-  - Sound effects for pellet collection and weapons
-  - Responsive controls using arrow keys and touch
-  - **PWA Ready**: Install as mobile app for offline play
-- **How to Play**: Use arrow keys or touch controls to move Pacboy. Collect all pellets while avoiding ghosts. Use weapons to defend yourself!
+- **100 Progressive Levels**: Increasing difficulty with more ghosts
+- **Smart Maze Generation**: Simple, reliable maze generation system
+- **Weapon System**: Fire blast and freeze wind weapons with cooldowns
+- **Responsive Design**: Optimized for mobile and desktop
+- **PWA Support**: Install as a native app
+- **Touch Controls**: Full mobile support with touch controls
+- **Particle Effects**: Celebration and game over animations
 
-## 🚀 Local Development & Testing
+## 📁 Project Structure
 
-### Quick Start (Local Testing)
-1. Start a local HTTP server:
-   ```bash
-   python3 -m http.server 8080 --bind 0.0.0.0
-   ```
+```
+src/
+├── index.html                 # Main HTML file (minimal)
+├── css/
+│   ├── main.css              # Main styles and layout
+│   ├── controls.css          # Mobile controls and menu styles
+│   └── responsive.css        # Responsive design rules
+├── js/
+│   ├── main.js               # Main game initialization
+│   ├── utils/
+│   │   └── constants.js      # Game configuration constants
+│   ├── maze/
+│   │   ├── generator.js      # Maze generation logic
+│   │   └── renderer.js       # Maze and game element rendering
+│   ├── game/
+│   │   └── engine.js         # Main game engine and logic
+│   ├── ui/                   # UI components (future)
+│   ├── audio/                # Audio system (future)
+│   └── weapons/              # Weapon system (future)
+├── assets/
+│   ├── images/               # Game images and icons
+│   └── sounds/               # Audio files
+├── manifest.json             # PWA manifest
+├── sw.js                     # Service worker
+└── offline.html              # Offline page
+```
 
-2. Find your computer's IP address:
-   ```bash
-   ifconfig | grep "inet " | grep -v 127.0.0.1
-   ```
-
-3. Access the game:
-   - **Desktop**: `http://localhost:8080/src/pacman.html`
-   - **Mobile/Tablet**: `http://[YOUR_IP]:8080/src/pacman.html`
-   
-   Example: `http://192.168.198.136:8080/src/pacman.html`
-
-### Mobile Testing
-- **iPhone/iPad**: Open Safari and navigate to the mobile URL
-- **Android**: Open Chrome and navigate to the mobile URL
-- **Features to test**:
-  - Touch controls (arrow buttons, weapon buttons)
-  - Weapon system (fire blast 🔥, freeze wind ❄️)
-  - Sound effects (tap screen first to enable audio)
-  - Responsive design and performance
-  - **PWA Installation**: Look for "Add to Home Screen" option
-
-### PWA Features
-- **Offline Play**: Game works without internet connection
-- **App-like Experience**: Install on home screen for quick access
-- **Touch Optimized**: Designed specifically for mobile devices
-- **Auto-updates**: Game updates automatically when online
-
-### Troubleshooting
-- **Port already in use**: Try different ports (3000, 5000, 8080)
-- **Connection issues**: Ensure both devices are on the same WiFi network
-- **Firewall blocking**: Check Mac's firewall settings
-
-## 🌐 Deployment to Internet Computer
-
-This project is configured to deploy to the Internet Computer blockchain using DFX.
+## 🚀 Getting Started
 
 ### Prerequisites
-1. Install DFX (DFINITY Canister SDK)
+
+- Modern web browser with ES6 module support
+- Local web server (for development)
+
+### Installation
+
+1. **Clone or download the project**
+2. **Start a local web server**:
    ```bash
-   sh -ci "$(curl -fsSL https://internetcomputer.org/install.sh)"
+   # Using Python 3
+   python3 -m http.server 8000
+   
+   # Using Node.js
+   npx http-server
+   
+   # Using PHP
+   php -S localhost:8000
    ```
+3. **Open your browser** and navigate to `http://localhost:8000/src/`
 
-2. Start the local Internet Computer replica
-   ```bash
-   dfx start --background
-   ```
+### Development
 
-### Local DFX Development
-1. Deploy to local network:
-   ```bash
-   dfx deploy
-   ```
+The game is built with ES6 modules, so you need to serve it from a web server (not just open the HTML file directly).
 
-2. Open the application:
-   ```bash
-   dfx canister open game_studio
-   ```
+## 🎯 How to Play
 
-### Browser Compatibility Notes
-- **Safari**: Works well with automatic refresh
-- **Chrome**: Usually handles cache updates properly
-- **Firefox**: May require hard refresh after dfx deployments
-  - **Hard Refresh**: `Cmd + Shift + R` (Mac) or `Ctrl + Shift + R` (Windows/Linux)
-  - **Alternative**: Open Developer Tools (F12) → Network tab → Check "Disable cache"
+### Controls
+- **Desktop**: Arrow keys or WASD to move
+- **Mobile**: Touch controls below the game
+- **Weapons**: 
+  - Spacebar/F key for weapons
+  - Touch weapon buttons on mobile
 
-### Production Deployment
-1. Deploy to mainnet:
-   ```bash
-   dfx deploy --network ic
-   ```
+### Objective
+1. Navigate through the maze
+2. Collect all golden pellets
+3. Reach the apple (exit) while avoiding ghosts
+4. Use weapons strategically to defeat ghosts
 
-2. The canister will be available at: `https://[CANISTER_ID].ic0.app`
+### Weapons
+- **Fire Blast 🔥**: Long-range, high damage, long cooldown
+- **Freeze Wind ❄️**: Short-range, crowd control, medium cooldown
 
-## 🛠️ Project Structure
+## 🏗️ Architecture
 
+### Modular Design
+
+The game is organized into logical modules:
+
+#### **Constants (`js/utils/constants.js`)**
+- Game configuration values
+- Ghost and weapon settings
+- CSS class names
+- Game states
+
+#### **Maze System (`js/maze/`)**
+- **Generator**: Creates mazes with thin dividers
+- **Renderer**: Draws maze, walls, and game elements
+
+#### **Game Engine (`js/game/engine.js`)**
+- Main game loop and state management
+- Ghost AI and movement
+- Collision detection
+- Level progression
+
+#### **Main Controller (`js/main.js`)**
+- Initializes all systems
+- Handles user input
+- Manages UI interactions
+- PWA setup
+
+### Key Benefits
+
+1. **Maintainability**: Each module has a single responsibility
+2. **Testability**: Modules can be tested independently
+3. **Scalability**: Easy to add new features
+4. **Readability**: Clear separation of concerns
+5. **Reusability**: Modules can be reused in other projects
+
+## 🎨 Styling
+
+### CSS Organization
+
+- **`main.css`**: Core layout and game container styles
+- **`controls.css`**: Mobile controls, menu, and weapon buttons
+- **`responsive.css`**: Mobile and tablet optimizations
+
+### Design Principles
+
+- **Mobile-first**: Optimized for touch devices
+- **Responsive**: Adapts to different screen sizes
+- **Accessible**: Proper contrast and touch targets
+- **Modern**: Uses CSS Grid, Flexbox, and modern features
+
+## 🔧 Configuration
+
+Game settings can be modified in `js/utils/constants.js`:
+
+```javascript
+export const GAME_CONFIG = {
+  MAP_WIDTH: 10,              // Maze width
+  MAP_HEIGHT: 16,             // Maze height
+  GHOST_MOVE_INTERVAL: 350,   // Ghost movement speed
+  FIRE_BLAST_COOLDOWN: 5000,  // Weapon cooldown
+  // ... more settings
+};
 ```
-game-studio/
-├── src/
-│   ├── index.html          # Main landing page
-│   ├── pacman.html         # Pacboy game
-│   └── waka.wav           # Sound effect for Pacboy
-├── pacman/                 # Original game files
-├── dfx.json               # DFX configuration
-└── README.md              # This file
+
+## 📱 PWA Features
+
+- **Offline Support**: Game works without internet
+- **Installable**: Add to home screen
+- **App-like Experience**: Full-screen mode
+- **Service Worker**: Caches game assets
+
+## 🚀 Performance
+
+- **Efficient Rendering**: Canvas-based graphics
+- **Optimized Loops**: 60fps game loop
+- **Memory Management**: Proper cleanup of intervals
+- **Responsive Canvas**: Adapts to screen size
+
+## 🔮 Future Enhancements
+
+### Planned Modules
+- **Audio System**: Sound effects and music
+- **Weapon System**: Advanced weapon mechanics
+- **UI Components**: Reusable UI elements
+- **Particle System**: Enhanced visual effects
+- **Save System**: Progress persistence
+
+### Potential Features
+- **Multiplayer**: Real-time multiplayer
+- **Level Editor**: Custom maze creation
+- **Achievements**: Unlockable content
+- **Leaderboards**: Global scoring
+- **Themes**: Visual customization
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Blank Screen**: Make sure you're serving from a web server
+2. **Module Errors**: Check browser console for ES6 support
+3. **Touch Not Working**: Ensure touch events aren't blocked
+4. **Performance Issues**: Check for multiple game instances
+
+### Debug Mode
+
+Open browser console to see debug messages:
+```javascript
+// Enable debug logging
+localStorage.setItem('debug', 'true');
 ```
 
-## 🎨 Features
+## 📄 License
 
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Modern UI**: Beautiful gradient backgrounds and smooth animations
-- **Cross-Platform**: Playable on any device with a web browser
-- **Decentralized**: Hosted on the Internet Computer blockchain
+© 2024 Brandon Yang - All rights reserved
 
-## 👨‍💻 About the Developer
+## 🤝 Contributing
 
-Brandon Yang is a 9-year-old game designer who loves creating fun and engaging games. This studio showcases his passion for game development and creativity.
-
-## 🔮 Future Games
-
-Brandon is currently working on:
-- Puzzle adventures
-- Racing games
-- Educational games
-- And much more!
-
-Stay tuned for new releases!
-
-## 📞 Contact
-
-For questions or feedback about the games, feel free to reach out!
+This is a personal project, but suggestions and feedback are welcome!
 
 ---
 
-*Built with ❤️ by Brandon Yang* 
+**Made with ❤️ by Brandon Yang**
+*Brandon's Epic Game Studio* 

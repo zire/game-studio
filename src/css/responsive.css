@@ -1,0 +1,271 @@
+/* Responsive Design */
+@media (max-width: 768px) {
+  .mobile-controls {
+    display: flex;
+  }
+  
+  .weapon-controls {
+    display: flex;
+  }
+  
+  .game-message-overlay {
+    font-size: 1.3em;
+  }
+  
+  #newGameBtn {
+    font-size: 1em;
+    padding: 8px 16px;
+  }
+  
+  .header-stats {
+    font-size: 0.8em;
+    gap: 12px;
+  }
+  
+  #levelDisplay, #livesDisplay, #scoreDisplay {
+    font-size: inherit;
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-container {
+    padding: 8px 0px;
+    gap: 8px;
+    justify-content: flex-start;
+    padding-top: max(8px, env(safe-area-inset-top) + 8px);
+    max-width: 100%;
+  }
+  
+  .game-header {
+    padding: 8px 12px 8px 4px;
+    margin-bottom: 8px;
+    width: 100%;
+  }
+  
+  .header-right {
+    align-items: flex-end;
+  }
+  
+  .header-stats {
+    gap: 8px;
+    font-size: 0.75em;
+    justify-content: flex-end;
+  }
+  
+  .game-title {
+    font-size: 1.1em;
+  }
+  
+  .control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .weapon-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 20px;
+  }
+  
+  .weapon-icon {
+    font-size: 18px;
+  }
+  
+  .cooldown-text {
+    font-size: 7px;
+  }
+  
+  .mobile-controls {
+    gap: 10px;
+    margin-top: 12px;
+  }
+  
+  .header-stats {
+    font-size: 0.75em;
+    gap: 8px;
+  }
+  
+  #levelDisplay, #livesDisplay, #scoreDisplay {
+    font-size: inherit;
+    padding: 0;
+  }
+}
+
+/* iPhone 16 Pro Max and similar large phones */
+@media (max-width: 430px) and (min-height: 800px) {
+  .game-container {
+    padding-top: max(15px, env(safe-area-inset-top) + 15px);
+    padding-left: 0px;
+    padding-right: 0px;
+    gap: 8px;
+    max-width: 100%;
+  }
+  
+  .game-header {
+    padding: 10px 20px 10px 5px;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  
+  .header-right {
+    align-items: flex-end;
+  }
+  
+  .header-stats {
+    gap: 6px;
+    font-size: 0.7em;
+    justify-content: flex-end;
+  }
+  
+  .header-stats {
+    font-size: 0.8em;
+    gap: 10px;
+  }
+  
+  #levelDisplay, #livesDisplay, #scoreDisplay {
+    font-size: inherit;
+    padding: 0;
+  }
+  
+  canvas {
+    max-height: 70vh;
+  }
+  
+  .mobile-controls {
+    margin-top: 15px;
+  }
+}
+
+/* Ultra-wide phones */
+@media (max-width: 360px) {
+  .game-container {
+    padding-top: max(6px, env(safe-area-inset-top) + 6px);
+    padding-left: 0px;
+    padding-right: 0px;
+    max-width: 100%;
+  }
+  
+  .game-header {
+    padding: 6px 10px 6px 3px;
+    margin-bottom: 6px;
+    width: 100%;
+  }
+  
+  .header-right {
+    align-items: flex-end;
+  }
+  
+  .header-stats {
+    gap: 4px;
+    font-size: 0.65em;
+    justify-content: flex-end;
+  }
+  
+  .game-title {
+    font-size: 1em;
+  }
+  
+  .header-stats {
+    font-size: 0.7em;
+    gap: 6px;
+  }
+  
+  #levelDisplay, #livesDisplay, #scoreDisplay {
+    font-size: inherit;
+    padding: 0;
+  }
+  
+  .control-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+  
+  .weapon-btn {
+    width: 55px;
+    height: 55px;
+    font-size: 18px;
+  }
+  
+  .weapon-icon {
+    font-size: 16px;
+  }
+  
+  .cooldown-text {
+    font-size: 6px;
+  }
+  
+  .mobile-controls {
+    gap: 8px;
+    margin-top: 10px;
+  }
+  
+  .studio-credit {
+    font-size: 10px;
+    margin-top: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .player-tips {
+    padding: 8px;
+    margin: 6px 0;
+  }
+  
+  .tips-header {
+    font-size: 12px;
+  }
+  
+  .tip-item {
+    font-size: 9px;
+    gap: 5px;
+  }
+  
+  .tip-icon {
+    font-size: 11px;
+    min-width: 16px;
+  }
+}
+
+/* Portrait mode optimizations */
+@media (orientation: portrait) {
+  .game-container {
+    max-width: 350px;
+    height: 100vh;
+  }
+  
+  canvas {
+    max-height: 70vh;
+  }
+  
+  #message {
+    font-size: 1.1em;
+  }
+}
+
+/* Firefox mobile specific fixes */
+@-moz-document url-prefix() {
+  body {
+    height: 100vh;
+    min-height: 100vh;
+  }
+  
+  .game-container {
+    height: 100vh;
+    min-height: 100vh;
+  }
+}
+
+/* Dynamic Island and notch devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .game-container {
+    padding-top: max(10px, env(safe-area-inset-top) + 10px);
+  }
+  
+  @media (max-width: 430px) and (min-height: 800px) {
+    .game-container {
+      padding-top: max(20px, env(safe-area-inset-top) + 20px);
+    }
+  }
+} 
