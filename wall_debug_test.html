@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wall Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .maze-display {
+            border: 2px solid #6a6a8a;
+            padding: 10px;
+            background: #16213e;
+            border-radius: 8px;
+        }
+        .maze-canvas {
+            border: 1px solid #6a6a8a;
+            background: #0f3460;
+        }
+        .stats {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #c73e1d;
+        }
+        .debug-info {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wall Generation Debug Test</h1>
+    
+    <div class="controls">
+        <button onclick="testBasicGeneration()">Test Basic Generation</button>
+        <button onclick="testWithValidation()">Test With Validation</button>
+        <button onclick="testWallPlacement()">Test Wall Placement</button>
+    </div>
+    
+    <div class="debug-info" id="debug-info">
+        <h3>Debug Information</h3>
+        <div id="debug-content">Click a test button to start debugging.</div>
+    </div>
+    
+    <div class="test-container" id="test-results">
+        <!-- Test results will be displayed here -->
+    </div>
+
+    <script type="module">
+        // Simplified maze generator for debugging
+        class DebugMazeGenerator {
+            constructor() {
+                this.horizontalWalls = [];
+                this.verticalWalls = [];
+            }
+
+            GAME_CONFIG = {
+                MAP_WIDTH: 10,
+                MAP_HEIGHT: 16,
+                BASE_WALL_DENSITY: 0.15,
+                MAX_WALL_DENSITY: 0.4,
+                DENSITY_INCREMENT: 0.02,
+                MIN_WALLS: 10,
+                GUARANTEED_WALLS: 5
+            };
+
+            generateBasicMaze(level = 1) {
+                console.log('Generating basic maze for level:', level);
+                
+                const newMap = [];
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    const row = [];
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        row.push(0);
+                    }
+                    newMap.push(row);
+                }
+                
+                // Clear existing walls
+                this.horizontalWalls.length = 0;
+                this.verticalWalls.length = 0;
+                
+                // Calculate wall density
+                const levelDensity = Math.min(
+                    this.GAME_CONFIG.MAX_WALL_DENSITY, 
+                    this.GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * this.GAME_CONFIG.DENSITY_INCREMENT
+                );
+                
+                console.log('Wall density:', levelDensity);
+                
+                let attemptedWalls = 0;
+                let placedWalls = 0;
+                
+                // Create horizontal walls
+                for (let y = 1; y < this.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        attemptedWalls++;
+                        if (Math.random() < levelDensity) {
+                            this.horizontalWalls.push({x, y});
+                            placedWalls++;
+                        }
+                    }
+                }
+                
+                // Create vertical walls
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    for (let x = 1; x < this.GAME_CONFIG.MAP_WIDTH - 1; x++) {
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        attemptedWalls++;
+                        if (Math.random() < levelDensity) {
+                            this.verticalWalls.push({x, y});
+                            placedWalls++;
+                        }
+                    }
+                }
+                
+                // Place exit
+                newMap[this.GAME_CONFIG.MAP_HEIGHT - 1][this.GAME_CONFIG.MAP_WIDTH - 1] = 2;
+                
+                return {
+                    map: newMap,
+                    horizontalWalls: [...this.horizontalWalls],
+                    verticalWalls: [...this.verticalWalls],
+                    stats: {
+                        attemptedWalls,
+                        placedWalls,
+                        levelDensity
+                    }
+                };
+            }
+
+            generateWithValidation(level = 1) {
+                console.log('Generating maze with validation for level:', level);
+                
+                const newMap = [];
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    const row = [];
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        row.push(0);
+                    }
+                    newMap.push(row);
+                }
+                
+                // Clear existing walls
+                this.horizontalWalls.length = 0;
+                this.verticalWalls.length = 0;
+                
+                // Calculate wall density
+                const levelDensity = Math.min(
+                    this.GAME_CONFIG.MAX_WALL_DENSITY, 
+                    this.GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * this.GAME_CONFIG.DENSITY_INCREMENT
+                );
+                
+                console.log('Wall density:', levelDensity);
+                
+                let attemptedWalls = 0;
+                let placedWalls = 0;
+                let rejectedWalls = 0;
+                
+                // Create horizontal walls with validation
+                for (let y = 1; y < this.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        attemptedWalls++;
+                        if (Math.random() < levelDensity) {
+                            if (this.canPlaceWallSafely(x, y, 'horizontal', newMap)) {
+                                this.horizontalWalls.push({x, y});
+                                placedWalls++;
+                            } else {
+                                rejectedWalls++;
+                            }
+                        }
+                    }
+                }
+                
+                // Create vertical walls with validation
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    for (let x = 1; x < this.GAME_CONFIG.MAP_WIDTH - 1; x++) {
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        attemptedWalls++;
+                        if (Math.random() < levelDensity) {
+                            if (this.canPlaceWallSafely(x, y, 'vertical', newMap)) {
+                                this.verticalWalls.push({x, y});
+                                placedWalls++;
+                            } else {
+                                rejectedWalls++;
+                            }
+                        }
+                    }
+                }
+                
+                // Place exit
+                newMap[this.GAME_CONFIG.MAP_HEIGHT - 1][this.GAME_CONFIG.MAP_WIDTH - 1] = 2;
+                
+                return {
+                    map: newMap,
+                    horizontalWalls: [...this.horizontalWalls],
+                    verticalWalls: [...this.verticalWalls],
+                    stats: {
+                        attemptedWalls,
+                        placedWalls,
+                        rejectedWalls,
+                        levelDensity
+                    }
+                };
+            }
+
+            canPlaceWallSafely(x, y, wallType, map) {
+                // Simple validation - just check if there's still a path from start to exit
+                const tempHorizontalWalls = [...this.horizontalWalls];
+                const tempVerticalWalls = [...this.verticalWalls];
+                
+                if (wallType === 'horizontal') {
+                    tempHorizontalWalls.push({x, y});
+                } else {
+                    tempVerticalWalls.push({x, y});
+                }
+                
+                return this.hasPathToExit(map, tempHorizontalWalls, tempVerticalWalls);
+            }
+
+            hasPathToExit(map, horizontalWalls, verticalWalls) {
+                const visited = new Set();
+                const queue = [{x: 0, y: 0}];
+                
+                while (queue.length > 0) {
+                    const {x, y} = queue.shift();
+                    const key = `${x},${y}`;
+                    
+                    if (visited.has(key)) continue;
+                    visited.add(key);
+                    
+                    if (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                        return true;
+                    }
+                    
+                    const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                    for (const [dx, dy] of directions) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        if (nx >= 0 && nx < this.GAME_CONFIG.MAP_WIDTH && ny >= 0 && ny < this.GAME_CONFIG.MAP_HEIGHT && 
+                            (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+                            
+                            let blocked = false;
+                            
+                            if (dx === 1) {
+                                blocked = verticalWalls.some(wall => wall.x === x && wall.y === y);
+                            } else if (dx === -1) {
+                                blocked = verticalWalls.some(wall => wall.x === nx && wall.y === y);
+                            } else if (dy === 1) {
+                                blocked = horizontalWalls.some(wall => wall.x === x && wall.y === y);
+                            } else if (dy === -1) {
+                                blocked = horizontalWalls.some(wall => wall.x === x && wall.y === ny);
+                            }
+                            
+                            if (!blocked) {
+                                queue.push({x: nx, y: ny});
+                            }
+                        }
+                    }
+                }
+                
+                return false;
+            }
+        }
+
+        // Canvas rendering
+        function drawMaze(canvas, mazeData, tileSize = 12) {
+            const ctx = canvas.getContext('2d');
+            const { map, horizontalWalls, verticalWalls } = mazeData;
+            
+            // Clear canvas
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate tile size
+            const mapWidth = map[0].length;
+            const mapHeight = map.length;
+            const maxTileSize = Math.min(canvas.width / mapWidth, canvas.height / mapHeight);
+            tileSize = Math.min(tileSize, maxTileSize);
+            
+            // Center the maze
+            const offsetX = (canvas.width - mapWidth * tileSize) / 2;
+            const offsetY = (canvas.height - mapHeight * tileSize) / 2;
+            
+            // Draw grid
+            ctx.strokeStyle = '#6a6a8a';
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= mapWidth; x++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX + x * tileSize, offsetY);
+                ctx.lineTo(offsetX + x * tileSize, offsetY + mapHeight * tileSize);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= mapHeight; y++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX, offsetY + y * tileSize);
+                ctx.lineTo(offsetX + mapWidth * tileSize, offsetY + y * tileSize);
+                ctx.stroke();
+            }
+            
+            // Draw walls
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2;
+            
+            // Draw horizontal walls
+            for (const wall of horizontalWalls) {
+                const x1 = offsetX + wall.x * tileSize;
+                const y1 = offsetY + (wall.y + 1) * tileSize;
+                const x2 = offsetX + (wall.x + 1) * tileSize;
+                const y2 = offsetY + (wall.y + 1) * tileSize;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Draw vertical walls
+            for (const wall of verticalWalls) {
+                const x1 = offsetX + (wall.x + 1) * tileSize;
+                const y1 = offsetY + wall.y * tileSize;
+                const x2 = offsetX + (wall.x + 1) * tileSize;
+                const y2 = offsetY + (wall.y + 1) * tileSize;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Draw start and exit
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(offsetX, offsetY, tileSize, tileSize);
+            
+            ctx.fillStyle = '#f44336';
+            ctx.fillRect(offsetX + (mapWidth - 1) * tileSize, offsetY + (mapHeight - 1) * tileSize, tileSize, tileSize);
+            
+            // Add labels
+            ctx.fillStyle = 'white';
+            ctx.font = '8px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', offsetX + tileSize/2, offsetY + tileSize/2);
+            ctx.fillText('E', offsetX + (mapWidth - 0.5) * tileSize, offsetY + (mapHeight - 0.5) * tileSize);
+        }
+
+        // Test functions
+        window.testBasicGeneration = function() {
+            const generator = new DebugMazeGenerator();
+            const result = generator.generateBasicMaze(1);
+            
+            displayResult('Basic Generation', result);
+        };
+
+        window.testWithValidation = function() {
+            const generator = new DebugMazeGenerator();
+            const result = generator.generateWithValidation(1);
+            
+            displayResult('With Validation', result);
+        };
+
+        window.testWallPlacement = function() {
+            const generator = new DebugMazeGenerator();
+            
+            // Test individual wall placement
+            const map = [];
+            for (let y = 0; y < generator.GAME_CONFIG.MAP_HEIGHT; y++) {
+                const row = [];
+                for (let x = 0; x < generator.GAME_CONFIG.MAP_WIDTH; x++) {
+                    row.push(0);
+                }
+                map.push(row);
+            }
+            map[generator.GAME_CONFIG.MAP_HEIGHT - 1][generator.GAME_CONFIG.MAP_WIDTH - 1] = 2;
+            
+            let testResults = [];
+            for (let x = 1; x < generator.GAME_CONFIG.MAP_WIDTH - 1; x++) {
+                for (let y = 1; y < generator.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+                    const canPlaceHorizontal = generator.canPlaceWallSafely(x, y, 'horizontal', map);
+                    const canPlaceVertical = generator.canPlaceWallSafely(x, y, 'vertical', map);
+                    testResults.push({x, y, horizontal: canPlaceHorizontal, vertical: canPlaceVertical});
+                }
+            }
+            
+            displayWallPlacementTest(testResults);
+        };
+
+        function displayResult(title, result) {
+            const container = document.getElementById('test-results');
+            const mazeDiv = document.createElement('div');
+            mazeDiv.className = 'maze-display';
+            
+            mazeDiv.innerHTML = `
+                <h4>${title}</h4>
+                <div style="text-align: center;">
+                    <canvas id="canvas-${Date.now()}" width="150" height="240" class="maze-canvas"></canvas>
+                </div>
+                <div class="stats">
+                    <div>Horizontal Walls: ${result.horizontalWalls.length}</div>
+                    <div>Vertical Walls: ${result.verticalWalls.length}</div>
+                    <div>Total Walls: ${result.horizontalWalls.length + result.verticalWalls.length}</div>
+                    ${result.stats ? `
+                        <div>Attempted: ${result.stats.attemptedWalls}</div>
+                        <div>Placed: ${result.stats.placedWalls}</div>
+                        ${result.stats.rejectedWalls ? `<div>Rejected: ${result.stats.rejectedWalls}</div>` : ''}
+                        <div>Density: ${(result.stats.levelDensity * 100).toFixed(1)}%</div>
+                    ` : ''}
+                </div>
+            `;
+            
+            container.appendChild(mazeDiv);
+            
+            setTimeout(() => {
+                const canvas = document.getElementById(`canvas-${Date.now()}`);
+                if (canvas) {
+                    drawMaze(canvas, result);
+                }
+            }, 10);
+        }
+
+        function displayWallPlacementTest(results) {
+            const container = document.getElementById('test-results');
+            const testDiv = document.createElement('div');
+            testDiv.className = 'maze-display';
+            
+            let horizontalCount = 0;
+            let verticalCount = 0;
+            let totalPositions = 0;
+            
+            results.forEach(r => {
+                totalPositions++;
+                if (r.horizontal) horizontalCount++;
+                if (r.vertical) verticalCount++;
+            });
+            
+            testDiv.innerHTML = `
+                <h4>Wall Placement Test</h4>
+                <div class="stats">
+                    <div>Total Positions: ${totalPositions}</div>
+                    <div>Can Place Horizontal: ${horizontalCount} (${(horizontalCount/totalPositions*100).toFixed(1)}%)</div>
+                    <div>Can Place Vertical: ${verticalCount} (${(verticalCount/totalPositions*100).toFixed(1)}%)</div>
+                </div>
+            `;
+            
+            container.appendChild(testDiv);
+        }
+
+        // Update debug info
+        function updateDebugInfo() {
+            const debugContent = document.getElementById('debug-content');
+            debugContent.innerHTML = `
+                <div>This test helps identify why walls might not be appearing.</div>
+                <div>• Basic Generation: Tests wall generation without validation</div>
+                <div>• With Validation: Tests wall generation with path validation</div>
+                <div>• Wall Placement: Tests which positions can accept walls</div>
+            `;
+        }
+
+        updateDebugInfo();
+    </script>
+</body>
+</html> 

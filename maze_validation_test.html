@@ -88,11 +88,11 @@
             GAME_CONFIG = {
                 MAP_WIDTH: 10,
                 MAP_HEIGHT: 16,
-                BASE_WALL_DENSITY: 0.15,
-                MAX_WALL_DENSITY: 0.4,
-                DENSITY_INCREMENT: 0.02,
-                MIN_WALLS: 10,
-                GUARANTEED_WALLS: 5
+                BASE_WALL_DENSITY: 0.25,
+                MAX_WALL_DENSITY: 0.5,
+                DENSITY_INCREMENT: 0.03,
+                MIN_WALLS: 15,
+                GUARANTEED_WALLS: 8
             };
 
             generateRandomMap(level = 1) {
@@ -112,7 +112,7 @@
                 this.horizontalWalls.length = 0;
                 this.verticalWalls.length = 0;
                 
-                // Generate simple maze with validation
+                // Generate simple maze with basic validation (matching production)
                 this.generateSimpleMazeWithValidation(level, newMap);
                 
                 // Ensure start position is open (top-left corner)
@@ -135,91 +135,294 @@
                 };
             }
 
-            generateSimpleMazeWithValidation(level, map) {
-                console.log('Generating simple maze for level:', level);
+                        generateSimpleMazeWithValidation(level, map) {
+              console.log('Generating simple maze for level:', level);
+              
+              // Calculate wall density based on level (more walls for higher levels)
+              const levelDensity = Math.min(
+                this.GAME_CONFIG.MAX_WALL_DENSITY, 
+                this.GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * this.GAME_CONFIG.DENSITY_INCREMENT
+              );
+              
+              console.log('Wall density:', levelDensity);
+              
+              // Create horizontal walls (dividing rows) with basic validation
+              for (let y = 1; y < this.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+                for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                  // Skip walls near start and end
+                  if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                    continue;
+                  }
+                  
+                  // Add wall with probability based on level, but only if it doesn't block the path
+                  if (Math.random() < levelDensity) {
+                    if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
+                      this.horizontalWalls.push({x, y});
+                    }
+                  }
+                }
+              }
+              
+              // Create vertical walls (dividing columns) with basic validation
+              for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                for (let x = 1; x < this.GAME_CONFIG.MAP_WIDTH - 1; x++) {
+                  // Skip walls near start and end
+                  if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                    continue;
+                  }
+                  
+                  // Add wall with probability based on level, but only if it doesn't block the path
+                  if (Math.random() < levelDensity) {
+                    if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
+                      this.verticalWalls.push({x, y});
+                    }
+                  }
+                }
+              }
+              
+              // Ensure we have a minimum number of walls for gameplay
+              if (this.horizontalWalls.length + this.verticalWalls.length < this.GAME_CONFIG.MIN_WALLS) {
+                console.log('Adding minimum walls for gameplay');
+                // Add some guaranteed walls with basic validation
+                for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
+                  const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
+                  const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
+                  if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
+                    this.horizontalWalls.push({x, y});
+                  }
+                }
+                for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
+                  const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
+                  const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
+                  if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
+                    this.verticalWalls.push({x, y});
+                  }
+                }
+              }
+              
+              console.log('Simple maze generated. Total walls:', this.horizontalWalls.length + this.verticalWalls.length);
+            }
+
+                        canPlaceWallSafely(x, y, wallType, map) {
+              // Temporarily add the wall
+              const tempHorizontalWalls = [...this.horizontalWalls];
+              const tempVerticalWalls = [...this.verticalWalls];
+              
+              if (wallType === 'horizontal') {
+                tempHorizontalWalls.push({x, y});
+              } else {
+                tempVerticalWalls.push({x, y});
+              }
+              
+              // Check if there's still a path from start to exit
+              const hasPath = this.hasPathToExit(map, tempHorizontalWalls, tempVerticalWalls);
+              
+              return hasPath;
+            }
+
+            getPotentialGhostPositions() {
+              // Return potential ghost spawn positions (strategic positions)
+              const positions = [];
+              
+              // Add positions near the middle of the maze (where ghosts typically spawn)
+              const centerX = Math.floor(this.GAME_CONFIG.MAP_WIDTH / 2);
+              const centerY = Math.floor(this.GAME_CONFIG.MAP_HEIGHT / 2);
+              
+              // Add center and surrounding positions
+              for (let dx = -1; dx <= 1; dx++) {
+                for (let dy = -1; dy <= 1; dy++) {
+                  const x = centerX + dx;
+                  const y = centerY + dy;
+                  if (x >= 1 && x < this.GAME_CONFIG.MAP_WIDTH - 1 && y >= 1 && y < this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                    positions.push({x, y});
+                  }
+                }
+              }
+              
+              // Add some additional strategic positions
+              const strategicPositions = [
+                {x: 2, y: 2},
+                {x: this.GAME_CONFIG.MAP_WIDTH - 3, y: 2},
+                {x: 2, y: this.GAME_CONFIG.MAP_HEIGHT - 3},
+                {x: this.GAME_CONFIG.MAP_WIDTH - 3, y: this.GAME_CONFIG.MAP_HEIGHT - 3}
+              ];
+              
+              for (const pos of strategicPositions) {
+                if (pos.x >= 1 && pos.x < this.GAME_CONFIG.MAP_WIDTH - 1 && 
+                    pos.y >= 1 && pos.y < this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                  positions.push(pos);
+                }
+              }
+              
+              return positions;
+            }
+
+            hasPathFromPosition(startX, startY, map, horizontalWalls, verticalWalls) {
+              // Use BFS to check if there's a path from any position to the exit
+              const visited = new Set();
+              const queue = [{x: startX, y: startY}];
+              
+              while (queue.length > 0) {
+                const {x, y} = queue.shift();
+                const key = `${x},${y}`;
                 
-                // Calculate wall density based on level (more walls for higher levels)
-                const levelDensity = Math.min(
-                    this.GAME_CONFIG.MAX_WALL_DENSITY, 
-                    this.GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * this.GAME_CONFIG.DENSITY_INCREMENT
+                if (visited.has(key)) continue;
+                visited.add(key);
+                
+                // Check if we reached the exit
+                if (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                  return true;
+                }
+                
+                // Check all 4 directions
+                const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                for (const [dx, dy] of directions) {
+                  const nx = x + dx;
+                  const ny = y + dy;
+                  
+                  if (nx >= 0 && nx < this.GAME_CONFIG.MAP_WIDTH && ny >= 0 && ny < this.GAME_CONFIG.MAP_HEIGHT && 
+                      (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+                    
+                    // Check if there's a divider blocking this move
+                    let blocked = false;
+                    
+                    if (dx === 1) { // Moving right
+                      blocked = verticalWalls.some(wall => wall.x === x && wall.y === y);
+                    } else if (dx === -1) { // Moving left
+                      blocked = verticalWalls.some(wall => wall.x === nx && wall.y === y);
+                    } else if (dy === 1) { // Moving down
+                      blocked = horizontalWalls.some(wall => wall.x === x && wall.y === y);
+                    } else if (dy === -1) { // Moving up
+                      blocked = horizontalWalls.some(wall => wall.x === x && wall.y === ny);
+                    }
+                    
+                    if (!blocked) {
+                      queue.push({x: nx, y: ny});
+                    }
+                  }
+                }
+              }
+              
+              return false;
+            }
+
+            createsDeadWeightRoom(x, y, wallType, map, horizontalWalls, verticalWalls) {
+              // Check if placing this wall creates a dead weight room
+              // A dead weight room is a room with no exits (enclosed by walls/borders)
+              
+              // Get the area that would be affected by this wall
+              const affectedArea = this.getAffectedArea(x, y, wallType);
+              
+              for (const area of affectedArea) {
+                if (this.isDeadWeightRoom(area, map, horizontalWalls, verticalWalls)) {
+                  return true;
+                }
+              }
+              
+              return false;
+            }
+
+            getAffectedArea(x, y, wallType) {
+              // Return the areas that would be affected by placing this wall
+              const areas = [];
+              
+              if (wallType === 'horizontal') {
+                // Horizontal wall affects the areas above and below it
+                if (y > 0) {
+                  areas.push({x1: 0, y1: 0, x2: this.GAME_CONFIG.MAP_WIDTH - 1, y2: y});
+                }
+                if (y < this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                  areas.push({x1: 0, y1: y + 1, x2: this.GAME_CONFIG.MAP_WIDTH - 1, y2: this.GAME_CONFIG.MAP_HEIGHT - 1});
+                }
+              } else {
+                // Vertical wall affects the areas left and right of it
+                if (x > 0) {
+                  areas.push({x1: 0, y1: 0, x2: x, y2: this.GAME_CONFIG.MAP_HEIGHT - 1});
+                }
+                if (x < this.GAME_CONFIG.MAP_WIDTH - 1) {
+                  areas.push({x1: x + 1, y1: 0, x2: this.GAME_CONFIG.MAP_WIDTH - 1, y2: this.GAME_CONFIG.MAP_HEIGHT - 1});
+                }
+              }
+              
+              return areas;
+            }
+
+            isDeadWeightRoom(area, map, horizontalWalls, verticalWalls) {
+              // Check if an area is a dead weight room (no exits)
+              const {x1, y1, x2, y2} = area;
+              
+              // Count walls and borders around this area
+              let wallCount = 0;
+              let borderCount = 0;
+              
+              // Check top border/wall
+              if (y1 === 0) {
+                borderCount++;
+              } else {
+                // Check for horizontal wall at top
+                const hasTopWall = horizontalWalls.some(wall => 
+                  wall.x >= x1 && wall.x <= x2 && wall.y === y1
                 );
-                
-                console.log('Wall density:', levelDensity);
-                
-                // Create horizontal walls (dividing rows) with validation
-                for (let y = 1; y < this.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
-                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
-                        // Skip walls near start and end
-                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
-                            continue;
-                        }
-                        
-                        // Add wall with probability based on level, but only if it doesn't block the path
-                        if (Math.random() < levelDensity) {
-                            // Test if adding this wall would block the path to the exit
-                            if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
-                                this.horizontalWalls.push({x, y});
-                            }
-                        }
-                    }
-                }
-                
-                // Create vertical walls (dividing columns) with validation
-                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
-                    for (let x = 1; x < this.GAME_CONFIG.MAP_WIDTH - 1; x++) {
-                        // Skip walls near start and end
-                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
-                            continue;
-                        }
-                        
-                        // Add wall with probability based on level, but only if it doesn't block the path
-                        if (Math.random() < levelDensity) {
-                            // Test if adding this wall would block the path to the exit
-                            if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
-                                this.verticalWalls.push({x, y});
-                            }
-                        }
-                    }
-                }
-                
-                // Ensure we have a minimum number of walls for gameplay
-                if (this.horizontalWalls.length + this.verticalWalls.length < this.GAME_CONFIG.MIN_WALLS) {
-                    console.log('Adding minimum walls for gameplay');
-                    // Add some guaranteed walls with validation
-                    for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
-                        const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
-                        const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
-                        if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
-                            this.horizontalWalls.push({x, y});
-                        }
-                    }
-                    for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
-                        const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
-                        const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
-                        if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
-                            this.verticalWalls.push({x, y});
-                        }
-                    }
-                }
-                
-                console.log('Simple maze generated. Total walls:', this.horizontalWalls.length + this.verticalWalls.length);
+                if (hasTopWall) wallCount++;
+              }
+              
+              // Check bottom border/wall
+              if (y2 === this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                borderCount++;
+              } else {
+                // Check for horizontal wall at bottom
+                const hasBottomWall = horizontalWalls.some(wall => 
+                  wall.x >= x1 && wall.x <= x2 && wall.y === y2
+                );
+                if (hasBottomWall) wallCount++;
+              }
+              
+              // Check left border/wall
+              if (x1 === 0) {
+                borderCount++;
+              } else {
+                // Check for vertical wall at left
+                const hasLeftWall = verticalWalls.some(wall => 
+                  wall.x === x1 && wall.y >= y1 && wall.y <= y2
+                );
+                if (hasLeftWall) wallCount++;
+              }
+              
+              // Check right border/wall
+              if (x2 === this.GAME_CONFIG.MAP_WIDTH - 1) {
+                borderCount++;
+              } else {
+                // Check for vertical wall at right
+                const hasRightWall = verticalWalls.some(wall => 
+                  wall.x === x2 && wall.y >= y1 && wall.y <= y2
+                );
+                if (hasRightWall) wallCount++;
+              }
+              
+              // Check if this creates a dead weight room:
+              // - 4 walls/borders = completely enclosed
+              // - 3 walls + 1 border = enclosed on 3 sides + 1 border
+              // - 2 walls + 2 borders (corners) = enclosed on 2 sides + 2 borders
+              const totalEnclosures = wallCount + borderCount;
+              
+              return totalEnclosures >= 4;
             }
 
             canPlaceWallSafely(x, y, wallType, map) {
-                // Temporarily add the wall
-                const tempHorizontalWalls = [...this.horizontalWalls];
-                const tempVerticalWalls = [...this.verticalWalls];
-                
-                if (wallType === 'horizontal') {
-                    tempHorizontalWalls.push({x, y});
-                } else {
-                    tempVerticalWalls.push({x, y});
-                }
-                
-                // Check if there's still a path from start to exit
-                const hasPath = this.hasPathToExit(map, tempHorizontalWalls, tempVerticalWalls);
-                
-                return hasPath;
+              // Temporarily add the wall
+              const tempHorizontalWalls = [...this.horizontalWalls];
+              const tempVerticalWalls = [...this.verticalWalls];
+              
+              if (wallType === 'horizontal') {
+                tempHorizontalWalls.push({x, y});
+              } else {
+                tempVerticalWalls.push({x, y});
+              }
+              
+              // Check if there's still a path from start to exit
+              const hasPath = this.hasPathToExit(map, tempHorizontalWalls, tempVerticalWalls);
+              
+              return hasPath;
             }
 
             hasPathToExit(map, horizontalWalls, verticalWalls) {

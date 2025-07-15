@@ -27,8 +27,11 @@ export class MazeRenderer {
   }
 
   drawWalls(horizontalWalls, verticalWalls) {
-    this.ctx.strokeStyle = '#6a6a8a';
-    this.ctx.lineWidth = 3;
+    console.log('Drawing walls - Horizontal:', horizontalWalls.length, 'Vertical:', verticalWalls.length);
+    console.log('Wall details - Horizontal:', horizontalWalls, 'Vertical:', verticalWalls);
+    
+    this.ctx.strokeStyle = '#e94560';
+    this.ctx.lineWidth = 4;
     
     // Draw horizontal dividers
     for (const wall of horizontalWalls) {
