@@ -23,8 +23,8 @@ export class MazeGenerator {
     this.horizontalWalls.length = 0;
     this.verticalWalls.length = 0;
     
-    // Generate simple maze
-    this.generateSimpleMaze(level);
+    // Generate simple maze with validation
+    this.generateSimpleMazeWithValidation(level, newMap);
     
     // Ensure start position is open (top-left corner)
     newMap[0][0] = 0;
@@ -44,6 +44,146 @@ export class MazeGenerator {
       horizontalWalls: [...this.horizontalWalls],
       verticalWalls: [...this.verticalWalls]
     };
+  }
+
+  generateSimpleMazeWithValidation(level, map) {
+    console.log('Generating simple maze for level:', level);
+    
+    // Calculate wall density based on level (more walls for higher levels)
+    const levelDensity = Math.min(
+      GAME_CONFIG.MAX_WALL_DENSITY, 
+      GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * GAME_CONFIG.DENSITY_INCREMENT
+    );
+    
+    console.log('Wall density:', levelDensity);
+    
+    // Create horizontal walls (dividing rows) with validation
+    for (let y = 1; y < GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+      for (let x = 0; x < GAME_CONFIG.MAP_WIDTH; x++) {
+        // Skip walls near start and end
+        if ((x === 0 && y === 0) || (x === GAME_CONFIG.MAP_WIDTH - 1 && y === GAME_CONFIG.MAP_HEIGHT - 1)) {
+          continue;
+        }
+        
+        // Add wall with probability based on level, but only if it doesn't block the path
+        if (Math.random() < levelDensity) {
+          // Test if adding this wall would block the path to the exit
+          if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
+            this.horizontalWalls.push({x, y});
+          }
+        }
+      }
+    }
+    
+    // Create vertical walls (dividing columns) with validation
+    for (let y = 0; y < GAME_CONFIG.MAP_HEIGHT; y++) {
+      for (let x = 1; x < GAME_CONFIG.MAP_WIDTH - 1; x++) {
+        // Skip walls near start and end
+        if ((x === 0 && y === 0) || (x === GAME_CONFIG.MAP_WIDTH - 1 && y === GAME_CONFIG.MAP_HEIGHT - 1)) {
+          continue;
+        }
+        
+        // Add wall with probability based on level, but only if it doesn't block the path
+        if (Math.random() < levelDensity) {
+          // Test if adding this wall would block the path to the exit
+          if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
+            this.verticalWalls.push({x, y});
+          }
+        }
+      }
+    }
+    
+    // Ensure we have a minimum number of walls for gameplay
+    if (this.horizontalWalls.length + this.verticalWalls.length < GAME_CONFIG.MIN_WALLS) {
+      console.log('Adding minimum walls for gameplay');
+      // Add some guaranteed walls with validation
+      for (let i = 0; i < GAME_CONFIG.GUARANTEED_WALLS; i++) {
+        const x = 2 + Math.floor(Math.random() * (GAME_CONFIG.MAP_WIDTH - 4));
+        const y = 2 + Math.floor(Math.random() * (GAME_CONFIG.MAP_HEIGHT - 4));
+        if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
+          this.horizontalWalls.push({x, y});
+        }
+      }
+      for (let i = 0; i < GAME_CONFIG.GUARANTEED_WALLS; i++) {
+        const x = 2 + Math.floor(Math.random() * (GAME_CONFIG.MAP_WIDTH - 4));
+        const y = 2 + Math.floor(Math.random() * (GAME_CONFIG.MAP_HEIGHT - 4));
+        if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
+          this.verticalWalls.push({x, y});
+        }
+      }
+    }
+    
+    console.log('Simple maze generated. Total walls:', this.horizontalWalls.length + this.verticalWalls.length);
+  }
+
+  canPlaceWallSafely(x, y, wallType, map) {
+    // Temporarily add the wall
+    const tempHorizontalWalls = [...this.horizontalWalls];
+    const tempVerticalWalls = [...this.verticalWalls];
+    
+    if (wallType === 'horizontal') {
+      tempHorizontalWalls.push({x, y});
+    } else {
+      tempVerticalWalls.push({x, y});
+    }
+    
+    // Check if there's still a path from start to exit
+    const hasPath = this.hasPathToExit(map, tempHorizontalWalls, tempVerticalWalls);
+    
+    return hasPath;
+  }
+
+  hasPathToExit(map, horizontalWalls, verticalWalls) {
+    // Use BFS to check if there's a path from start (0,0) to exit (MAP_WIDTH-1, MAP_HEIGHT-1)
+    const visited = new Set();
+    const queue = [{x: 0, y: 0}];
+    
+    while (queue.length > 0) {
+      const {x, y} = queue.shift();
+      const key = `${x},${y}`;
+      
+      if (visited.has(key)) continue;
+      visited.add(key);
+      
+      // Check if we reached the exit
+      if (x === GAME_CONFIG.MAP_WIDTH - 1 && y === GAME_CONFIG.MAP_HEIGHT - 1) {
+        return true;
+      }
+      
+      // Check all 4 directions
+      const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+      for (const [dx, dy] of directions) {
+        const nx = x + dx;
+        const ny = y + dy;
+        
+        if (nx >= 0 && nx < GAME_CONFIG.MAP_WIDTH && ny >= 0 && ny < GAME_CONFIG.MAP_HEIGHT && 
+            (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+          
+          // Check if there's a divider blocking this move
+          let blocked = false;
+          
+          if (dx === 1) { // Moving right
+            // Check for vertical wall at current x position
+            blocked = verticalWalls.some(wall => wall.x === x && wall.y === y);
+          } else if (dx === -1) { // Moving left
+            // Check for vertical wall at target x position
+            blocked = verticalWalls.some(wall => wall.x === nx && wall.y === y);
+          } else if (dy === 1) { // Moving down
+            // Check for horizontal wall at current y position
+            blocked = horizontalWalls.some(wall => wall.x === x && wall.y === y);
+          } else if (dy === -1) { // Moving up
+            // Check for horizontal wall at target y position
+            blocked = horizontalWalls.some(wall => wall.x === x && wall.y === ny);
+          }
+          
+          if (!blocked) {
+            queue.push({x: nx, y: ny});
+          }
+        }
+      }
+    }
+    
+    return false;
   }
 
   generateSimpleMaze(level) {
