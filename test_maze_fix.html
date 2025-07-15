@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .maze-display {
+            border: 2px solid #6a6a8a;
+            padding: 10px;
+            background: #16213e;
+            border-radius: 8px;
+        }
+        .maze-canvas {
+            border: 1px solid #6a6a8a;
+            background: #0f3460;
+        }
+        .stats {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #c73e1d;
+        }
+    </style>
+</head>
+<body>
+    <h1>Maze Fix Test - Using Actual Game Code</h1>
+    
+    <div>
+        <button onclick="testMaze()">Test Single Maze</button>
+        <button onclick="testMultipleMazes(10)">Test 10 Mazes</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        // Import the actual game maze generator
+        import { MazeGenerator } from './src/js/maze/generator.js';
+        import { GAME_CONFIG } from './src/js/utils/constants.js';
+
+        let testCount = 0;
+        let successCount = 0;
+        let failCount = 0;
+
+        function drawMaze(canvas, mazeData, tileSize = 12) {
+            const ctx = canvas.getContext('2d');
+            const { map, horizontalWalls, verticalWalls } = mazeData;
+            
+            // Clear canvas
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate tile size to fit the maze
+            const mapWidth = map[0].length;
+            const mapHeight = map.length;
+            const maxTileSize = Math.min(canvas.width / mapWidth, canvas.height / mapHeight);
+            tileSize = Math.min(tileSize, maxTileSize);
+            
+            // Center the maze
+            const offsetX = (canvas.width - mapWidth * tileSize) / 2;
+            const offsetY = (canvas.height - mapHeight * tileSize) / 2;
+            
+            // Draw grid
+            ctx.strokeStyle = '#6a6a8a';
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= mapWidth; x++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX + x * tileSize, offsetY);
+                ctx.lineTo(offsetX + x * tileSize, offsetY + mapHeight * tileSize);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= mapHeight; y++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX, offsetY + y * tileSize);
+                ctx.lineTo(offsetX + mapWidth * tileSize, offsetY + y * tileSize);
+                ctx.stroke();
+            }
+            
+            // Draw walls
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2;
+            
+            // Draw horizontal walls
+            for (const wall of horizontalWalls) {
+                const x1 = offsetX + wall.x * tileSize;
+                const y1 = offsetY + (wall.y + 1) * tileSize;
+                const x2 = offsetX + (wall.x + 1) * tileSize;
+                const y2 = offsetY + (wall.y + 1) * tileSize;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Draw vertical walls
+            for (const wall of verticalWalls) {
+                const x1 = offsetX + (wall.x + 1) * tileSize;
+                const y1 = offsetY + wall.y * tileSize;
+                const x2 = offsetX + (wall.x + 1) * tileSize;
+                const y2 = offsetY + (wall.y + 1) * tileSize;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Draw start position (green)
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(offsetX, offsetY, tileSize, tileSize);
+            
+            // Draw exit position (red)
+            ctx.fillStyle = '#f44336';
+            ctx.fillRect(offsetX + (mapWidth - 1) * tileSize, offsetY + (mapHeight - 1) * tileSize, tileSize, tileSize);
+            
+            // Add labels
+            ctx.fillStyle = 'white';
+            ctx.font = '8px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', offsetX + tileSize/2, offsetY + tileSize/2);
+            ctx.fillText('E', offsetX + (mapWidth - 0.5) * tileSize, offsetY + (mapHeight - 0.5) * tileSize);
+        }
+
+        function testMaze() {
+            const generator = new MazeGenerator();
+            const level = 1 + Math.floor(Math.random() * 10);
+            
+            try {
+                const mazeData = generator.generateRandomMap(level);
+                
+                // Test connectivity using the actual game's pathfinding
+                const hasPath = generator.hasPathToExit(
+                    mazeData.map, 
+                    mazeData.horizontalWalls, 
+                    mazeData.verticalWalls
+                );
+                
+                testCount++;
+                if (hasPath) {
+                    successCount++;
+                } else {
+                    failCount++;
+                }
+                
+                displayResult(mazeData, hasPath, level, testCount);
+                updateStats();
+                
+            } catch (error) {
+                console.error('Maze generation error:', error);
+                failCount++;
+                testCount++;
+                updateStats();
+            }
+        }
+
+        function testMultipleMazes(count) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    testMaze();
+                }, i * 100);
+            }
+        }
+
+        function displayResult(mazeData, hasPath, level, testNum) {
+            const results = document.getElementById('results');
+            const mazeDiv = document.createElement('div');
+            mazeDiv.className = 'maze-display';
+            
+            const statusText = hasPath ? '✓ PASS' : '✗ FAIL';
+            const statusClass = hasPath ? 'success' : 'error';
+            
+            mazeDiv.innerHTML = `
+                <h4>Test ${testNum} - ${statusText}</h4>
+                <div style="text-align: center;">
+                    <canvas id="canvas-${testNum}" width="150" height="240" class="maze-canvas"></canvas>
+                </div>
+                <div class="stats">
+                    <div>Level: ${level}</div>
+                    <div>Walls: ${mazeData.horizontalWalls.length + mazeData.verticalWalls.length}</div>
+                    <div class="${statusClass}">Path: ${hasPath ? 'Valid' : 'Blocked'}</div>
+                </div>
+            `;
+            
+            results.appendChild(mazeDiv);
+            
+            // Draw the maze
+            setTimeout(() => {
+                const canvas = document.getElementById(`canvas-${testNum}`);
+                if (canvas) {
+                    drawMaze(canvas, mazeData);
+                }
+            }, 10);
+        }
+
+        function updateStats() {
+            const successRate = testCount > 0 ? ((successCount / testCount) * 100).toFixed(1) : 0;
+            console.log(`Tests: ${testCount}, Success: ${successCount}, Failed: ${failCount}, Rate: ${successRate}%`);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+            testCount = 0;
+            successCount = 0;
+            failCount = 0;
+            updateStats();
+        }
+
+        // Make functions global
+        window.testMaze = testMaze;
+        window.testMultipleMazes = testMultipleMazes;
+        window.clearResults = clearResults;
+    </script>
+</body>
+</html> 

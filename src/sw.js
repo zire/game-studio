@@ -1,11 +1,12 @@
 const CACHE_NAME = 'pacboy-v2';
 const urlsToCache = [
   '/',
-  '/pacman.html',
-  '/waka.wav',
-  '/manifest.json',
-  '/assets/images/y3labs.png',
-  '/offline.html'
+  '/src/index.html',
+  '/src/pacman.html',
+  '/src/waka.wav',
+  '/src/manifest.json',
+  '/src/assets/images/y3labs.png',
+  '/src/offline.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -37,7 +38,7 @@ self.addEventListener('fetch', (event) => {
           .catch(() => {
             // If offline and requesting a page, show offline page
             if (event.request.mode === 'navigate') {
-              return caches.match('/offline.html');
+              return caches.match('/src/offline.html');
             }
           });
       })
