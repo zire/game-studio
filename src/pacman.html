@@ -19,9 +19,9 @@
   <title>Brandon's Pacboy Game Studio</title>
   
   <!-- CSS Files -->
-  <link rel="stylesheet" href="css/main.css?v=1.1">
-  <link rel="stylesheet" href="css/controls.css?v=1.1">
-  <link rel="stylesheet" href="css/responsive.css?v=1.1">
+  <link rel="stylesheet" href="css/main.css?v=1.3">
+  <link rel="stylesheet" href="css/controls.css?v=1.3">
+  <link rel="stylesheet" href="css/responsive.css?v=1.3">
 </head>
 <body>
   <!-- Menu Overlay -->
@@ -108,6 +108,13 @@
   </div>
   
   <div class="game-container">
+    <!-- Development Refresh Button (only on localhost) -->
+    <div id="devRefreshBtn" style="position: fixed; top: 10px; right: 10px; z-index: 1000; display: none;">
+      <button onclick="location.reload(true)" style="background: #FFD700; color: #000; border: none; padding: 8px 12px; border-radius: 5px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+        🔄 Refresh
+      </button>
+    </div>
+    
     <!-- Header Section -->
     <div class="game-header">
       <div class="header-left">
@@ -165,6 +172,36 @@
   <script type="module" src="js/main.js"></script>
   
   <script>
+    // Auto-cache busting for development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      // Force fresh load on localhost by adding timestamp to all resource URLs
+      const timestamp = Date.now();
+      
+      // Update CSS links with timestamp
+      document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+        if (link.href.includes('localhost') || link.href.includes('127.0.0.1')) {
+          const separator = link.href.includes('?') ? '&' : '?';
+          link.href = link.href + separator + 't=' + timestamp;
+        }
+      });
+      
+      // Update JS links with timestamp
+      document.querySelectorAll('script[src]').forEach(script => {
+        if (script.src.includes('localhost') || script.src.includes('127.0.0.1')) {
+          const separator = script.src.includes('?') ? '&' : '?';
+          script.src = script.src + separator + 't=' + timestamp;
+        }
+      });
+      
+      console.log('Development mode: Cache busting applied with timestamp', timestamp);
+      
+      // Show refresh button on localhost
+      const refreshBtn = document.getElementById('devRefreshBtn');
+      if (refreshBtn) {
+        refreshBtn.style.display = 'block';
+      }
+    }
+    
     // PWA Installation Logic for Pacman page
     let deferredPrompt;
 
