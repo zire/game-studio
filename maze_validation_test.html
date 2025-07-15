@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Generation Validation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        .test-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .maze-display {
+            border: 2px solid #6a6a8a;
+            padding: 10px;
+            background: #16213e;
+            border-radius: 8px;
+        }
+        .maze-canvas {
+            border: 1px solid #6a6a8a;
+            background: #0f3460;
+        }
+        .stats {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .controls {
+            margin-bottom: 20px;
+        }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #c73e1d;
+        }
+        .summary {
+            background: #16213e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Maze Generation Validation Test</h1>
+    
+    <div class="controls">
+        <button onclick="runSingleTest()">Test Single Maze</button>
+        <button onclick="runBatchTest(10)">Test 10 Mazes</button>
+        <button onclick="runBatchTest(50)">Test 50 Mazes</button>
+        <button onclick="runBatchTest(100)">Test 100 Mazes</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div class="summary" id="summary">
+        <h3>Test Summary</h3>
+        <div id="summary-content">No tests run yet.</div>
+    </div>
+    
+    <div class="test-container" id="test-results">
+        <!-- Test results will be displayed here -->
+    </div>
+
+    <script type="module">
+        // Import the maze generator (we'll need to create a test version)
+        class TestMazeGenerator {
+            constructor() {
+                this.horizontalWalls = [];
+                this.verticalWalls = [];
+            }
+
+            // Game config for testing
+            GAME_CONFIG = {
+                MAP_WIDTH: 10,
+                MAP_HEIGHT: 16,
+                BASE_WALL_DENSITY: 0.15,
+                MAX_WALL_DENSITY: 0.4,
+                DENSITY_INCREMENT: 0.02,
+                MIN_WALLS: 10,
+                GUARANTEED_WALLS: 5
+            };
+
+            generateRandomMap(level = 1) {
+                console.log('Generating maze for level:', level);
+                
+                // Create maze with thin dividers on gridlines from level 1
+                const newMap = [];
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    const row = [];
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        row.push(0); // Start with all walkable space
+                    }
+                    newMap.push(row);
+                }
+                
+                // Clear existing walls
+                this.horizontalWalls.length = 0;
+                this.verticalWalls.length = 0;
+                
+                // Generate simple maze with validation
+                this.generateSimpleMazeWithValidation(level, newMap);
+                
+                // Ensure start position is open (top-left corner)
+                newMap[0][0] = 0;
+                
+                // Place exit door at bottom-right corner
+                const exitX = this.GAME_CONFIG.MAP_WIDTH - 1;
+                const exitY = this.GAME_CONFIG.MAP_HEIGHT - 1;
+                newMap[exitY][exitX] = 2; // Door
+                
+                // Ensure the door is accessible
+                this.ensureDoorAccess(newMap);
+                
+                console.log('Maze generation complete. Horizontal walls:', this.horizontalWalls.length, 'Vertical walls:', this.verticalWalls.length);
+                
+                return {
+                    map: newMap,
+                    horizontalWalls: [...this.horizontalWalls],
+                    verticalWalls: [...this.verticalWalls]
+                };
+            }
+
+            generateSimpleMazeWithValidation(level, map) {
+                console.log('Generating simple maze for level:', level);
+                
+                // Calculate wall density based on level (more walls for higher levels)
+                const levelDensity = Math.min(
+                    this.GAME_CONFIG.MAX_WALL_DENSITY, 
+                    this.GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * this.GAME_CONFIG.DENSITY_INCREMENT
+                );
+                
+                console.log('Wall density:', levelDensity);
+                
+                // Create horizontal walls (dividing rows) with validation
+                for (let y = 1; y < this.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        // Skip walls near start and end
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        // Add wall with probability based on level, but only if it doesn't block the path
+                        if (Math.random() < levelDensity) {
+                            // Test if adding this wall would block the path to the exit
+                            if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
+                                this.horizontalWalls.push({x, y});
+                            }
+                        }
+                    }
+                }
+                
+                // Create vertical walls (dividing columns) with validation
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    for (let x = 1; x < this.GAME_CONFIG.MAP_WIDTH - 1; x++) {
+                        // Skip walls near start and end
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        // Add wall with probability based on level, but only if it doesn't block the path
+                        if (Math.random() < levelDensity) {
+                            // Test if adding this wall would block the path to the exit
+                            if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
+                                this.verticalWalls.push({x, y});
+                            }
+                        }
+                    }
+                }
+                
+                // Ensure we have a minimum number of walls for gameplay
+                if (this.horizontalWalls.length + this.verticalWalls.length < this.GAME_CONFIG.MIN_WALLS) {
+                    console.log('Adding minimum walls for gameplay');
+                    // Add some guaranteed walls with validation
+                    for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
+                        const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
+                        const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
+                        if (this.canPlaceWallSafely(x, y, 'horizontal', map)) {
+                            this.horizontalWalls.push({x, y});
+                        }
+                    }
+                    for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
+                        const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
+                        const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
+                        if (this.canPlaceWallSafely(x, y, 'vertical', map)) {
+                            this.verticalWalls.push({x, y});
+                        }
+                    }
+                }
+                
+                console.log('Simple maze generated. Total walls:', this.horizontalWalls.length + this.verticalWalls.length);
+            }
+
+            canPlaceWallSafely(x, y, wallType, map) {
+                // Temporarily add the wall
+                const tempHorizontalWalls = [...this.horizontalWalls];
+                const tempVerticalWalls = [...this.verticalWalls];
+                
+                if (wallType === 'horizontal') {
+                    tempHorizontalWalls.push({x, y});
+                } else {
+                    tempVerticalWalls.push({x, y});
+                }
+                
+                // Check if there's still a path from start to exit
+                const hasPath = this.hasPathToExit(map, tempHorizontalWalls, tempVerticalWalls);
+                
+                return hasPath;
+            }
+
+            hasPathToExit(map, horizontalWalls, verticalWalls) {
+                // Use BFS to check if there's a path from start (0,0) to exit (MAP_WIDTH-1, MAP_HEIGHT-1)
+                const visited = new Set();
+                const queue = [{x: 0, y: 0}];
+                
+                while (queue.length > 0) {
+                    const {x, y} = queue.shift();
+                    const key = `${x},${y}`;
+                    
+                    if (visited.has(key)) continue;
+                    visited.add(key);
+                    
+                    // Check if we reached the exit
+                    if (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1) {
+                        return true;
+                    }
+                    
+                    // Check all 4 directions
+                    const directions = [[0, -1], [0, 1], [-1, 0], [1, 0]];
+                    for (const [dx, dy] of directions) {
+                        const nx = x + dx;
+                        const ny = y + dy;
+                        
+                        if (nx >= 0 && nx < this.GAME_CONFIG.MAP_WIDTH && ny >= 0 && ny < this.GAME_CONFIG.MAP_HEIGHT && 
+                            (map[ny][nx] === 0 || map[ny][nx] === 2) && !visited.has(`${nx},${ny}`)) {
+                            
+                            // Check if there's a divider blocking this move
+                            let blocked = false;
+                            
+                            if (dx === 1) { // Moving right
+                                // Check for vertical wall at current x position
+                                blocked = verticalWalls.some(wall => wall.x === x && wall.y === y);
+                            } else if (dx === -1) { // Moving left
+                                // Check for vertical wall at target x position
+                                blocked = verticalWalls.some(wall => wall.x === nx && wall.y === y);
+                            } else if (dy === 1) { // Moving down
+                                // Check for horizontal wall at current y position
+                                blocked = horizontalWalls.some(wall => wall.x === x && wall.y === y);
+                            } else if (dy === -1) { // Moving up
+                                // Check for horizontal wall at target y position
+                                blocked = horizontalWalls.some(wall => wall.x === x && wall.y === ny);
+                            }
+                            
+                            if (!blocked) {
+                                queue.push({x: nx, y: ny});
+                            }
+                        }
+                    }
+                }
+                
+                return false;
+            }
+
+            // Original method for comparison
+            generateSimpleMaze(level) {
+                console.log('Generating simple maze for level:', level);
+                
+                // Calculate wall density based on level (more walls for higher levels)
+                const levelDensity = Math.min(
+                    this.GAME_CONFIG.MAX_WALL_DENSITY, 
+                    this.GAME_CONFIG.BASE_WALL_DENSITY + (level - 1) * this.GAME_CONFIG.DENSITY_INCREMENT
+                );
+                
+                console.log('Wall density:', levelDensity);
+                
+                // Create horizontal walls (dividing rows)
+                for (let y = 1; y < this.GAME_CONFIG.MAP_HEIGHT - 1; y++) {
+                    for (let x = 0; x < this.GAME_CONFIG.MAP_WIDTH; x++) {
+                        // Skip walls near start and end
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        // Add wall with probability based on level
+                        if (Math.random() < levelDensity) {
+                            this.horizontalWalls.push({x, y});
+                        }
+                    }
+                }
+                
+                // Create vertical walls (dividing columns)
+                for (let y = 0; y < this.GAME_CONFIG.MAP_HEIGHT; y++) {
+                    for (let x = 1; x < this.GAME_CONFIG.MAP_WIDTH - 1; x++) {
+                        // Skip walls near start and end
+                        if ((x === 0 && y === 0) || (x === this.GAME_CONFIG.MAP_WIDTH - 1 && y === this.GAME_CONFIG.MAP_HEIGHT - 1)) {
+                            continue;
+                        }
+                        
+                        // Add wall with probability based on level
+                        if (Math.random() < levelDensity) {
+                            this.verticalWalls.push({x, y});
+                        }
+                    }
+                }
+                
+                // Ensure we have a minimum number of walls for gameplay
+                if (this.horizontalWalls.length + this.verticalWalls.length < this.GAME_CONFIG.MIN_WALLS) {
+                    console.log('Adding minimum walls for gameplay');
+                    // Add some guaranteed walls
+                    for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
+                        const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
+                        const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
+                        this.horizontalWalls.push({x, y});
+                    }
+                    for (let i = 0; i < this.GAME_CONFIG.GUARANTEED_WALLS; i++) {
+                        const x = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_WIDTH - 4));
+                        const y = 2 + Math.floor(Math.random() * (this.GAME_CONFIG.MAP_HEIGHT - 4));
+                        this.verticalWalls.push({x, y});
+                    }
+                }
+                
+                console.log('Simple maze generated. Total walls:', this.horizontalWalls.length + this.verticalWalls.length);
+            }
+
+            ensureDoorAccess(map) {
+                // Ensure there's a path to the door
+                const doorX = this.GAME_CONFIG.MAP_WIDTH - 1;
+                const doorY = this.GAME_CONFIG.MAP_HEIGHT - 1;
+                
+                // Check if door is accessible from left or above
+                if (map[doorY][doorX - 1] !== 0 && map[doorY - 1][doorX] !== 0) {
+                    // Door is blocked, create a path
+                    if (Math.random() > 0.5) {
+                        map[doorY][doorX - 1] = 0; // Open left
+                    } else {
+                        map[doorY - 1][doorX] = 0; // Open above
+                    }
+                }
+            }
+
+            isMoveBlockedByDivider(fromX, fromY, toX, toY) {
+                // Check if there's a divider blocking this move
+                if (toX > fromX) { // Moving right
+                    // Check for vertical wall at current x position
+                    return this.verticalWalls.some(wall => wall.x === fromX && wall.y === fromY);
+                } else if (toX < fromX) { // Moving left
+                    // Check for vertical wall at target x position
+                    return this.verticalWalls.some(wall => wall.x === toX && wall.y === fromY);
+                } else if (toY > fromY) { // Moving down
+                    // Check for horizontal wall at current y position
+                    return this.horizontalWalls.some(wall => wall.x === fromX && wall.y === fromY);
+                } else if (toY < fromY) { // Moving up
+                    // Check for horizontal wall at target y position
+                    return this.horizontalWalls.some(wall => wall.x === fromX && wall.y === toY);
+                }
+                return false;
+            }
+        }
+
+        // Test results tracking
+        let testResults = {
+            total: 0,
+            successful: 0,
+            failed: 0,
+            details: []
+        };
+
+        // Canvas rendering for maze visualization
+        function drawMaze(canvas, mazeData, tileSize = 12) {
+            const ctx = canvas.getContext('2d');
+            const { map, horizontalWalls, verticalWalls } = mazeData;
+            
+            // Clear canvas
+            ctx.fillStyle = '#0f3460';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Calculate tile size to fit the maze
+            const mapWidth = map[0].length;
+            const mapHeight = map.length;
+            const maxTileSize = Math.min(canvas.width / mapWidth, canvas.height / mapHeight);
+            tileSize = Math.min(tileSize, maxTileSize);
+            
+            // Center the maze
+            const offsetX = (canvas.width - mapWidth * tileSize) / 2;
+            const offsetY = (canvas.height - mapHeight * tileSize) / 2;
+            
+            // Draw grid
+            ctx.strokeStyle = '#6a6a8a';
+            ctx.lineWidth = 0.5;
+            for (let x = 0; x <= mapWidth; x++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX + x * tileSize, offsetY);
+                ctx.lineTo(offsetX + x * tileSize, offsetY + mapHeight * tileSize);
+                ctx.stroke();
+            }
+            for (let y = 0; y <= mapHeight; y++) {
+                ctx.beginPath();
+                ctx.moveTo(offsetX, offsetY + y * tileSize);
+                ctx.lineTo(offsetX + mapWidth * tileSize, offsetY + y * tileSize);
+                ctx.stroke();
+            }
+            
+            // Draw walls
+            ctx.strokeStyle = '#e94560';
+            ctx.lineWidth = 2;
+            
+            // Draw horizontal walls
+            for (const wall of horizontalWalls) {
+                const x1 = offsetX + wall.x * tileSize;
+                const y1 = offsetY + (wall.y + 1) * tileSize;
+                const x2 = offsetX + (wall.x + 1) * tileSize;
+                const y2 = offsetY + (wall.y + 1) * tileSize;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Draw vertical walls
+            for (const wall of verticalWalls) {
+                const x1 = offsetX + (wall.x + 1) * tileSize;
+                const y1 = offsetY + wall.y * tileSize;
+                const x2 = offsetX + (wall.x + 1) * tileSize;
+                const y2 = offsetY + (wall.y + 1) * tileSize;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+            }
+            
+            // Draw start position (green)
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(offsetX, offsetY, tileSize, tileSize);
+            
+            // Draw exit position (red)
+            ctx.fillStyle = '#f44336';
+            ctx.fillRect(offsetX + (mapWidth - 1) * tileSize, offsetY + (mapHeight - 1) * tileSize, tileSize, tileSize);
+            
+            // Add labels
+            ctx.fillStyle = 'white';
+            ctx.font = '8px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('S', offsetX + tileSize/2, offsetY + tileSize/2);
+            ctx.fillText('E', offsetX + (mapWidth - 0.5) * tileSize, offsetY + (mapHeight - 0.5) * tileSize);
+        }
+
+        // Test function
+        function testMazeGeneration(useValidation = true) {
+            const generator = new TestMazeGenerator();
+            const level = 1 + Math.floor(Math.random() * 10); // Random level 1-10
+            
+            try {
+                const mazeData = generator.generateRandomMap(level);
+                
+                // Test connectivity
+                const hasPath = generator.hasPathToExit(
+                    mazeData.map, 
+                    mazeData.horizontalWalls, 
+                    mazeData.verticalWalls
+                );
+                
+                return {
+                    success: hasPath,
+                    mazeData,
+                    level,
+                    wallCount: mazeData.horizontalWalls.length + mazeData.verticalWalls.length,
+                    useValidation
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    level,
+                    useValidation
+                };
+            }
+        }
+
+        // Display test result
+        function displayTestResult(result, index) {
+            const container = document.getElementById('test-results');
+            const mazeDiv = document.createElement('div');
+            mazeDiv.className = 'maze-display';
+            
+            const statusClass = result.success ? 'success' : 'error';
+            const statusText = result.success ? '✓ PASS' : '✗ FAIL';
+            
+            mazeDiv.innerHTML = `
+                <h4>Test ${index + 1} - ${statusText}</h4>
+                <div style="text-align: center;">
+                    <canvas id="canvas-${index}" width="150" height="240" class="maze-canvas"></canvas>
+                </div>
+                <div class="stats">
+                    <div>Level: ${result.level}</div>
+                    <div>Walls: ${result.wallCount || 'N/A'}</div>
+                    <div>Validation: ${result.useValidation ? 'ON' : 'OFF'}</div>
+                    ${result.error ? `<div class="error">Error: ${result.error}</div>` : ''}
+                </div>
+            `;
+            
+            container.appendChild(mazeDiv);
+            
+            // Draw the maze after the element is added to DOM
+            setTimeout(() => {
+                if (result.mazeData) {
+                    const canvas = document.getElementById(`canvas-${index}`);
+                    if (canvas) {
+                        drawMaze(canvas, result.mazeData);
+                    }
+                }
+            }, 10);
+        }
+
+        // Update summary
+        function updateSummary() {
+            const summary = document.getElementById('summary-content');
+            const successRate = testResults.total > 0 ? 
+                ((testResults.successful / testResults.total) * 100).toFixed(1) : 0;
+            
+            summary.innerHTML = `
+                <div>Total Tests: ${testResults.total}</div>
+                <div class="success">Successful: ${testResults.successful}</div>
+                <div class="error">Failed: ${testResults.failed}</div>
+                <div>Success Rate: ${successRate}%</div>
+            `;
+        }
+
+        // Test functions
+        window.runSingleTest = function() {
+            const result = testMazeGeneration(true);
+            testResults.total++;
+            if (result.success) {
+                testResults.successful++;
+            } else {
+                testResults.failed++;
+            }
+            testResults.details.push(result);
+            
+            displayTestResult(result, testResults.details.length - 1);
+            updateSummary();
+        };
+
+        window.runBatchTest = function(count) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const result = testMazeGeneration(true);
+                    testResults.total++;
+                    if (result.success) {
+                        testResults.successful++;
+                    } else {
+                        testResults.failed++;
+                    }
+                    testResults.details.push(result);
+                    
+                    displayTestResult(result, testResults.details.length - 1);
+                    updateSummary();
+                }, i * 100); // Stagger tests for better visualization
+            }
+        };
+
+        window.clearResults = function() {
+            document.getElementById('test-results').innerHTML = '';
+            testResults = {
+                total: 0,
+                successful: 0,
+                failed: 0,
+                details: []
+            };
+            updateSummary();
+        };
+
+        // Initialize
+        updateSummary();
+    </script>
+</body>
+</html> 
