@@ -1,6 +1,6 @@
 {
   "canisters": {
-    "game-studio": {
+    "y3-labs": {
       "frontend": {
         "entrypoint": "src/index.html"
       },
