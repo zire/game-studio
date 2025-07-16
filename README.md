@@ -2,7 +2,7 @@
 
 A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate through randomly generated mazes, collect golden pellets, and avoid ghosts while using powerful weapons! Created by 9-year-old game designer Brandon Yang.
 
-🌐 **Live Website**: [https://viiha-gqaaa-aaaae-qfe4q-cai.ic0.app](https://viiha-gqaaa-aaaae-qfe4q-cai.ic0.app)
+🌐 **Live Website**: [https://viiha-gqaaa-aaaae-qfe4q-cai.icp0.io](https://viiha-gqaaa-aaaae-qfe4q-cai.icp0.io)
 
 ## 🎮 Features
 
