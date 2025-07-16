@@ -1,12 +1,14 @@
-const CACHE_NAME = 'pacboy-v2';
+const CACHE_NAME = 'y3labs-v1';
 const urlsToCache = [
   '/',
-  '/src/index.html',
-  '/src/pacman.html',
-  '/src/waka.wav',
-  '/src/manifest.json',
-  '/src/assets/images/y3labs.png',
-  '/src/offline.html'
+  '/src/landing/index.html',
+  '/src/games/pacboy-2025/',
+  '/src/games/pacboy-2025/index.html',
+  '/src/games/pacboy-2025/waka.wav',
+  '/src/landing/manifest.json',
+  '/src/landing/img/Y3labs.png',
+  '/src/landing/img/brandonator.png',
+  '/src/landing/offline.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -38,7 +40,7 @@ self.addEventListener('fetch', (event) => {
           .catch(() => {
             // If offline and requesting a page, show offline page
             if (event.request.mode === 'navigate') {
-              return caches.match('/src/offline.html');
+              return caches.match('/src/landing/offline.html');
             }
           });
       })

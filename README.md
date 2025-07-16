@@ -20,35 +20,54 @@ A modern, modular HTML5 maze game built with vanilla JavaScript. Navigate throug
 ## 📁 Project Structure
 
 ```
-src/
-├── index.html                 # Landing page (Y3 Labs)
-├── pacman.html               # Main game page (Pacboy 2025)
-├── css/
-│   ├── main.css              # Main styles and layout
-│   ├── controls.css          # Mobile controls and menu styles
-│   └── responsive.css        # Responsive design rules
-├── js/
-│   ├── main.js               # Main game initialization
-│   ├── utils/
-│   │   └── constants.js      # Game configuration constants
-│   ├── maze/
-│   │   ├── generator.js      # Maze generation logic
-│   │   └── renderer.js       # Maze and game element rendering
-│   ├── game/
-│   │   └── engine.js         # Main game engine and logic
-│   ├── audio/
-│   │   └── sounds.js         # Audio system (Web Audio API)
-│   └── ui/                   # UI components
-├── assets/
-│   ├── images/               # Game images and icons
-│   │   ├── brandonator.png   # Y3 Labs logo
-│   │   ├── bags_avatar.jpg   # Avatar image
-│   │   └── internet-computer-logo.png # Powered by logo
-│   └── sounds/               # Audio files
-├── manifest.json             # PWA manifest
-├── sw.js                     # Service worker
-├── offline.html              # Offline page
-└── waka.wav                  # Original sound file
+y3labs/
+├── dfx.json                   # DFX configuration
+├── canister_ids.json          # Canister IDs for deployment
+├── README.md                  # Project documentation
+├── .gitignore                 # Git ignore rules
+├── docs/                      # Documentation
+│   └── maze-generation.md     # Maze generation documentation
+├── scripts/                   # Deployment scripts
+├── .github/workflows/         # CI/CD deployment
+└── src/                       # Source code
+    ├── index.html             # Y3 Labs Game Studio landing page
+    ├── manifest.json          # PWA manifest
+    ├── sw.js                  # Service worker
+    ├── offline.html           # Offline page
+    ├── img/                   # Studio images
+    │   ├── Y3labs.png        # Studio logo
+    │   ├── brandonator.png   # Studio branding
+    │   └── internet-computer-logo.png # Powered by logo
+    ├── css/                   # Studio styles
+    ├── js/                    # Studio scripts
+    └── games/
+        └── pacboy-2025/       # Pacboy 2025 game
+            ├── index.html     # Game page
+            ├── manifest.json  # Game PWA manifest
+            ├── js/
+            │   ├── main.js    # Main game initialization
+            │   ├── utils/
+            │   │   └── constants.js # Game configuration constants
+            │   ├── maze/
+            │   │   ├── generator.js # Maze generation logic
+            │   │   └── renderer.js  # Maze and game element rendering
+            │   ├── game/
+            │   │   └── engine.js    # Main game engine and logic
+            │   ├── audio/
+            │   │   └── sounds.js    # Audio system (Web Audio API)
+            │   └── ui/              # UI components
+            ├── css/
+            │   ├── main.css         # Core layout and game container styles
+            │   ├── controls.css     # Mobile controls and menu styles
+            │   └── responsive.css   # Responsive design rules
+            ├── assets/
+            │   ├── images/          # Game images and icons
+            │   └── sounds/          # Audio files
+            ├── testing/             # Game testing files
+            │   ├── wall_debug_test.html
+            │   ├── test_maze_fix.html
+            │   └── maze_validation_test.html
+            └── waka.wav             # Original sound file
 ```
 
 ## 🚀 Getting Started
@@ -72,7 +91,7 @@ src/
    # Using PHP
    php -S localhost:8000
    ```
-3. **Open your browser** and navigate to `http://localhost:8000/src/`
+3. **Open your browser** and navigate to `http://localhost:8000/src/` for the Y3 Labs studio page, or `http://localhost:8000/src/games/pacboy-2025/` for the game directly
 
 ### Development
 
@@ -156,7 +175,7 @@ The game is organized into logical modules:
 
 ## 🔧 Configuration
 
-Game settings can be modified in `js/utils/constants.js`:
+Game settings can be modified in `src/games/pacboy-2025/js/utils/constants.js`:
 
 ```javascript
 export const GAME_CONFIG = {
