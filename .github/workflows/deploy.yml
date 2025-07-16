@@ -66,6 +66,9 @@ jobs:
       env:
         DFX_NETWORK: ic
       run: |
+        # Set PATH for this step
+        export PATH="$HOME/.local/share/dfx/versions/0.24.3:$PATH"
+        
         # Deploy to IC using pacboy-prod identity
         dfx identity use pacboy-prod
         dfx deploy --network ic --yes 
