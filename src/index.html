@@ -14,15 +14,15 @@
     <link rel="manifest" href="manifest.json">
     <meta property="og:title" content="Y3 Labs - Pacboy 2025">
     <meta property="og:description" content="Pacboy 2025 and more exciting games created by 9-year-old game designer Brandon Yang. Experience the ultimate maze adventure!">
-    <meta property="og:image" content="assets/images/brandonator.png">
+    <meta property="og:image" content="img/brandonator.png">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Y3 Labs - Pacboy 2025">
     <meta name="twitter:description" content="Pacboy 2025 and more exciting games created by 9-year-old game designer Brandon Yang. Experience the ultimate maze adventure!">
-    <meta name="twitter:image" content="assets/images/brandonator.png">
+    <meta name="twitter:image" content="img/brandonator.png">
     <meta name="twitter:image:alt" content="Y3 Labs - Pacboy 2025">
-    <link rel="icon" type="image/png" href="assets/images/y3labs.png">
-    <link rel="apple-touch-icon" href="assets/images/y3labs.png">
+    <link rel="icon" type="image/png" href="img/Y3labs.png">
+    <link rel="apple-touch-icon" href="img/Y3labs.png">
     <title>Y3 Labs</title>
     <style>
         * {
@@ -310,7 +310,7 @@
 <body>
     <div class="container">
         <header>
-            <img src="assets/images/brandonator.png" alt="Y3 Labs" style="width: 100%; height: auto; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+            <img src="img/brandonator.png" alt="Y3 Labs" style="width: 100%; height: auto; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
             <h1 class="logo">Y3 Labs</h1>
             <p class="tagline">Where Fun Meets Imagination!</p>
             
@@ -369,7 +369,7 @@
                     Navigate through randomly generated mazes, collect golden pellets, and avoid the colorful ghosts! 
                     Each game is unique with a new maze layout. Optimized for portrait mode on mobile phones with touch controls.
                 </p>
-                <a href="pacman.html" class="play-button">🎮 Play Now!</a>
+                <a href="games/pacboy-2025/" class="play-button">🎮 Play Now!</a>
             </div>
 
 
@@ -403,7 +403,7 @@
             </div>
             <div style="margin-top: 20px; text-align: center;">
                 <p style="margin: 0; text-align: center; color: #cccccc; font-size: 12px;">Powered by</p>
-                <img src="assets/images/internet-computer-logo.png" alt="Internet Computer" style="height: 20px; margin-top: 8px;">
+                <img src="img/internet-computer-logo.png" alt="Internet Computer" style="height: 20px; margin-top: 8px;">
             </div>
         </footer>
     </div>
@@ -449,18 +449,7 @@
             localStorage.setItem('pwaInstallDismissed', 'true');
         });
 
-        // Register Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/src/sw.js')
-                    .then((registration) => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch((registrationError) => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
+
 
         // Handle iOS PWA specific behaviors
         if (window.navigator.standalone) {
